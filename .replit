@@ -1,0 +1,61 @@
+modules = ["python-3.11"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Casino Bot"
+
+[[workflows.workflow]]
+name = "Casino Bot"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
+waitForPort = 5000
+
+[userenv]
+
+[userenv.shared]
+ADMIN_IDS = "7748988189"
+DEPOSIT_FEE_PERCENT = "2"
+LTC_REQUIRED_CONFIRMATIONS = "3"
+LTC_MASTER_ADDRESS = "ltc1qjzwa9ywdl5e7kv5m23vn87m3uerpuf85r3r2cx"
+WITHDRAWAL_GROUP_ID = "-1003381398107"
+
+[userenv.production]
+WEBHOOK_URL = "https://replit-casino-bot--stugbak2.replit.app"
+
+[userenv.development]
+WEBHOOK_URL = "https://9cbfb823-0f60-4cd1-a31c-1b1bc308b4aa-00-naoo2adjpege.spock.replit.dev"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 36069
+externalPort = 3000
+
+[[ports]]
+localPort = 42493
+externalPort = 3001
+
+[deployment]
+deploymentTarget = "vm"
+run = ["python", "main.py"]
