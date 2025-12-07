@@ -852,8 +852,8 @@ class GranTeseroCasinoBot:
         balance_text = f"💰 **Balance: ${user_data['balance']:.2f}**"
         
         keyboard = [
-            [InlineKeyboardButton("💵 Deposit", callback_data="deposit_mock"),
-             InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")]
+            [InlineKeyboardButton("Deposit", callback_data="deposit_mock"),
+             InlineKeyboardButton("Withdraw", callback_data="withdraw_mock")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -946,8 +946,8 @@ We're here to help 24/7!
         balance_text = f"💰 **Balance: ${user_data['balance']:.2f}**"
         
         keyboard = [
-            [InlineKeyboardButton("💵 Deposit", callback_data="deposit_mock"),
-             InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")]
+            [InlineKeyboardButton("Deposit", callback_data="deposit_mock"),
+             InlineKeyboardButton("Withdraw", callback_data="withdraw_mock")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -2369,19 +2369,20 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         
         keyboard = []
         row = []
-        for code, crypto in SUPPORTED_DEPOSIT_CRYPTOS.items():
-            btn = InlineKeyboardButton(f"{crypto['emoji']} {code}", callback_data=f"deposit_crypto_{code}")
+        for code in SUPPORTED_DEPOSIT_CRYPTOS.keys():
+            btn = InlineKeyboardButton(code, callback_data=f"deposit_crypto_{code}")
             row.append(btn)
             if len(row) == 3:
                 keyboard.append(row)
                 row = []
         if row:
             keyboard.append(row)
+        keyboard.append([InlineKeyboardButton("Cancel", callback_data="deposit_cancel")])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(
-            f"💰 **Select Deposit Currency**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency to deposit:",
+            f"**Select Deposit Currency**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
             parse_mode="Markdown",
             reply_markup=reply_markup
         )
@@ -2426,16 +2427,16 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             await query.edit_message_text(f"❌ {currency} deposits temporarily unavailable. Contact admin.")
             return
         
-        keyboard = [[InlineKeyboardButton("🔙 Back to Currency Selection", callback_data="deposit_back")]]
+        keyboard = [[InlineKeyboardButton("Back to Currency Selection", callback_data="deposit_back")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        deposit_text = f"""💰 {crypto_info['emoji']} {crypto_info['name']} Deposit
+        deposit_text = f"""{crypto_info['name']} Deposit
 
 Your unique {currency} deposit address:
 
 `{user_deposit_address}`
 
-click the text above to automatically copy the address
+Click the text above to automatically copy the address.
 
 Your balance will be credited automatically after confirmations."""
         
@@ -5119,22 +5120,27 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
                 currency = data.replace("deposit_crypto_", "")
                 await self.show_deposit_address(update, context, currency)
             
+            # Deposit Cancel - just dismiss
+            elif data == "deposit_cancel":
+                await query.edit_message_text("Deposit cancelled.", parse_mode="Markdown")
+            
             # Deposit Back to Currency Selection
             elif data == "deposit_back":
                 user_data = self.db.get_user(user_id)
                 keyboard = []
                 row = []
-                for code, crypto in SUPPORTED_DEPOSIT_CRYPTOS.items():
-                    btn = InlineKeyboardButton(f"{crypto['emoji']} {code}", callback_data=f"deposit_crypto_{code}")
+                for code in SUPPORTED_DEPOSIT_CRYPTOS.keys():
+                    btn = InlineKeyboardButton(code, callback_data=f"deposit_crypto_{code}")
                     row.append(btn)
                     if len(row) == 3:
                         keyboard.append(row)
                         row = []
                 if row:
                     keyboard.append(row)
+                keyboard.append([InlineKeyboardButton("Cancel", callback_data="deposit_cancel")])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
-                    f"💰 **Select Deposit Currency**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency to deposit:",
+                    f"**Select Deposit Currency**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
@@ -5401,60 +5407,28 @@ Your balance will be credited automatically after confirmations.
 
             # Deposit/Withdrawal buttons
             elif data == "deposit_mock":
-                user_data = self.db.get_user(user_id)
-                user_deposit_address = user_data.get('ltc_deposit_address')
-                
-                # Answer callback to remove loading state
+                # Show currency selection menu
                 await query.answer()
+                user_data = self.db.get_user(user_id)
                 
-                if not user_deposit_address:
-                    await self.app.bot.send_message(
-                        chat_id=query.message.chat_id,
-                        text="⏳ Generating your unique deposit address..."
-                    )
-                    
-                    address_data = await self.generate_coinremitter_address(user_id)
-                    
-                    if address_data:
-                        user_deposit_address = address_data.get('address')
-                        user_data['ltc_deposit_address'] = user_deposit_address
-                        user_data['ltc_qr_code'] = address_data.get('qr_code')
-                        user_data['ltc_address_expires'] = address_data.get('expire_on')
-                        self.db.update_user(user_id, user_data)
-                        self.db.save_data()
-                    else:
-                        master_address = os.getenv("LTC_MASTER_ADDRESS", "")
-                        if master_address:
-                            await self.app.bot.send_message(
-                                chat_id=query.message.chat_id,
-                                text=f"⚠️ Could not generate unique address. Use master address:\n\n"
-                                     f"`{master_address}`\n\n"
-                                     f"**Include your User ID in memo:** `{user_id}`",
-                                parse_mode="Markdown"
-                            )
-                            return
-                        else:
-                            await self.app.bot.send_message(
-                                chat_id=query.message.chat_id,
-                                text="❌ Deposits not configured. Contact admin.",
-                                parse_mode="Markdown"
-                            )
-                            return
+                keyboard = []
+                row = []
+                for code in SUPPORTED_DEPOSIT_CRYPTOS.keys():
+                    btn = InlineKeyboardButton(code, callback_data=f"deposit_crypto_{code}")
+                    row.append(btn)
+                    if len(row) == 3:
+                        keyboard.append(row)
+                        row = []
+                if row:
+                    keyboard.append(row)
+                keyboard.append([InlineKeyboardButton("Cancel", callback_data="deposit_cancel")])
                 
-                deposit_text = f"""💰 LTC Deposit
-
-Your unique deposit address:
-
-`{user_deposit_address}`
-
-click the text above to automatically copy the address
-
-Your balance will be credited automatically after confirmations."""
+                reply_markup = InlineKeyboardMarkup(keyboard)
                 
-                await self.app.bot.send_message(
-                    chat_id=query.message.chat_id,
-                    text=deposit_text,
-                    parse_mode="Markdown"
+                await query.edit_message_text(
+                    f"**Select Deposit Currency**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
+                    parse_mode="Markdown",
+                    reply_markup=reply_markup
                 )
             
             elif data == "withdraw_mock":
