@@ -2526,7 +2526,7 @@ Your balance will be credited automatically after confirmations."""
         # Step 1: User is entering withdrawal amount
         if 'pending_withdraw_method' in context.user_data and 'pending_withdraw_amount' not in context.user_data:
             # Create cancel button for error messages
-            cancel_keyboard = [[InlineKeyboardButton("❌ Cancel Withdrawal", callback_data="withdraw_cancel_flow")]]
+            cancel_keyboard = [[InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]]
             cancel_markup = InlineKeyboardMarkup(cancel_keyboard)
             
             try:
@@ -2566,7 +2566,7 @@ Your balance will be credited automatically after confirmations."""
             currency = context.user_data.get('pending_withdraw_method', 'ltc').upper()
             crypto_info = SUPPORTED_WITHDRAWAL_CRYPTOS.get(currency, {'name': currency})
             
-            keyboard = [[InlineKeyboardButton("❌ Cancel Withdrawal", callback_data="withdraw_cancel_flow")]]
+            keyboard = [[InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
             await update.message.reply_text(
@@ -2584,7 +2584,7 @@ Your balance will be credited automatically after confirmations."""
             crypto_info = SUPPORTED_WITHDRAWAL_CRYPTOS.get(currency, {'name': currency})
             
             if len(wallet_address) < 20:
-                keyboard = [[InlineKeyboardButton("❌ Cancel Withdrawal", callback_data="withdraw_cancel_flow")]]
+                keyboard = [[InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
                 await update.message.reply_text(
@@ -5473,7 +5473,7 @@ Your balance will be credited automatically after confirmations.
                 
                 context.user_data['pending_withdraw_method'] = currency.lower()
                 
-                keyboard = [[InlineKeyboardButton("❌ Cancel Withdrawal", callback_data="withdraw_cancel_flow")]]
+                keyboard = [[InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
                 await query.edit_message_text(
