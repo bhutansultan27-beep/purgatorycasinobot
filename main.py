@@ -5483,7 +5483,7 @@ Your balance will be credited automatically after confirmations.
                 # Clear any pending withdrawal state
                 context.user_data.pop('pending_withdraw_method', None)
                 context.user_data.pop('pending_withdraw_amount', None)
-                await query.edit_message_text("❌ Withdrawal cancelled. You can continue using the bot normally.")
+                await query.edit_message_text("Withdraw cancelled.")
             
             elif data.startswith("withdraw_approve_"):
                 parts = data.split('_')
