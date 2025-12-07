@@ -1,70 +1,94 @@
-# Deploy Casino Bot on External Server (Webdock/Plisio)
+# Deploy Casino Bot on Webdock Server using FileZilla
 
-## Files to Upload
-Upload these files to your server:
-- `main.py`
-- `webhook_server.py`
-- `database.py`
-- `casino_data.json`
-- `requirements.txt`
+## Step 1: Files to Upload via FileZilla
 
-## Server Setup
+Connect to your Webdock server with FileZilla and upload these files to `/opt/casino-bot/`:
 
-### 1. Install Python 3.10+
+**Required files:**
+- `main.py` - Main bot code
+- `blackjack.py` - Blackjack game logic
+- `webhook_server.py` - Webhook for deposits
+- `database.py` - Database utilities
+- `requirements.txt` - Python dependencies
+
+**Optional (only if you have them):**
+- `casino_data.json` - Existing user data (will be created automatically if missing)
+
+## Step 2: Connect via SSH to Your Webdock Server
+
+Open terminal/SSH and connect to your server:
 ```bash
-sudo apt update
-sudo apt install python3 python3-pip python3-venv
+ssh root@YOUR_SERVER_IP
 ```
 
-### 2. Create project directory
+## Step 3: Install Python and Dependencies
+
 ```bash
-mkdir -p /opt/casino-bot
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Python 3 and pip
+sudo apt install python3 python3-pip python3-venv -y
+
+# Navigate to your bot folder
 cd /opt/casino-bot
-# Upload your files here
+
+# Install required Python packages
+pip3 install aiohttp python-telegram-bot APScheduler
 ```
 
-### 3. Install dependencies
+## Step 4: Set Up Environment Variables
+
+Create a startup script:
 ```bash
-pip3 install -r requirements.txt
+nano /opt/casino-bot/start_bot.sh
 ```
 
-### 4. Set environment variables
+Paste this content (replace with your actual values):
 ```bash
-export TELEGRAM_BOT_TOKEN="your_bot_token_here"
-export ADMIN_IDS="your_telegram_user_id"
-export PLISIO_API_KEY="your_plisio_secret_key"
-export LTC_USD_RATE="100"
-```
+#!/bin/bash
+export TELEGRAM_BOT_TOKEN="YOUR_BOT_TOKEN_HERE"
+export ADMIN_IDS="YOUR_TELEGRAM_USER_ID"
+export PLISIO_API_KEY="YOUR_PLISIO_API_KEY"
 
-Or create a `.env` file and source it.
-
-### 5. Run the bot
-```bash
+cd /opt/casino-bot
 python3 main.py
 ```
 
-## Run as a Service (24/7)
+Make it executable:
+```bash
+chmod +x /opt/casino-bot/start_bot.sh
+```
 
-Create systemd service file:
+## Step 5: Run the Bot (Quick Test)
+
+```bash
+cd /opt/casino-bot
+./start_bot.sh
+```
+
+If it starts without errors, press `Ctrl+C` to stop it.
+
+## Step 6: Run 24/7 as a Service
+
+Create a systemd service:
 ```bash
 sudo nano /etc/systemd/system/casino-bot.service
 ```
 
-Add this content:
+Paste this (replace with your values):
 ```ini
 [Unit]
-Description=Antaria Casino Bot
+Description=Gild Tesoro Casino Bot
 After=network.target
 
 [Service]
 Type=simple
 User=root
 WorkingDirectory=/opt/casino-bot
-Environment="TELEGRAM_BOT_TOKEN=your_token"
-Environment="ADMIN_IDS=your_admin_id"
-Environment="COINREMITTER_API_KEY=your_key"
-Environment="COINREMITTER_PASSWORD=your_password"
-Environment="LTC_REQUIRED_CONFIRMATIONS=3"
+Environment="TELEGRAM_BOT_TOKEN=YOUR_BOT_TOKEN_HERE"
+Environment="ADMIN_IDS=YOUR_TELEGRAM_USER_ID"
+Environment="PLISIO_API_KEY=YOUR_PLISIO_API_KEY"
 ExecStart=/usr/bin/python3 main.py
 Restart=always
 RestartSec=10
@@ -73,30 +97,60 @@ RestartSec=10
 WantedBy=multi-user.target
 ```
 
-Enable and start:
+Enable and start the service:
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable casino-bot
 sudo systemctl start casino-bot
 ```
 
-Check status:
+## Step 7: Useful Commands
+
+**Check if bot is running:**
 ```bash
 sudo systemctl status casino-bot
 ```
 
-View logs:
+**View live logs:**
 ```bash
 journalctl -u casino-bot -f
 ```
 
-## Webhook Setup (for deposits)
+**Restart bot after changes:**
+```bash
+sudo systemctl restart casino-bot
+```
 
-Your webhook URL will be:
+**Stop the bot:**
+```bash
+sudo systemctl stop casino-bot
+```
+
+## Step 8: Webhook for Deposits (Optional)
+
+If using Plisio for crypto deposits, your webhook URL is:
 ```
 http://YOUR_SERVER_IP:5000/webhook/deposit
 ```
 
-Configure this URL in your CoinRemitter dashboard.
+Make sure port 5000 is open on your server:
+```bash
+sudo ufw allow 5000
+```
 
-If you have a domain, use nginx to proxy port 5000 with HTTPS.
+## Troubleshooting
+
+**Bot won't start:**
+- Check logs: `journalctl -u casino-bot -n 50`
+- Verify all files are uploaded
+- Make sure TELEGRAM_BOT_TOKEN is correct
+
+**Permission errors:**
+```bash
+chmod 755 /opt/casino-bot/*.py
+```
+
+**Missing dependencies:**
+```bash
+pip3 install -r /opt/casino-bot/requirements.txt
+```
