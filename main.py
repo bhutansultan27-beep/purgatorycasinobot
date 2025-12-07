@@ -139,12 +139,15 @@ for tier in LEVEL_TIERS:
 LEVELS.insert(0, {"id": "unranked", "name": "Unranked", "emoji": "⚪", "threshold": 0, "bonus": 0, "tier_name": "Unranked"})
 
 # --- Supported Crypto Currencies for Deposits & Withdrawals (Plisio) ---
+# Note: Only currencies actually supported by Plisio API are included
+# Plisio does NOT support SOL (Solana) or TON (Toncoin) for invoices
 SUPPORTED_CRYPTOS = {
     'LTC': {'name': 'Litecoin', 'emoji': '💎', 'plisio_code': 'LTC'},
-    'SOL': {'name': 'Solana', 'emoji': '🟣', 'plisio_code': 'SOL'},
-    'TRX': {'name': 'Tron', 'emoji': '🔴', 'plisio_code': 'TRX'},
-    'TON': {'name': 'Toncoin', 'emoji': '💠', 'plisio_code': 'TON'},
     'ETH': {'name': 'Ethereum', 'emoji': '⟠', 'plisio_code': 'ETH'},
+    'TRX': {'name': 'Tron', 'emoji': '🔴', 'plisio_code': 'TRX'},
+    'BTC': {'name': 'Bitcoin', 'emoji': '🟠', 'plisio_code': 'BTC'},
+    'DOGE': {'name': 'Dogecoin', 'emoji': '🐕', 'plisio_code': 'DOGE'},
+    'USDT_TRX': {'name': 'USDT (TRC20)', 'emoji': '💵', 'plisio_code': 'USDT_TRX'},
 }
 
 SUPPORTED_DEPOSIT_CRYPTOS = SUPPORTED_CRYPTOS
@@ -2284,7 +2287,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
 
     async def get_ltc_price_usd(self) -> Optional[float]:
         """Get current LTC price in USD from Plisio API."""
-        api_key = os.getenv('PLISIO_API_KEY', 'wMlExjlEV0Gu2AXHuheIclaWDkDQj14wWNqpLz1p8dIt60uDyhA-ZmTKWVCntlj0')
+        api_key = os.getenv('PLISIO_API_KEY')
         
         try:
             async with aiohttp.ClientSession() as session:
@@ -2311,7 +2314,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
 
     async def generate_coinremitter_address(self, user_id: int, currency: str = 'LTC') -> Optional[Dict[str, Any]]:
         """Generate a unique deposit address via Plisio API for specified currency."""
-        api_key = os.getenv('PLISIO_API_KEY', 'wMlExjlEV0Gu2AXHuheIclaWDkDQj14wWNqpLz1p8dIt60uDyhA-ZmTKWVCntlj0')
+        api_key = os.getenv('PLISIO_API_KEY')
         
         if not api_key:
             logger.error("[PLISIO DEBUG] PLISIO_API_KEY not configured!")
@@ -2742,7 +2745,7 @@ Your balance will be credited automatically after confirmations."""
 
     async def get_crypto_price_usd(self, currency: str) -> Optional[float]:
         """Get current crypto price in USD from Plisio API."""
-        api_key = os.getenv('PLISIO_API_KEY', 'wMlExjlEV0Gu2AXHuheIclaWDkDQj14wWNqpLz1p8dIt60uDyhA-ZmTKWVCntlj0')
+        api_key = os.getenv('PLISIO_API_KEY')
         
         try:
             async with aiohttp.ClientSession() as session:
@@ -2768,7 +2771,7 @@ Your balance will be credited automatically after confirmations."""
 
     async def send_crypto_withdrawal(self, wallet_address: str, usd_amount: float, currency: str = 'LTC') -> dict:
         """Send crypto withdrawal via Plisio API. Converts USD to crypto first."""
-        api_key = os.getenv('PLISIO_API_KEY', 'wMlExjlEV0Gu2AXHuheIclaWDkDQj14wWNqpLz1p8dIt60uDyhA-ZmTKWVCntlj0')
+        api_key = os.getenv('PLISIO_API_KEY')
         
         if not api_key:
             logger.error("[PLISIO DEBUG] PLISIO_API_KEY not configured for withdrawal!")
