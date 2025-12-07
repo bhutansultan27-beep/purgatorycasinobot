@@ -1,219 +1,264 @@
-# 🎰 Gran Tesero Casino Bot
+# 🏴‍☠️ Gild Tesoro Casino Bot
 
-A premium Telegram gambling bot with advanced features, social mechanics, and anti-abuse protections.
+A premium Telegram gambling bot with crypto deposits/withdrawals, level system, PvP games, and admin controls.
 
 ## 🚀 Quick Start
 
-Your bot is **already running**! You can find it on Telegram and start using it immediately.
+### Running on Webdock Server
 
-### How to Use
+1. **Upload files via FileZilla** to `~/casino-bot/`:
+   - `main.py`
+   - `blackjack.py`
+   - `webhook_server.py`
+   - `database.py`
+   - `requirements.txt`
 
-1. Open Telegram and search for your bot
-2. Send `/start` to begin
-3. You'll receive $5 locked bonus to get started
-4. Play games to unlock your bonus and start winning!
+2. **SSH into your server** and run:
+```bash
+cd ~/casino-bot
+python3 -m venv venv
+source venv/bin/activate
+pip install aiohttp python-telegram-bot APScheduler
+```
+
+3. **Set environment variables**:
+```bash
+export TELEGRAM_BOT_TOKEN="your_bot_token"
+export ADMIN_IDS="your_telegram_id"
+export PLISIO_API_KEY="your_plisio_key"
+export USE_POLLING=true
+```
+
+4. **Start the bot**:
+```bash
+python3 main.py
+```
+
+5. **Run 24/7** (background):
+```bash
+nohup python3 main.py > bot.log 2>&1 &
+```
+
+See `DEPLOY_EXTERNAL.md` for detailed systemd service setup.
+
+---
 
 ## 🎮 Available Games
 
-### 🎲 Dice Game
-Roll the dice and bet on who gets the higher number!
-
-**Commands:**
+### 🎲 Dice
 ```
-/dice 10          # Bet $10 against the bot
-/dice 50 @friend  # Challenge a friend with $50
+/dice 10          - Bet $10 against the bot
+/dice 50 @friend  - Challenge a friend with $50
 ```
-
-**Rules:**
-- Both players roll 1-6
-- Highest roll wins 2x the bet
-- Draws refund both players (PvP only)
+- Both players roll 1-6, highest wins 2x
 
 ### 🪙 CoinFlip
-Classic heads or tails - double or nothing!
-
-**Commands:**
 ```
-/coinflip 10 heads          # Bet $10 on heads vs bot
-/coinflip 25 tails @friend  # Challenge friend to opposite side
+/coinflip 10 heads          - Bet $10 on heads vs bot
+/coinflip 25 tails @friend  - Challenge friend
 ```
-
-**Rules:**
-- Choose heads or tails
 - Win = 2x your bet
-- Lose = lose your bet
 
 ### 🔮 Predict
-Predict what number you'll roll on the dice!
-
-**Commands:**
 ```
-/predict 10 #6    # Bet $10 predicting you'll roll a 6
-/predict all #3   # Bet all predicting you'll roll a 3
+/predict 10 #6    - Bet $10 predicting roll of 6
+/predict all #3   - Bet all on rolling a 3
 ```
-
-**Rules:**
-- Predict any number 1-6
-- Correct prediction = 5x payout
-- Wrong prediction = lose your bet
+- Correct = 5x payout
 
 ### 🎳 Bowling
-Roll a bowling ball and score strikes and spares!
-
-**Commands:**
 ```
-/bowling 10       # Bet $10 on a bowling game
-/bowling all      # Bet all your balance
+/bowling 10       - Bet $10 on bowling
+/bowling all      - Bet entire balance
+```
+- Strike (6 pins) = 3x
+- Spare (5 pins) = 2x
+- 4+ pins = 1.5x
+
+### 🎰 Roulette
+```
+/roulette 10 red      - Bet on red (2x)
+/roulette 10 black    - Bet on black (2x)
+/roulette 10 #17      - Bet on number 17 (35x)
+/roulette 10 odd      - Bet on odd (2x)
+/roulette 10 even     - Bet on even (2x)
 ```
 
-**Payouts:**
-- 🎳 **Strike** (all 6 pins) - 3x payout
-- **Spare** (5 pins) - 2x payout
-- **4+ pins** - 1.5x payout
-- **Less than 4 pins** - lose your bet
+### 🃏 Blackjack
+```
+/blackjack 25     - Play blackjack for $25
+```
+- Hit, Stand, Double Down, Split, Insurance, Surrender
+- Blackjack pays 3:2
+- 6-deck shoe
 
-## 💰 Bonus System
+---
 
-### First-Time Bonus
-- New players get **$5 locked bonus**
-- Must wager $5 to unlock withdrawals
-- Prevents instant withdrawal abuse
+## 💰 Deposits & Withdrawals
 
-### Daily Bonus
-- Get **1% of total wagered** since last withdrawal
-- 24-hour cooldown between claims
-- Use `/bonus` to claim
-- Must play through bonus before withdrawing
+### Supported Cryptocurrencies
+- 💎 Litecoin (LTC)
+- 🟣 Solana (SOL)
+- 🔴 Tron (TRX)
+- 💠 Toncoin (TON)
+- ⟠ Ethereum (ETH)
 
-## 📊 Player Commands
+### Commands
+```
+/deposit          - Generate deposit address
+/withdraw         - Request withdrawal (requires admin approval)
+/bal              - Check your balance
+```
+
+**Fees**: 0.5% house fee on deposits and withdrawals
+
+---
+
+## 📊 Level System
+
+Progress through 65 levels across 14 tiers by wagering:
+
+| Tier | Levels | Wager Required |
+|------|--------|----------------|
+| 🥉 Bronze | I-V | $100 - $5,000 |
+| 🥈 Silver | I-V | $10,000 - $32,000 |
+| 🏆 Gold | I-V | $39,000 - $81,000 |
+| 💎 Platinum | I-V | $94,000 - $155,000 |
+| 💠 Diamond | I-V | $173,000 - $253,000 |
+| 💚 Emerald | I-V | $275,000 - $373,000 |
+| ❤️ Ruby | I-V | $400,000 - $518,000 |
+| 💙 Sapphire | I-V | $550,000 - $688,000 |
+| 💜 Amethyst | I-V | $725,000 - $883,000 |
+| 🖤 Obsidian | I-V | $925,000 - $1,107,000 |
+| 🔮 Mythic | I-V | $1,159,000 - $1,393,000 |
+| 👑 Legendary | I-V | $1,458,000 - $1,743,000 |
+| ✨ Ethereal | I-V | $1,850,000 - $2,650,000 |
+
+Each level unlocks bonus rewards!
+
+---
+
+## 📋 Player Commands
 
 | Command | Description |
 |---------|-------------|
-| `/start` or `/help` | Welcome message and overview |
-| `/bal` | Check balance with deposit/withdraw options |
-| `/stats` | View your personal statistics |
-| `/bonus` | Claim your daily bonus |
-| `/achievements` | View unlocked badges |
-| `/referral` | Get your referral link and earnings |
-| `/leaderboard` | Browse top players |
-| `/rp` | Check your Respect Points level |
-| `/backup` | Create manual database backup |
+| `/start` | Welcome and menu |
+| `/help` | Command list |
+| `/bal` | Check balance |
+| `/stats` | Your statistics |
+| `/bonus` | Claim daily bonus |
+| `/level` | View current level |
+| `/achievements` | View badges |
+| `/referral` | Get referral link |
+| `/leaderboard` | Top players |
+| `/biggestdices` | Biggest PvP wins |
+| `/biggestdeposits` | Largest deposits |
 
-## 🏆 Achievements
-
-Unlock special badges by completing challenges:
-
-| Achievement | Requirement |
-|------------|-------------|
-| 🎲 First Bet | Place your first bet |
-| 💰 High Roller | Bet over $100 total |
-| 🔥 Win Streak | Win 5 games in a row |
-| 🎰 Jackpot | Reach $1000 in total profit |
-| 👥 Referrer | Refer 10 friends |
-| 📈 Leveled Up | Reach level 10 |
+---
 
 ## 👥 Referral System
 
-Earn **1% commission** on your referrals' betting volume!
+Earn **1% commission** on referrals' wagered amount!
 
 1. Use `/referral` to get your unique link
 2. Share with friends
 3. Earn automatically as they play
 4. Claim earnings anytime
 
-## 📈 Respect Points (RP)
+---
 
-Your level is calculated from:
-- **Total wagered**: 1 RP per $100
-- **Achievements**: 50 RP each
-- **Account age**: 2 RP per day
+## 🛡️ Admin Commands
 
-Use `/rp` to check your current level!
+### User Management
+```
+/addbalance @user 100     - Add $100 to user
+/removebalance @user 50   - Remove $50 from user
+/setbalance @user 500     - Set balance to $500
+/lookup @user             - View user details
+/ban @user                - Ban user
+/unban @user              - Unban user
+```
+
+### Admin Management
+```
+/addadmin 123456789       - Add new admin
+/removeadmin 123456789    - Remove admin
+/listadmins               - List all admins
+/addapprover 123456789    - Add withdrawal approver
+/removeapprover 123456789 - Remove approver
+```
+
+### Withdrawals
+```
+/pending                  - View pending withdrawals
+/approve <id>             - Approve withdrawal
+/deny <id>                - Deny withdrawal
+```
+
+### House Management
+```
+/house                    - View house balance
+/addhouse 1000            - Add to house balance
+```
+
+### Stickers (for roulette)
+```
+/setsticker 17 <sticker>  - Set sticker for number 17
+/liststickers             - List configured stickers
+```
+
+---
+
+## 🔧 Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `TELEGRAM_BOT_TOKEN` | Bot token from @BotFather | Yes |
+| `ADMIN_IDS` | Comma-separated admin Telegram IDs | Yes |
+| `PLISIO_API_KEY` | Plisio API key for crypto | For deposits |
+| `USE_POLLING` | Set to "true" for polling mode | Recommended |
+| `WEBHOOK_URL` | Webhook URL if using webhook mode | Optional |
+
+---
+
+## 📁 File Structure
+
+```
+casino-bot/
+├── main.py              # Main bot code
+├── blackjack.py         # Blackjack game logic
+├── webhook_server.py    # Webhook server for deposits
+├── database.py          # Database utilities
+├── requirements.txt     # Python dependencies
+├── casino_data.json     # User data (auto-generated)
+├── .env                 # Environment variables
+└── bot.log              # Log file
+```
+
+---
 
 ## 🔒 Security Features
 
-- ✅ Playthrough requirements prevent bonus abuse
-- ✅ 24-hour cooldown on bonus claims
-- ✅ Balance validation on all transactions
-- ✅ Automatic database backups every 5 minutes
-- ✅ Transaction logging for all operations
+- Playthrough requirements prevent bonus abuse
+- 24-hour cooldown on bonus claims
+- Admin approval required for withdrawals
+- Transaction logging for all operations
+- Persistent JSON database with auto-save
+
+---
 
 ## 🛠️ Technical Details
 
-### Architecture
-- **Language**: Python 3.11
-- **Framework**: python-telegram-bot v22.5
-- **Database**: JSON with auto-save
-- **Async**: Full async/await for performance
+- **Python**: 3.10+
+- **Framework**: python-telegram-bot v22+
+- **Async**: Full async/await
+- **Database**: JSON file storage
+- **Crypto**: Plisio API integration
 
-### Files
-- `main.py` - Bot logic and game mechanics
-- `database.py` - Data persistence and management
-- `casino_data.json` - User data (auto-generated)
+---
 
-## 📝 For Developers
+## 📞 Support
 
-### Database Structure
-```json
-{
-  "users": {
-    "user_id": {
-      "balance": 0.0,
-      "locked_bonus": 5.0,
-      "playthrough_required": 5.0,
-      "total_wagered": 0.0,
-      "total_pnl": 0.0,
-      "games_played": 0,
-      "games_won": 0,
-      "achievements": [],
-      "referral_code": "abc123",
-      "transactions": []
-    }
-  },
-  "games": [],
-  "pending_pvp": {}
-}
-```
+For issues or questions, contact the bot administrators.
 
-### Auto-Save
-- Saves every 5 minutes automatically
-- Manual backup with `/backup`
-- Backups named: `casino_data_backup_YYYYMMDD_HHMMSS.json`
-
-## 🎊 Next Steps
-
-### Recommended Enhancements
-1. **Admin Panel**
-   - User management
-   - Balance adjustments
-   - Withdrawal approvals
-
-2. **More Games**
-   - Slots with jackpots
-   - Poker tournaments
-   - Blackjack tables
-
-3. **VIP System**
-   - Tiered memberships
-   - Enhanced bonuses
-   - Exclusive games
-
-4. **Analytics**
-   - Player behavior tracking
-   - Revenue metrics
-   - Engagement stats
-
-5. **Payment Integration**
-   - Real deposits via crypto
-   - Automated withdrawals
-   - Multiple currencies
-
-## ⚠️ Important Notes
-
-
-## 🎮 Start Playing!
-
-Your bot is live and ready! Open Telegram, find your bot, and send `/start` to begin your casino adventure!
-
-Good luck! 🍀
-# antariaversion1
+Good luck and happy gambling! 🎰🍀
