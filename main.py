@@ -8,6 +8,12 @@ import aiohttp
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # Import Blackjack game logic
 from blackjack import BlackjackGame
 
@@ -5684,15 +5690,10 @@ Your balance will be credited automatically after confirmations.
 
 
 async def main():
-    BOT_TOKEN = "8575155625:AAFd40dO3bjJ6b6P74QcjH3mHUzuN7MilEA"
-    USE_POLLING = os.getenv("USE_POLLING", "false").lower() == "true"
+    BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8575155625:AAFd40dO3bjJ6b6P74QcjH3mHUzuN7MilEA")
+    USE_POLLING = os.getenv("USE_POLLING", "true").lower() == "true"
     
-    # Auto-detect webhook URL from Replit environment
-    WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
-    if not WEBHOOK_URL:
-        replit_domain = os.getenv("REPLIT_DEV_DOMAIN", "")
-        if replit_domain:
-            WEBHOOK_URL = f"https://{replit_domain}"
+    WEBHOOK_URL = os.getenv("WEBHOOK_URL", "https://casino.vps.webdock.cloud")
     
     logger.info("Starting Gran Tesero Casino Bot...")
     bot = GranTeseroCasinoBot(token=BOT_TOKEN)
