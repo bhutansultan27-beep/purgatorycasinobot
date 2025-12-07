@@ -139,13 +139,13 @@ for tier in LEVEL_TIERS:
 LEVELS.insert(0, {"id": "unranked", "name": "Unranked", "emoji": "⚪", "threshold": 0, "bonus": 0, "tier_name": "Unranked"})
 
 # --- Supported Crypto Currencies for Deposits & Withdrawals (Plisio) ---
-# Note: Only currencies actually supported by Plisio API are included
-# Plisio does NOT support SOL (Solana) or TON (Toncoin) for invoices
 SUPPORTED_CRYPTOS = {
     'LTC': {'name': 'Litecoin', 'emoji': '💎', 'plisio_code': 'LTC'},
     'ETH': {'name': 'Ethereum', 'emoji': '⟠', 'plisio_code': 'ETH'},
     'TRX': {'name': 'Tron', 'emoji': '🔴', 'plisio_code': 'TRX'},
     'BTC': {'name': 'Bitcoin', 'emoji': '🟠', 'plisio_code': 'BTC'},
+    'SOL': {'name': 'Solana', 'emoji': '🟣', 'plisio_code': 'SOL'},
+    'TON': {'name': 'Toncoin', 'emoji': '💠', 'plisio_code': 'TON'},
     'DOGE': {'name': 'Dogecoin', 'emoji': '🐕', 'plisio_code': 'DOGE'},
     'USDT_TRX': {'name': 'USDT (TRC20)', 'emoji': '💵', 'plisio_code': 'USDT_TRX'},
 }
