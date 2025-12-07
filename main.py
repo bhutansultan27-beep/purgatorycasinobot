@@ -2529,36 +2529,28 @@ Your balance will be credited automatically after confirmations."""
             cancel_keyboard = [[InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]]
             cancel_markup = InlineKeyboardMarkup(cancel_keyboard)
             
+            async def send_error_with_ownership(msg_text):
+                sent_msg = await update.message.reply_text(msg_text, reply_markup=cancel_markup)
+                self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+            
             try:
                 amount = round(float(text), 2)
             except ValueError:
-                await update.message.reply_text(
-                    "❌ Invalid amount. Please enter a number:",
-                    reply_markup=cancel_markup
-                )
+                await send_error_with_ownership("Invalid amount. Please enter a number:")
                 return
             
             user_data = self.db.get_user(user_id)
             
             if amount <= 0:
-                await update.message.reply_text(
-                    "❌ Amount must be positive. Please enter a valid amount:",
-                    reply_markup=cancel_markup
-                )
+                await send_error_with_ownership("Amount must be positive. Please enter a valid amount:")
                 return
             
             if amount < 1.00:
-                await update.message.reply_text(
-                    "❌ Minimum withdrawal is $1.00. Please enter a valid amount:",
-                    reply_markup=cancel_markup
-                )
+                await send_error_with_ownership("Minimum withdrawal is $1.00. Please enter a valid amount:")
                 return
             
             if amount > user_data['balance']:
-                await update.message.reply_text(
-                    f"❌ Insufficient balance. Your balance: ${user_data['balance']:.2f}\n\nPlease enter a valid amount:",
-                    reply_markup=cancel_markup
-                )
+                await send_error_with_ownership(f"Insufficient balance. Your balance: ${user_data['balance']:.2f}\n\nPlease enter a valid amount:")
                 return
             
             context.user_data['pending_withdraw_amount'] = amount
@@ -2569,11 +2561,12 @@ Your balance will be credited automatically after confirmations."""
             keyboard = [[InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
-            await update.message.reply_text(
-                f"💸 **Withdraw ${amount:.2f} {crypto_info['name']}**\n\nEnter your {currency} wallet address:",
+            sent_msg = await update.message.reply_text(
+                f"**Withdraw ${amount:.2f} {crypto_info['name']}**\n\nEnter your {currency} wallet address:",
                 parse_mode="Markdown",
                 reply_markup=reply_markup
             )
+            self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
             return
         
         # Step 2: User is entering wallet address
@@ -2587,10 +2580,11 @@ Your balance will be credited automatically after confirmations."""
                 keyboard = [[InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
-                await update.message.reply_text(
-                    f"❌ Invalid {currency} address. Please enter a valid address:",
+                sent_msg = await update.message.reply_text(
+                    f"Invalid {currency} address. Please enter a valid address:",
                     reply_markup=reply_markup
                 )
+                self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
                 context.user_data['pending_withdraw_amount'] = amount
                 context.user_data['pending_withdraw_method'] = currency.lower()
                 return
