@@ -847,6 +847,18 @@ class GranTeseroCasinoBot:
 /help - Shows all commands
 """
         await update.message.reply_text(welcome_text, parse_mode="Markdown")
+        
+        # Also show balance with deposit/withdraw buttons
+        balance_text = f"💰 **Balance: ${user_data['balance']:.2f}**"
+        
+        keyboard = [
+            [InlineKeyboardButton("💵 Deposit", callback_data="deposit_mock"),
+             InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        sent_msg = await update.message.reply_text(balance_text, reply_markup=reply_markup, parse_mode="Markdown")
+        self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user.id
     
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show all player commands"""
