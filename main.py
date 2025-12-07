@@ -2382,7 +2382,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(
-            f"**Select Deposit Currency**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
+            f"Your balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
             parse_mode="Markdown",
             reply_markup=reply_markup
         )
@@ -2455,13 +2455,20 @@ Your balance will be credited automatically after confirmations."""
             return
         
         keyboard = []
-        for code, crypto in SUPPORTED_WITHDRAWAL_CRYPTOS.items():
-            keyboard.append([InlineKeyboardButton(f"{crypto['emoji']} {crypto['name']}", callback_data=f"withdraw_method_{code.lower()}")])
-        keyboard.append([InlineKeyboardButton("❌ Cancel", callback_data="withdraw_cancel")])
+        row = []
+        for code in SUPPORTED_WITHDRAWAL_CRYPTOS.keys():
+            btn = InlineKeyboardButton(code, callback_data=f"withdraw_method_{code.lower()}")
+            row.append(btn)
+            if len(row) == 3:
+                keyboard.append(row)
+                row = []
+        if row:
+            keyboard.append(row)
+        keyboard.append([InlineKeyboardButton("Cancel", callback_data="withdraw_cancel")])
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(
-            f"💸 **Withdraw Funds**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect payment method:",
+            f"Your balance: **${user_data['balance']:.2f}**\n\nSelect withdrawal currency:",
             parse_mode="Markdown",
             reply_markup=reply_markup
         )
@@ -5140,7 +5147,7 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
                 keyboard.append([InlineKeyboardButton("Cancel", callback_data="deposit_cancel")])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
-                    f"**Select Deposit Currency**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
+                    f"Your balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
@@ -5426,7 +5433,7 @@ Your balance will be credited automatically after confirmations.
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
                 await query.edit_message_text(
-                    f"**Select Deposit Currency**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
+                    f"Your balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
@@ -5434,15 +5441,22 @@ Your balance will be credited automatically after confirmations.
             elif data == "withdraw_mock":
                 user_data = self.db.get_user(user_id)
                 if user_data['balance'] < 1.00:
-                    await query.edit_message_text(f"❌ Minimum withdrawal is $1.00\n\nYour balance: **${user_data['balance']:.2f}**", parse_mode="Markdown")
+                    await query.edit_message_text(f"Minimum withdrawal is $1.00\n\nYour balance: **${user_data['balance']:.2f}**", parse_mode="Markdown")
                 else:
                     keyboard = []
-                    for code, crypto in SUPPORTED_WITHDRAWAL_CRYPTOS.items():
-                        keyboard.append([InlineKeyboardButton(f"{crypto['emoji']} {crypto['name']}", callback_data=f"withdraw_method_{code.lower()}")])
-                    keyboard.append([InlineKeyboardButton("❌ Cancel", callback_data="withdraw_cancel")])
+                    row = []
+                    for code in SUPPORTED_WITHDRAWAL_CRYPTOS.keys():
+                        btn = InlineKeyboardButton(code, callback_data=f"withdraw_method_{code.lower()}")
+                        row.append(btn)
+                        if len(row) == 3:
+                            keyboard.append(row)
+                            row = []
+                    if row:
+                        keyboard.append(row)
+                    keyboard.append([InlineKeyboardButton("Cancel", callback_data="withdraw_cancel")])
                     reply_markup = InlineKeyboardMarkup(keyboard)
                     await query.edit_message_text(
-                        f"💸 **Withdraw Funds**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect payment method:",
+                        f"Your balance: **${user_data['balance']:.2f}**\n\nSelect withdrawal currency:",
                         parse_mode="Markdown",
                         reply_markup=reply_markup
                     )
