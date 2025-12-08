@@ -1119,6 +1119,7 @@ Total Won: ${total_won:,.2f}"""
                 winner_username = dice.get('winner_username', 'Unknown')
                 loser_username = dice.get('loser_username', 'Unknown')
                 amount = dice.get('amount', 0)
+                wager = amount / 2
                 game_mode = dice.get('game_mode', 'pvp')
 
                 winner_user = self.db.get_user(winner_id) if winner_id else {}
@@ -1129,9 +1130,9 @@ Total Won: ${total_won:,.2f}"""
                     loser_user = self.db.get_user(loser_id)
                     loser_level = get_user_level(loser_user.get('total_wagered', 0))
                     loser_emoji = loser_level.get('emoji', '⚪')
-                    leaderboard_text += f"{idx}) {winner_emoji} {winner_username} vs {loser_emoji} {loser_username} • ${amount:,.2f}\n"
+                    leaderboard_text += f"{idx}) {winner_emoji} {winner_username} vs {loser_emoji} {loser_username} • ${wager:,.2f}\n"
                 else:
-                    leaderboard_text += f"{idx}) {winner_emoji} {winner_username} vs 🤖 Bot • ${amount:,.2f}\n"
+                    leaderboard_text += f"{idx}) {winner_emoji} {winner_username} vs 🤖 Bot • ${wager:,.2f}\n"
 
         keyboard = [
             [InlineKeyboardButton("Most Wagered all time", callback_data="lb_wagered")],
