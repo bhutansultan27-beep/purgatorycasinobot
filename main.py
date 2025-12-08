@@ -5692,10 +5692,32 @@ We're here to help 24/7!"""
                 await self.show_leaderboard_wagered(update)
             
             elif data == "more_raffle":
-                raffle_text = "🎟️ **Raffle**\n\nRaffle feature coming soon! Stay tuned for exciting prizes."
-                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="menu_more_content")]]
+                raffle_text = "🎟️ **Raffle**\n\nThere are no active raffles right now. Come back later!"
+                keyboard = [
+                    [InlineKeyboardButton("ℹ️ Rules", callback_data="raffle_rules"),
+                     InlineKeyboardButton("ℹ️ Event History", callback_data="raffle_history")],
+                    [InlineKeyboardButton("⬅️ Back", callback_data="menu_more_content")]
+                ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(raffle_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "raffle_rules":
+                rules_text = """🎟️ **Raffle Rules**
+
+1. Raffles are held periodically with exciting prizes
+2. Each ticket costs a set amount to enter
+3. Winners are selected randomly
+4. Prizes are credited directly to your balance
+5. Stay tuned for announcements!"""
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="more_raffle")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(rules_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "raffle_history":
+                history_text = "🎟️ **Event History**\n\nNo past raffles yet. Check back after the first raffle ends!"
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="more_raffle")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(history_text, reply_markup=reply_markup, parse_mode="Markdown")
             
             elif data.startswith("game_info_"):
                 game_name = data.replace("game_info_", "")
