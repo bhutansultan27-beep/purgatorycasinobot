@@ -5429,29 +5429,60 @@ Your balance will be credited automatically after confirmations.
                 
                 self.db.add_transaction(user_id, "level_bonus", bonus_amount, f"Level Bonus - {level_to_claim['name']}")
                 
-                # Check for remaining unclaimed bonuses
-                remaining_unclaimed = []
+                # Re-fetch user data and rebuild the same level bonus view
+                next_level = get_next_level(total_wagered)
+                
+                # Get user's rank
+                all_users = []
+                for u_data in self.db.data['users'].values():
+                    all_users.append({
+                        "user_id": u_data.get('user_id'),
+                        "total_wagered": u_data.get('total_wagered', 0)
+                    })
+                all_users.sort(key=lambda x: x['total_wagered'], reverse=True)
+                user_rank = None
+                for i, u in enumerate(all_users):
+                    if u['user_id'] == user_id:
+                        user_rank = i + 1
+                        break
+                
+                # Find ALL unclaimed level bonuses that the user has reached (after claiming this one)
+                unclaimed_levels = []
                 for level in LEVELS:
                     if total_wagered >= level['threshold'] and level['id'] not in claimed_bonuses and level['bonus'] > 0:
-                        remaining_unclaimed.append(level)
+                        unclaimed_levels.append(level)
                 
-                result_text = (
-                    f"🎉 **Level Bonus Claimed!**\n\n"
-                    f"{level_to_claim['emoji']} You reached **{level_to_claim['name']}**!\n"
-                    f"Bonus: **+${bonus_amount:.2f}**\n\n"
-                    f"New Balance: ${user_data['balance']:.2f}"
-                )
+                total_unclaimed = sum(level['bonus'] for level in unclaimed_levels)
                 
+                # Build same format as view_level_bonus
+                level_text = "🌲 **Level Up Bonus**\n\n"
+                level_text += "Play games, level up and get even more bonuses!\n\n"
+                level_text += f"Your current level:\n{current_level['emoji']} **{current_level['name']}** - ${total_wagered:,.0f} wagered\n\n"
+                
+                if next_level:
+                    level_text += f"Next Level:\n{next_level['emoji']} **{next_level['name']}** - ${next_level['threshold']:,.0f} wagered\n\n"
+                    wager_needed = next_level['threshold'] - total_wagered
+                    if user_rank:
+                        level_text += f"You are ranked **#{user_rank}**.\n"
+                    level_text += f"Wager **${wager_needed:,.0f}** more to upgrade your level!"
+                else:
+                    if user_rank:
+                        level_text += f"You are ranked **#{user_rank}**.\n"
+                    level_text += "You've reached the maximum level!"
+                
+                # Show unclaimed bonuses info
+                if unclaimed_levels:
+                    level_text += f"\n\n🎁 **{len(unclaimed_levels)} unclaimed bonus(es)** worth **${total_unclaimed:,.0f}** total!"
+                
+                # Build keyboard
                 keyboard = []
-                if remaining_unclaimed:
-                    total_remaining = sum(level['bonus'] for level in remaining_unclaimed)
-                    result_text += f"\n\n🎁 **{len(remaining_unclaimed)} more bonus(es)** worth **${total_remaining:,.0f}** available!"
-                    next_bonus = remaining_unclaimed[0]
+                if unclaimed_levels:
+                    next_bonus = unclaimed_levels[0]
                     keyboard.append([InlineKeyboardButton(f"🎁 Claim {next_bonus['emoji']} {next_bonus['name']} - ${next_bonus['bonus']:.0f}", callback_data=f"claim_level_bonus_{next_bonus['id']}")])
                 keyboard.append([InlineKeyboardButton("Levels List", callback_data="show_levels_list")])
                 keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_bonus")])
                 
-                await query.edit_message_text(result_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+                await query.edit_message_text(level_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
             elif data == "view_rakeback":
                 user_data = self.db.get_user(user_id)
