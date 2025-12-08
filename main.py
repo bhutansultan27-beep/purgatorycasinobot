@@ -1337,7 +1337,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         user_id = update.effective_user.id
         await self._show_history_page(update.message, user_id, 0)
     
-    async def _show_history_page(self, message, user_id: int, page: int, edit_message=False):
+    async def _show_history_page(self, message, user_id: int, page: int, edit_message=False, show_back=False):
         """Display a page of history with 7 games per page."""
         games_per_page = 7
         
@@ -1438,13 +1438,19 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                     history_text += f"{result_emoji} **{game_type.replace('_', ' ').title()}** - ${wager:.2f}\n"
                     history_text += f"   {time_str}{balance_str}\n\n"
         
-        buttons = []
+        nav_buttons = []
         if page > 0:
-            buttons.append(InlineKeyboardButton("⬅️ Prev", callback_data=f"history_page_{page - 1}"))
+            nav_buttons.append(InlineKeyboardButton("⬅️ Prev", callback_data=f"history_page_{page - 1}"))
         if page < total_pages - 1:
-            buttons.append(InlineKeyboardButton("Next ➡️", callback_data=f"history_page_{page + 1}"))
+            nav_buttons.append(InlineKeyboardButton("Next ➡️", callback_data=f"history_page_{page + 1}"))
         
-        keyboard = InlineKeyboardMarkup([buttons]) if buttons else None
+        keyboard_rows = []
+        if nav_buttons:
+            keyboard_rows.append(nav_buttons)
+        if show_back:
+            keyboard_rows.append([InlineKeyboardButton("⬅️ Back", callback_data="menu_more_content")])
+        
+        keyboard = InlineKeyboardMarkup(keyboard_rows) if keyboard_rows else None
         
         if edit_message:
             await message.edit_text(history_text, reply_markup=keyboard, parse_mode="Markdown")
@@ -1452,6 +1458,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             sent_msg = await message.reply_text(history_text, reply_markup=keyboard, parse_mode="Markdown")
             if keyboard:
                 self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+
     async def matches_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """View match history for self or another user with pagination."""
         user_id = update.effective_user.id
@@ -5269,7 +5276,7 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
             # History Pagination
             elif data.startswith("history_page_"):
                 page = int(data.split("_")[2])
-                await self._show_history_page(query.message, user_id, page, edit_message=True)
+                await self._show_history_page(query.message, user_id, page, edit_message=True, show_back=True)
             
             # Levels Tier Navigation
             elif data.startswith("levels_tier_"):
@@ -5697,7 +5704,7 @@ We're here to help 24/7!"""
                 await query.edit_message_text(stats_text, reply_markup=reply_markup, parse_mode="Markdown")
             
             elif data == "more_history":
-                await self._show_history_page(query.message, user_id, 1, edit_message=True)
+                await self._show_history_page(query.message, user_id, 0, edit_message=True, show_back=True)
             
             elif data == "more_leaderboard":
                 await self.show_leaderboard_wagered(update)
