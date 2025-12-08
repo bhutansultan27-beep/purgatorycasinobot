@@ -851,6 +851,8 @@ Hey there! Ready to play?
 🎰 Slots - /slots
 ♠️ Blackjack - /blackjack
 
+📋 /menu - Open the main menu
+
 Good luck! 🍀
 
 ━━━━━━━━━━━━━━━━━━━━
