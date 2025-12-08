@@ -692,20 +692,63 @@ class GranTeseroCasinoBot:
         elif game_type == "mines":
             if user_id in self.mines_sessions:
                 game = self.mines_sessions[user_id]
-                forfeit_amount = game.wager
-                self.db.update_house_balance(forfeit_amount)
-                del self.mines_sessions[user_id]
+                revealed_count = len(game.revealed_tiles)
                 
-                self.db.add_transaction(user_id, "mines_timeout", -forfeit_amount,
-                                        f"Mines timeout - Forfeited ${forfeit_amount:.2f}")
-                
-                if bot:
-                    await bot.send_message(
-                        chat_id=chat_id,
-                        text=f"⏰ @{username} took too long! Game timed out.\n"
-                             f"💸 Forfeited **${forfeit_amount:.2f}** to the house.",
-                        parse_mode="Markdown"
-                    )
+                if revealed_count > 0:
+                    cashout_amount = game.get_potential_payout()
+                    user_data_mines = self.db.get_user(user_id)
+                    user_data_mines['balance'] += cashout_amount
+                    profit = cashout_amount - game.wager
+                    user_data_mines['total_wagered'] += game.wager
+                    user_data_mines['games_played'] += 1
+                    if profit > 0:
+                        user_data_mines['games_won'] += 1
+                        user_data_mines['total_pnl'] += profit
+                        self.db.update_house_balance(-profit)
+                    else:
+                        user_data_mines['total_pnl'] += profit
+                        self.db.update_house_balance(-profit)
+                    self.db.update_user(user_id, user_data_mines)
+                    del self.mines_sessions[user_id]
+                    
+                    self.db.add_transaction(user_id, "mines_timeout_cashout", cashout_amount,
+                                            f"Mines timeout - Auto cashout ${cashout_amount:.2f}")
+                    
+                    self.db.record_game({
+                        'type': 'mines',
+                        'player_id': user_id,
+                        'username': username,
+                        'wager': game.wager,
+                        'num_mines': game.num_mines,
+                        'tiles_revealed': revealed_count,
+                        'multiplier': game.current_multiplier,
+                        'payout': cashout_amount,
+                        'result': 'win' if profit > 0 else 'loss',
+                        'balance_after': user_data_mines['balance']
+                    })
+                    
+                    if bot:
+                        await bot.send_message(
+                            chat_id=chat_id,
+                            text=f"⏰ @{username} timed out - auto cashout!\n"
+                                 f"💰 Credited **${cashout_amount:.2f}** ({game.current_multiplier:.2f}x)",
+                            parse_mode="Markdown"
+                        )
+                else:
+                    forfeit_amount = game.wager
+                    self.db.update_house_balance(forfeit_amount)
+                    del self.mines_sessions[user_id]
+                    
+                    self.db.add_transaction(user_id, "mines_timeout", -forfeit_amount,
+                                            f"Mines timeout - Forfeited ${forfeit_amount:.2f}")
+                    
+                    if bot:
+                        await bot.send_message(
+                            chat_id=chat_id,
+                            text=f"⏰ @{username} took too long! Game timed out.\n"
+                                 f"💸 Forfeited **${forfeit_amount:.2f}** to the house.",
+                            parse_mode="Markdown"
+                        )
         
         elif game_type == "keno":
             if user_id in self.keno_sessions:
@@ -3003,7 +3046,7 @@ Total Won: ${total_won:,.2f}"""
             message += f"**Multiplier:** {game.current_multiplier:.2f}x\n"
             message += f"**Bet:** ${game.wager:.2f}\n"
             message += f"**Current Value:** ${payout:.2f}\n\n"
-            message += f"Click tiles to reveal gems 💎 or hit a mine 💣"
+            message += f"Click tiles to reveal gems 💎"
         
         reply_markup = self._build_mines_grid_keyboard(game)
         
