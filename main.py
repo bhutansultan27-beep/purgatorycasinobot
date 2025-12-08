@@ -5686,37 +5686,18 @@ Your balance will be credited automatically after confirmations.
 async def main():
     BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8575155625:AAFd40dO3bjJ6b6P74QcjH3mHUzuN7MilEA")
     USE_POLLING = os.getenv("USE_POLLING", "true").lower() == "true"
-    
     WEBHOOK_URL = os.getenv("WEBHOOK_URL", "https://casino.vps.webdock.cloud")
     
     logger.info("Starting Gran Tesero Casino Bot...")
-    bot = GranTeseroCasinoBot(token=BOT_TOKEN)
+    logger.info(f"USE_POLLING={USE_POLLING}, WEBHOOK_URL={WEBHOOK_URL}")
     
-    from webhook_server import WebhookServer
-    webhook_server = WebhookServer(bot, port=5000)
-    await webhook_server.start()
-    logger.info("Webhook server started on port 5000")
+    bot = GranTeseroCasinoBot(token=BOT_TOKEN)
     
     await bot.app.initialize()
     await bot.app.start()
     
-    if WEBHOOK_URL and WEBHOOK_URL.startswith("https://") and not USE_POLLING:
-        webhook_full_url = f"{WEBHOOK_URL.rstrip('/')}/webhook/telegram"
-        logger.info(f"Setting up Telegram webhook at: {webhook_full_url}")
-        await bot.app.bot.set_webhook(url=webhook_full_url)
-        logger.info("Webhook mode active - bot will receive updates via HTTP")
-        
-        try:
-            while True:
-                await asyncio.sleep(1)
-        except KeyboardInterrupt:
-            pass
-        finally:
-            await bot.app.bot.delete_webhook()
-            await bot.app.stop()
-            await bot.app.shutdown()
-    else:
-        logger.info("Polling mode active - using long-polling for updates")
+    if USE_POLLING:
+        logger.info("Polling mode active - using long-polling for updates (webhook server disabled)")
         job_queue = bot.app.job_queue
         job_queue.run_repeating(bot.check_expired_challenges, interval=5, first=5)
         
@@ -5729,6 +5710,26 @@ async def main():
             pass
         finally:
             await bot.app.updater.stop()
+            await bot.app.stop()
+            await bot.app.shutdown()
+    else:
+        from webhook_server import WebhookServer
+        webhook_server = WebhookServer(bot, port=5000)
+        await webhook_server.start()
+        logger.info("Webhook server started on port 5000")
+        
+        webhook_full_url = f"{WEBHOOK_URL.rstrip('/')}/webhook/telegram"
+        logger.info(f"Setting up Telegram webhook at: {webhook_full_url}")
+        await bot.app.bot.set_webhook(url=webhook_full_url)
+        logger.info("Webhook mode active - bot will receive updates via HTTP")
+        
+        try:
+            while True:
+                await asyncio.sleep(1)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            await bot.app.bot.delete_webhook()
             await bot.app.stop()
             await bot.app.shutdown()
 
