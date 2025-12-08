@@ -291,8 +291,8 @@ class DatabaseManager:
             self.data['games'] = self.data['games'][-500:]
         self.save_data()
 
-    def record_biggest_dice(self, winner_id: int, winner_username: str, loser_id: int, loser_username: str, amount: float):
-        """Records a PvP dice win for biggest dices tracking."""
+    def record_biggest_dice(self, winner_id: int, winner_username: str, loser_id: int, loser_username: str, amount: float, game_mode: str = "pvp"):
+        """Records a dice win for biggest dices tracking (both PvP and vs Bot)."""
         if 'biggest_dices' not in self.data:
             self.data['biggest_dices'] = []
         
@@ -302,6 +302,7 @@ class DatabaseManager:
             "loser_id": loser_id,
             "loser_username": loser_username,
             "amount": amount,
+            "game_mode": game_mode,
             "timestamp": datetime.now().isoformat()
         })
         # Keep last 1000 entries
@@ -1118,17 +1119,19 @@ Total Won: ${total_won:,.2f}"""
                 winner_username = dice.get('winner_username', 'Unknown')
                 loser_username = dice.get('loser_username', 'Unknown')
                 amount = dice.get('amount', 0)
+                game_mode = dice.get('game_mode', 'pvp')
 
                 winner_user = self.db.get_user(winner_id) if winner_id else {}
-                loser_user = self.db.get_user(loser_id) if loser_id else {}
-
                 winner_level = get_user_level(winner_user.get('total_wagered', 0))
-                loser_level = get_user_level(loser_user.get('total_wagered', 0))
-
                 winner_emoji = winner_level.get('emoji', '⚪')
-                loser_emoji = loser_level.get('emoji', '⚪')
 
-                leaderboard_text += f"{idx}) {winner_emoji} {winner_username} - {loser_emoji} {loser_username} • ${amount:,.2f}\n"
+                if loser_id and loser_id != 0:
+                    loser_user = self.db.get_user(loser_id)
+                    loser_level = get_user_level(loser_user.get('total_wagered', 0))
+                    loser_emoji = loser_level.get('emoji', '⚪')
+                    leaderboard_text += f"{idx}) {winner_emoji} {winner_username} vs {loser_emoji} {loser_username} • ${amount:,.2f}\n"
+                else:
+                    leaderboard_text += f"{idx}) {winner_emoji} {winner_username} vs 🤖 Bot • ${amount:,.2f}\n"
 
         keyboard = [
             [InlineKeyboardButton("Most Wagered all time", callback_data="lb_wagered")],
@@ -4740,6 +4743,11 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
             "result": result,
             "balance_after": user_data['balance']
         })
+        
+        # Record for biggest dices leaderboard (dice games only, wins only)
+        if game_type == "dice_bot" and result == "win":
+            winnings = wager * 2
+            self.db.record_biggest_dice(user_id, username, 0, "Bot", winnings, "bot")
         
         keyboard = [[InlineKeyboardButton("Play Again", callback_data=f"{game_type.replace('_bot', '_bot')}_{wager:.2f}")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
