@@ -2314,8 +2314,7 @@ Total Won: ${total_won:,.2f}"""
             if len(state['player_hands']) > 1:
                 hand_status = f"**Hand {hand['id'] + 1}:** "
             
-            hand_status += f"{hand['cards']} (Value: {hand['value']}) "
-            hand_status += f"- Bet: ${hand['bet']:.2f}"
+            hand_status += f"{hand['cards']} (Value: {hand['value']})"
             
             if hand['status'] == 'Blackjack':
                 hand_status += " 🎉 BLACKJACK!"
@@ -2332,19 +2331,12 @@ Total Won: ${total_won:,.2f}"""
         
         # Game over - show results
         if state['game_over']:
-            message += f"\n**Final Result:**\n"
             if state['dealer']['final_status'] == 'Bust':
-                message += f"Dealer busts with {state['dealer']['value']}!\n\n"
+                message += f"\nDealer busts with {state['dealer']['value']}!"
             elif state['dealer']['is_blackjack']:
-                message += "Dealer has Blackjack!\n\n"
+                message += "\nDealer has Blackjack!"
             
             total_payout = state['total_payout']
-            if total_payout > 0:
-                message += f"✅ **You won ${total_payout:.2f}!**"
-            elif total_payout < 0:
-                message += f"❌ **You lost ${abs(total_payout):.2f}**"
-            else:
-                message += "🤝 **Push** - Bet returned"
             
             # Update user balance
             user_data = self.db.get_user(user_id)
@@ -2379,11 +2371,23 @@ Total Won: ${total_won:,.2f}"""
             keyboard = [[InlineKeyboardButton(f"🔄 Play Again (${original_bet:.2f})", callback_data=f"bj_{user_id}_playagain_{original_bet:.2f}")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
-            # Edit message if from callback, otherwise reply
-            if update.callback_query:
-                await update.callback_query.edit_message_text(message, reply_markup=reply_markup, parse_mode="Markdown")
+            # Build the result message
+            if total_payout > 0:
+                result_message = f"✅ **You won ${total_payout:.2f}!**"
+            elif total_payout < 0:
+                result_message = f"❌ **You lost ${abs(total_payout):.2f}**"
             else:
-                await update.effective_message.reply_text(message, reply_markup=reply_markup, parse_mode="Markdown")
+                result_message = "🤝 **Push** - Bet returned"
+            
+            # Edit the game message (without result) and send result as separate message
+            chat_id = update.effective_chat.id
+            if update.callback_query:
+                await update.callback_query.edit_message_text(message, parse_mode="Markdown")
+            else:
+                await update.effective_message.reply_text(message, parse_mode="Markdown")
+            
+            # Send result in a separate message with Play Again button
+            await context.bot.send_message(chat_id, result_message, reply_markup=reply_markup, parse_mode="Markdown")
             return
         
         # Build action buttons for current hand
@@ -2443,8 +2447,7 @@ Total Won: ${total_won:,.2f}"""
             if len(state['player_hands']) > 1:
                 hand_status = f"**Hand {hand['id'] + 1}:** "
             
-            hand_status += f"{hand['cards']} (Value: {hand['value']}) "
-            hand_status += f"- Bet: ${hand['bet']:.2f}"
+            hand_status += f"{hand['cards']} (Value: {hand['value']})"
             
             if hand['status'] == 'Blackjack':
                 hand_status += " 🎉 BLACKJACK!"
