@@ -1943,27 +1943,14 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         await asyncio.sleep(3)
         
         # Determine payout based on dice value
-        # Payouts calibrated for ~19% house edge (81% RTP)
-        # 777 Jackpot (value 64): 22x -> 1/64 * 22 = 0.344
-        # Three of a kind except 777 (values 1, 22, 43): 8x -> 3/64 * 8 = 0.375
-        # Two 7s start (values 16, 32, 48): 2x -> 3/64 * 2 = 0.094
-        # Total RTP = 0.813 (18.7% house edge)
+        # All triples pay 25x (1/64 chance each = ~61% house edge)
+        # Value 1 = Triple Bars, Value 22 = Triple Grapes
+        # Value 43 = Triple Lemons, Value 64 = Triple 7s
         
         payout_multiplier = 0
-        result_text = ""
         
-        if dice_value == 64:
-            payout_multiplier = 22
-            result_text = "777 JACKPOT!"
-        elif dice_value in (1, 22, 43):
-            payout_multiplier = 8
-            result_text = "Three of a Kind!"
-        elif dice_value in (16, 32, 48):
-            payout_multiplier = 2
-            result_text = "Two 7s!"
-        else:
-            payout_multiplier = 0
-            result_text = "No match"
+        if dice_value in (1, 22, 43, 64):
+            payout_multiplier = 25
         
         username = user_data.get('username', f'User{user_id}')
         
@@ -2039,22 +2026,14 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         await asyncio.sleep(3)
         
         # Determine payout based on dice value
-        # Payouts calibrated for ~19% house edge (81% RTP)
-        payout_multiplier = 0
-        result_text = ""
+        # All triples pay 25x (1/64 chance each = ~61% house edge)
+        # Value 1 = Triple Bars, Value 22 = Triple Grapes
+        # Value 43 = Triple Lemons, Value 64 = Triple 7s
         
-        if dice_value == 64:
-            payout_multiplier = 22
-            result_text = "777 JACKPOT!"
-        elif dice_value in (1, 22, 43):
-            payout_multiplier = 8
-            result_text = "Three of a Kind!"
-        elif dice_value in (16, 32, 48):
-            payout_multiplier = 2
-            result_text = "Two 7s!"
-        else:
-            payout_multiplier = 0
-            result_text = "No match"
+        payout_multiplier = 0
+        
+        if dice_value in (1, 22, 43, 64):
+            payout_multiplier = 25
         
         username = user_data.get('username', f'User{user_id}')
         
