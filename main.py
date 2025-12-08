@@ -859,6 +859,7 @@ Hey there! Ready to play?
 🎡 Roulette - /roulette
 🎰 Slots - /slots
 ♠️ Blackjack - /blackjack
+💣 Mines - /mines
 
 📋 /menu - Open the main menu
 
@@ -5917,6 +5918,7 @@ Your balance will be credited automatically after confirmations.
 /roulette - Play roulette 🎡
 /slots - Play slots 🎰
 /blackjack - Play blackjack ♠️
+/mines - Play mines 💣
 
 **Account:**
 /bal - Check your balance
@@ -5951,6 +5953,7 @@ Your balance will be credited automatically after confirmations.
                     [InlineKeyboardButton("⚽ Soccer", callback_data="game_info_soccer")],
                     [InlineKeyboardButton("🎳 Bowling", callback_data="game_info_bowling")],
                     [InlineKeyboardButton("♠️ Blackjack", callback_data="game_info_blackjack")],
+                    [InlineKeyboardButton("💣 Mines", callback_data="game_info_mines")],
                     [InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
@@ -6395,7 +6398,8 @@ Total Won: ${total_won:,.2f}"""
                     "basketball": "Usage: `/basketball <amount|all>`",
                     "soccer": "Usage: `/soccer <amount|all>`",
                     "bowling": "Usage: `/bowling <amount|all>`",
-                    "blackjack": "Usage: `/blackjack <amount|all>`"
+                    "blackjack": "Usage: `/blackjack <amount|all>`",
+                    "mines": "💣 **Mines**\n\nFind gems in the minefield! More mines = higher multipliers.\n\n**Usage:** `/mines <amount|all>`"
                 }
                 
                 usage_text = game_usage.get(game_name, "Game not found.")
@@ -6744,7 +6748,12 @@ Total Won: ${total_won:,.2f}"""
                 game = self.mines_sessions[game_user_id]
                 
                 # Reveal the tile
-                is_safe, game_over, multiplier = game.reveal_tile(position)
+                is_safe, game_over, multiplier, already_revealed = game.reveal_tile(position)
+                
+                # If already revealed, just acknowledge and do nothing
+                if already_revealed:
+                    await query.answer()
+                    return
                 
                 # Update display
                 await self._display_mines_state(update, context, user_id)

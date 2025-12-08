@@ -52,20 +52,24 @@ class MinesGame:
         index = min(num_reveals - 1, len(multipliers) - 1)
         return multipliers[index]
     
-    def reveal_tile(self, position: int) -> Tuple[bool, bool, float]:
+    def reveal_tile(self, position: int) -> Tuple[bool, bool, float, bool]:
         """
         Reveal a tile at the given position.
-        Returns: (is_safe, game_over, current_multiplier)
+        Returns: (is_safe, game_over, current_multiplier, already_revealed)
         """
-        if self.game_over or position in self.revealed_tiles:
-            return (False, True, self.current_multiplier)
+        if self.game_over:
+            return (False, True, self.current_multiplier, False)
+        
+        if position in self.revealed_tiles:
+            # Already revealed - ignore this click
+            return (True, False, self.current_multiplier, True)
         
         is_mine = position in self.mine_positions
         
         if is_mine:
             self.hit_mine = True
             self.game_over = True
-            return (False, True, 0.0)
+            return (False, True, 0.0, False)
         
         self.revealed_tiles.append(position)
         self.current_multiplier = self.get_multiplier_for_reveals(len(self.revealed_tiles))
@@ -75,7 +79,7 @@ class MinesGame:
             self.game_over = True
             self.cashed_out = True
         
-        return (True, self.game_over, self.current_multiplier)
+        return (True, self.game_over, self.current_multiplier, False)
     
     def cash_out(self) -> float:
         """Cash out and end the game. Returns the payout amount."""
