@@ -2285,16 +2285,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         )
 
     async def get_ltc_price_usd(self) -> Optional[float]:
-        """Get current LTC price in USD from Plisio API with CoinGecko fallback."""
+        """Get current LTC price in USD from Plisio API, fallback to manual rate."""
         api_key = os.getenv('PLISIO_API_KEY')
         
-        # First check if manual rate is set
-        manual_rate = self.db.data.get('manual_ltc_rate')
-        if manual_rate:
-            logger.info(f"[LTC PRICE] Using manual rate: ${manual_rate}")
-            return float(manual_rate)
-        
-        # Try Plisio API first
+        # Try Plisio API first for exact real-time price
         try:
             async with aiohttp.ClientSession() as session:
                 url = f"https://plisio.net/api/v1/currencies/USD"
@@ -2302,36 +2296,27 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 
                 async with session.get(url, params=params, timeout=10) as response:
                     result = await response.json()
-                    logger.info(f"[PLISIO DEBUG] Currencies response: {result.get('status')}")
+                    logger.info(f"[PLISIO] Currencies response: {result.get('status')}")
                     
                     if result.get('status') == 'success':
                         currencies = result.get('data', [])
                         for currency in currencies:
                             if currency.get('cid') == 'LTC':
                                 price = float(currency.get('price_usd', 0))
-                                logger.info(f"[PLISIO DEBUG] LTC price: ${price}")
+                                logger.info(f"[PLISIO] LTC price: ${price}")
                                 return price
                     
-                    logger.warning(f"[PLISIO DEBUG] Could not get LTC price from Plisio: {result}")
+                    logger.warning(f"[PLISIO] Could not get LTC price: {result}")
         except Exception as e:
-            logger.warning(f"[PLISIO DEBUG] Error fetching LTC price from Plisio: {e}")
+            logger.warning(f"[PLISIO] Error fetching LTC price: {e}")
         
-        # Fallback to CoinGecko API (free, no API key needed)
-        try:
-            async with aiohttp.ClientSession() as session:
-                url = "https://api.coingecko.com/api/v3/simple/price"
-                params = {"ids": "litecoin", "vs_currencies": "usd"}
-                
-                async with session.get(url, params=params, timeout=10) as response:
-                    result = await response.json()
-                    price = result.get('litecoin', {}).get('usd')
-                    if price:
-                        logger.info(f"[COINGECKO] LTC price: ${price}")
-                        return float(price)
-        except Exception as e:
-            logger.error(f"[COINGECKO] Error fetching LTC price: {e}")
+        # Fallback to manual rate if Plisio fails
+        manual_rate = self.db.data.get('manual_ltc_rate')
+        if manual_rate:
+            logger.info(f"[LTC PRICE] Using manual fallback rate: ${manual_rate}")
+            return float(manual_rate)
         
-        logger.error("[LTC PRICE] All price sources failed")
+        logger.error("[LTC PRICE] Plisio failed and no manual rate set. Use /setltcrate to set one.")
         return None
 
     async def generate_coinremitter_address(self, user_id: int, currency: str = 'LTC') -> Optional[Dict[str, Any]]:
