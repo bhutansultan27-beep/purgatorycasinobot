@@ -1931,7 +1931,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             await update.message.reply_text(
                 "**Slots**\n\n"
                 "**Payouts:**\n"
-                "777 Jackpot: 25x\n"
+                "777 Jackpot: 22x\n"
                 "Three of a Kind: 8x\n"
                 "Two 7s: 2x\n\n"
                 "**Usage:** `/slots <amount|all>`",
