@@ -15,19 +15,18 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Development Status"
+args = "Casino Bot Info"
 
 [[workflows.workflow]]
-name = "Development Status"
+name = "Casino Bot Info"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python placeholder.py"
-waitForPort = 5000
+args = "python replit_info.py"
 
 [workflows.workflow.metadata]
-outputType = "webview"
+outputType = "console"
 
 [userenv]
 

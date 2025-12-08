@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+
+print("="*60)
+print("  Gran Tesero Casino Bot - Development Environment")
+print("="*60)
+print()
+print("ℹ️  This Replit workspace is used for CODE EDITING ONLY")
+print()
+print("🚀 The bot runs on: External Webdock VPS Server")
+print("📝 Use Replit for: Viewing and editing code")
+print("❌ Do NOT use Replit for: Running the bot")
+print()
+print("To deploy changes:")
+print("  1. Edit code files in this Replit workspace")
+print("  2. Deploy changes to the Webdock VPS server")
+print("  3. Restart the bot on Webdock to see changes")
+print()
+print("="*60)
