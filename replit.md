@@ -8,6 +8,8 @@ The Gran Tesero Casino Bot is a feature-rich Telegram bot offering a variety of 
 
 The user prefers that all game results are displayed in a simplified, clean format without excessive score details. Communication should be streamlined, and redundant information removed. The user values engaging, interactive gameplay experiences, which is why manual emoji sending for games was implemented. For development, the user prefers a focus on high-level features and architectural decisions over granular implementation specifics, and wants to avoid all changelogs, update logs, and date-wise entries in documentation.
 
+**Important: The bot runs on Webdock (external VPS), NOT on Replit. Do not start or run the bot workflow on Replit as it will conflict with the production instance on Webdock. Replit is used only for code editing and development.**
+
 ## System Architecture
 
 The Gran Tesero Casino Bot is built using Python and the `python-telegram-bot` library, leveraging an asynchronous programming model for performance.
