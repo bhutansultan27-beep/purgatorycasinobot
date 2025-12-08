@@ -53,6 +53,19 @@ The Gran Tesero Casino Bot is built using Python and the `python-telegram-bot` l
 - **Error Handling**: Comprehensive error handling is built into the system.
 - **Security**: Includes playthrough requirements, bonus cooldowns, balance validation, and anti-spam withdrawal protection.
 
+### 30-Second Timeout System
+The bot implements a 30-second inactivity timeout for all turn-based games to prevent players from getting stuck with locked wagers:
+- **Affected Games**: Blackjack, Mines, Keno, Hi-Lo, Connect 4
+- **Behavior**: 
+  - Solo games (blackjack, mines, keno, hilo): Wager is forfeited to the house
+  - PvP games (connect4): Active player receives refund, inactive player forfeits to house
+- **Implementation Details**:
+  - Uses asyncio tasks stored in `game_timeouts` dictionary, keyed by game type and user/game ID
+  - Timeout resets on each player action
+  - Timeout cancels when game ends naturally
+  - `forfeit_game()` method handles the forfeit logic for each game type
+  - Game property names: MinesGame/KenoGame/HiLoGame use `wager`, BlackjackGame uses `initial_bet`
+
 ## External Dependencies
 
 - **Telegram Bot API**: The core platform for bot interaction, accessed via the `python-telegram-bot` library.

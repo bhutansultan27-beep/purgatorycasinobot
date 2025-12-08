@@ -529,6 +529,13 @@ class GranTeseroCasinoBot:
         
         # Dictionary to store active Connect 4 games: game_id -> Connect4Game instance
         self.connect4_sessions: Dict[str, Connect4Game] = {}
+        
+        # Game timeout tracking: game_key -> asyncio.Task
+        # game_key format: "type_user_id" (e.g., "blackjack_123456", "connect4_gameid", "pvp_gameid")
+        self.game_timeout_tasks: Dict[str, asyncio.Task] = {}
+        
+        # Timeout duration in seconds
+        self.GAME_TIMEOUT_SECONDS = 30
 
     def user_has_active_game(self, user_id: int) -> bool:
         """Check if a user already has an active game (PvP, blackjack, mines, keno, or pending opponent selection)"""
@@ -601,6 +608,225 @@ class GranTeseroCasinoBot:
         callback_data = f"resume_{game_type}_{user_id}"
         keyboard = [[InlineKeyboardButton("resume game", callback_data=callback_data)]]
         return InlineKeyboardMarkup(keyboard)
+
+    def start_game_timeout(self, game_key: str, game_type: str, user_id: int, chat_id: int, 
+                           wager: float, is_pvp: bool = False, opponent_id: int = None,
+                           game_id: str = None, bot = None):
+        """Start a 30-second timeout for a game. If time expires, player forfeits."""
+        self.cancel_game_timeout(game_key)
+        
+        async def timeout_handler():
+            try:
+                await asyncio.sleep(self.GAME_TIMEOUT_SECONDS)
+                await self.handle_game_timeout(game_key, game_type, user_id, chat_id, 
+                                               wager, is_pvp, opponent_id, game_id, bot)
+            except asyncio.CancelledError:
+                pass
+        
+        task = asyncio.create_task(timeout_handler())
+        self.game_timeout_tasks[game_key] = task
+        logger.info(f"[TIMEOUT] Started {self.GAME_TIMEOUT_SECONDS}s timeout for {game_key}")
+
+    def cancel_game_timeout(self, game_key: str):
+        """Cancel an existing timeout for a game."""
+        if game_key in self.game_timeout_tasks:
+            self.game_timeout_tasks[game_key].cancel()
+            del self.game_timeout_tasks[game_key]
+            logger.info(f"[TIMEOUT] Cancelled timeout for {game_key}")
+
+    def reset_game_timeout(self, game_key: str, game_type: str, user_id: int, chat_id: int,
+                           wager: float, is_pvp: bool = False, opponent_id: int = None,
+                           game_id: str = None, bot = None):
+        """Reset (restart) the timeout for a game after a player makes a move."""
+        self.start_game_timeout(game_key, game_type, user_id, chat_id, wager, 
+                                is_pvp, opponent_id, game_id, bot)
+
+    async def handle_game_timeout(self, game_key: str, game_type: str, user_id: int, 
+                                   chat_id: int, wager: float, is_pvp: bool = False,
+                                   opponent_id: int = None, game_id: str = None, bot = None):
+        """Handle game timeout - forfeit wager to house, refund opponent in PvP."""
+        logger.info(f"[TIMEOUT] Game timeout triggered for {game_key}")
+        
+        if game_key in self.game_timeout_tasks:
+            del self.game_timeout_tasks[game_key]
+        
+        user_data = self.db.get_user(user_id)
+        username = user_data.get('username', f'User{user_id}')
+        
+        if game_type == "blackjack":
+            if user_id in self.blackjack_sessions:
+                game = self.blackjack_sessions[user_id]
+                total_bet = sum(h['bet'] for h in game.player_hands)
+                self.db.update_house_balance(total_bet)
+                del self.blackjack_sessions[user_id]
+                
+                self.db.add_transaction(user_id, "blackjack_timeout", -total_bet, 
+                                        f"Blackjack timeout - Forfeited ${total_bet:.2f}")
+                self.db.record_game({
+                    "type": "blackjack",
+                    "player_id": user_id,
+                    "wager": total_bet,
+                    "result": "timeout",
+                    "outcome": "loss"
+                })
+                
+                if bot:
+                    await bot.send_message(
+                        chat_id=chat_id,
+                        text=f"⏰ @{username} took too long! Game timed out.\n"
+                             f"💸 Forfeited **${total_bet:.2f}** to the house.",
+                        parse_mode="Markdown"
+                    )
+        
+        elif game_type == "hilo":
+            if user_id in self.hilo_sessions:
+                game = self.hilo_sessions[user_id]
+                forfeit_amount = game.initial_wager
+                self.db.update_house_balance(forfeit_amount)
+                del self.hilo_sessions[user_id]
+                
+                self.db.add_transaction(user_id, "hilo_timeout", -forfeit_amount,
+                                        f"Hi-Lo timeout - Forfeited ${forfeit_amount:.2f}")
+                
+                if bot:
+                    await bot.send_message(
+                        chat_id=chat_id,
+                        text=f"⏰ @{username} took too long! Game timed out.\n"
+                             f"💸 Forfeited **${forfeit_amount:.2f}** to the house.",
+                        parse_mode="Markdown"
+                    )
+        
+        elif game_type == "mines":
+            if user_id in self.mines_sessions:
+                game = self.mines_sessions[user_id]
+                forfeit_amount = game.wager
+                self.db.update_house_balance(forfeit_amount)
+                del self.mines_sessions[user_id]
+                
+                self.db.add_transaction(user_id, "mines_timeout", -forfeit_amount,
+                                        f"Mines timeout - Forfeited ${forfeit_amount:.2f}")
+                
+                if bot:
+                    await bot.send_message(
+                        chat_id=chat_id,
+                        text=f"⏰ @{username} took too long! Game timed out.\n"
+                             f"💸 Forfeited **${forfeit_amount:.2f}** to the house.",
+                        parse_mode="Markdown"
+                    )
+        
+        elif game_type == "keno":
+            if user_id in self.keno_sessions:
+                game = self.keno_sessions[user_id]
+                forfeit_amount = game.wager
+                self.db.update_house_balance(forfeit_amount)
+                del self.keno_sessions[user_id]
+                
+                self.db.add_transaction(user_id, "keno_timeout", -forfeit_amount,
+                                        f"Keno timeout - Forfeited ${forfeit_amount:.2f}")
+                
+                if bot:
+                    await bot.send_message(
+                        chat_id=chat_id,
+                        text=f"⏰ @{username} took too long! Game timed out.\n"
+                             f"💸 Forfeited **${forfeit_amount:.2f}** to the house.",
+                        parse_mode="Markdown"
+                    )
+        
+        elif game_type == "connect4":
+            if game_id and game_id in self.connect4_sessions:
+                game = self.connect4_sessions[game_id]
+                p1_data = self.db.get_user(game.player1_id)
+                p2_data = self.db.get_user(game.player2_id)
+                p1_username = p1_data.get('username', 'Player 1')
+                p2_username = p2_data.get('username', 'Player 2')
+                
+                inactive_id = user_id
+                active_id = game.player2_id if inactive_id == game.player1_id else game.player1_id
+                active_username = p2_username if inactive_id == game.player1_id else p1_username
+                inactive_username = p1_username if inactive_id == game.player1_id else p2_username
+                
+                active_data = self.db.get_user(active_id)
+                active_data['balance'] += game.wager
+                self.db.update_user(active_id, {'balance': active_data['balance']})
+                
+                self.db.update_house_balance(game.wager)
+                
+                self.db.add_transaction(inactive_id, "connect4_timeout", -game.wager,
+                                        f"Connect 4 timeout - Forfeited ${game.wager:.2f}")
+                self.db.add_transaction(active_id, "connect4_refund", game.wager,
+                                        f"Connect 4 refund - Opponent timed out")
+                
+                del self.connect4_sessions[game_id]
+                
+                if bot:
+                    await bot.send_message(
+                        chat_id=chat_id,
+                        text=f"⏰ @{inactive_username} took too long! Game timed out.\n\n"
+                             f"💸 @{inactive_username} forfeited **${game.wager:.2f}** to the house.\n"
+                             f"💰 @{active_username} was refunded **${game.wager:.2f}**.",
+                        parse_mode="Markdown"
+                    )
+        
+        elif game_type == "pvp" or game_type.endswith("_pvp"):
+            if game_id and game_id in self.pending_pvp:
+                challenge = self.pending_pvp[game_id]
+                challenger_id = challenge.get('challenger')
+                opponent_id_pvp = challenge.get('opponent')
+                pvp_wager = challenge.get('wager', wager)
+                
+                inactive_id = user_id
+                
+                if opponent_id_pvp and challenger_id:
+                    active_id = opponent_id_pvp if inactive_id == challenger_id else challenger_id
+                    active_data = self.db.get_user(active_id)
+                    inactive_data = self.db.get_user(inactive_id)
+                    active_username = active_data.get('username', f'User{active_id}')
+                    inactive_username = inactive_data.get('username', f'User{inactive_id}')
+                    
+                    active_data['balance'] += pvp_wager
+                    self.db.update_user(active_id, {'balance': active_data['balance']})
+                    
+                    self.db.update_house_balance(pvp_wager)
+                    
+                    self.db.add_transaction(inactive_id, "pvp_timeout", -pvp_wager,
+                                            f"PvP timeout - Forfeited ${pvp_wager:.2f}")
+                    self.db.add_transaction(active_id, "pvp_refund", pvp_wager,
+                                            f"PvP refund - Opponent timed out")
+                    
+                    del self.pending_pvp[game_id]
+                    self.db.data['pending_pvp'] = self.pending_pvp
+                    self.db.save_data()
+                    
+                    if bot:
+                        await bot.send_message(
+                            chat_id=chat_id,
+                            text=f"⏰ @{inactive_username} took too long! Game timed out.\n\n"
+                                 f"💸 @{inactive_username} forfeited **${pvp_wager:.2f}** to the house.\n"
+                                 f"💰 @{active_username} was refunded **${pvp_wager:.2f}**.",
+                            parse_mode="Markdown"
+                        )
+                else:
+                    player_id = challenge.get('player')
+                    if player_id:
+                        self.db.update_house_balance(pvp_wager)
+                        
+                        self.db.add_transaction(player_id, "game_timeout", -pvp_wager,
+                                                f"Game timeout - Forfeited ${pvp_wager:.2f}")
+                        
+                        del self.pending_pvp[game_id]
+                        self.db.data['pending_pvp'] = self.pending_pvp
+                        self.db.save_data()
+                        
+                        player_data = self.db.get_user(player_id)
+                        player_username = player_data.get('username', f'User{player_id}')
+                        
+                        if bot:
+                            await bot.send_message(
+                                chat_id=chat_id,
+                                text=f"⏰ @{player_username} took too long! Game timed out.\n"
+                                     f"💸 Forfeited **${pvp_wager:.2f}** to the house.",
+                                parse_mode="Markdown"
+                            )
 
     def setup_handlers(self):
         """Setup all command and callback handlers"""
@@ -2373,6 +2599,12 @@ Total Won: ${total_won:,.2f}"""
         game.start_game()
         self.blackjack_sessions[user_id] = game
         
+        # Start 30-second timeout for the game
+        chat_id = update.effective_chat.id
+        game_key = f"blackjack_{user_id}"
+        self.start_game_timeout(game_key, "blackjack", user_id, chat_id, wager, 
+                                bot=context.bot)
+        
         # Display game state
         await self._display_blackjack_state(update, context, user_id)
     
@@ -2447,6 +2679,10 @@ Total Won: ${total_won:,.2f}"""
             
             # Store original bet before removing session
             original_bet = game.initial_bet
+            
+            # Cancel timeout since game is over
+            game_key = f"blackjack_{user_id}"
+            self.cancel_game_timeout(game_key)
             
             # Remove session
             del self.blackjack_sessions[user_id]
@@ -2760,6 +2996,10 @@ Total Won: ${total_won:,.2f}"""
                 # Update house balance
                 self.db.update_house_balance(-profit)
             
+            # Cancel timeout since game is over
+            game_key = f"mines_{user_id}"
+            self.cancel_game_timeout(game_key)
+            
             # Remove session
             del self.mines_sessions[user_id]
         else:
@@ -2971,6 +3211,12 @@ Total Won: ${total_won:,.2f}"""
         game = KenoGame(user_id, wager)
         self.keno_sessions[user_id] = game
         
+        # Start 30-second timeout for the game
+        chat_id = update.effective_chat.id
+        game_key = f"keno_{user_id}"
+        self.start_game_timeout(game_key, "keno", user_id, chat_id, wager, 
+                                bot=context.bot)
+        
         await self._display_keno_state(update, context, user_id, is_new=True)
 
     def _build_keno_grid_keyboard(self, game: KenoGame) -> InlineKeyboardMarkup:
@@ -3071,6 +3317,10 @@ Total Won: ${total_won:,.2f}"""
                 'result': 'win' if game.payout > 0 else 'loss',
                 'balance_after': user_data['balance']
             })
+            
+            # Cancel timeout since game is over
+            game_key = f"keno_{user_id}"
+            self.cancel_game_timeout(game_key)
             
             del self.keno_sessions[user_id]
         else:
@@ -3258,6 +3508,12 @@ Total Won: ${total_won:,.2f}"""
         game = HiLoGame(user_id, wager)
         self.hilo_sessions[user_id] = game
         
+        # Start 30-second timeout for the game
+        chat_id = update.effective_chat.id
+        game_key = f"hilo_{user_id}"
+        self.start_game_timeout(game_key, "hilo", user_id, chat_id, wager, 
+                                bot=context.bot)
+        
         await self._display_hilo_state(update, context, user_id, is_new=True)
     
     def _build_hilo_keyboard(self, game: HiLoGame) -> InlineKeyboardMarkup:
@@ -3348,6 +3604,10 @@ Total Won: ${total_won:,.2f}"""
                 'result': 'win' if (game.won or game.cashed_out) else 'loss',
                 'balance_after': user_data['balance']
             })
+            
+            # Cancel timeout since game is over
+            game_key = f"hilo_{user_id}"
+            self.cancel_game_timeout(game_key)
             
             del self.hilo_sessions[user_id]
         else:
@@ -3510,6 +3770,14 @@ Total Won: ${total_won:,.2f}"""
         
         await query.edit_message_text(roll_message, parse_mode="Markdown")
         
+        # Start 30-second timeout for the first player
+        chat_id = query.message.chat_id
+        game_key = f"connect4_{game_id}"
+        self.start_game_timeout(game_key, "connect4", first_player_id, chat_id, wager, 
+                                bot=context.bot, game_id=game_id, 
+                                other_player_id=challenger_id if first_player_id == user_id else user_id,
+                                is_pvp=True)
+        
         await self._display_connect4_state(update, context, game_id)
     
     def _build_connect4_keyboard(self, game: Connect4Game, game_id: str) -> InlineKeyboardMarkup:
@@ -3586,6 +3854,10 @@ Total Won: ${total_won:,.2f}"""
                 self.db.update_user(game.player1_id, {'balance': p1_data['balance']})
                 self.db.update_user(game.player2_id, {'balance': p2_data['balance']})
                 
+                # Cancel timeout since game is over
+                game_key = f"connect4_{game_id}"
+                self.cancel_game_timeout(game_key)
+                
                 del self.connect4_sessions[game_id]
                 reply_markup = final_board
             else:
@@ -3623,6 +3895,10 @@ Total Won: ${total_won:,.2f}"""
                     'winner_balance_after': winner_data['balance'],
                     'loser_balance_after': loser_data['balance']
                 })
+                
+                # Cancel timeout since game is over
+                game_key = f"connect4_{game_id}"
+                self.cancel_game_timeout(game_key)
                 
                 del self.connect4_sessions[game_id]
                 reply_markup = final_board
@@ -7774,6 +8050,12 @@ Total Won: ${total_won:,.2f}"""
                     new_game.start_game()
                     self.blackjack_sessions[user_id] = new_game
                     
+                    # Start 30-second timeout for the game
+                    chat_id = query.message.chat_id
+                    game_key = f"blackjack_{user_id}"
+                    self.start_game_timeout(game_key, "blackjack", user_id, chat_id, wager, 
+                                            bot=context.bot)
+                    
                     # Send a NEW message for the new game (not editing)
                     await self._display_blackjack_state_new_message(update, context, user_id)
                     return
@@ -7834,6 +8116,16 @@ Total Won: ${total_won:,.2f}"""
                     
                     game.take_insurance()
                 
+                # Reset timeout after each action (if game is still active)
+                if game_user_id in self.blackjack_sessions:
+                    game_state = game.get_game_state()
+                    if not game_state['game_over']:
+                        chat_id = query.message.chat_id
+                        game_key = f"blackjack_{user_id}"
+                        wager = sum(h['bet'] for h in game.player_hands)
+                        self.reset_game_timeout(game_key, "blackjack", user_id, chat_id, wager,
+                                                bot=context.bot)
+                
                 # Update the display with new game state
                 await self._display_blackjack_state(update, context, user_id)
             
@@ -7862,6 +8154,12 @@ Total Won: ${total_won:,.2f}"""
                     # Create new game
                     game = MinesGame(user_id=user_id, wager=wager, num_mines=num_mines)
                     self.mines_sessions[user_id] = game
+                    
+                    # Start 30-second timeout for the game
+                    chat_id = query.message.chat_id
+                    game_key = f"mines_{user_id}"
+                    self.start_game_timeout(game_key, "mines", user_id, chat_id, wager, 
+                                            bot=context.bot)
                     
                     # Display game grid
                     await self._display_mines_state(update, context, user_id, is_new=True)
@@ -7893,6 +8191,13 @@ Total Won: ${total_won:,.2f}"""
                 if already_revealed:
                     await query.answer()
                     return
+                
+                # Reset timeout if game is still active
+                if not game_over and user_id in self.mines_sessions:
+                    chat_id = query.message.chat_id
+                    game_key = f"mines_{user_id}"
+                    self.reset_game_timeout(game_key, "mines", user_id, chat_id, game.wager,
+                                            bot=context.bot)
                 
                 # Update display
                 await self._display_mines_state(update, context, user_id)
@@ -8019,6 +8324,14 @@ Total Won: ${total_won:,.2f}"""
                 
                 game = self.keno_sessions[user_id]
                 success, msg = game.pick_number(number)
+                
+                # Reset timeout since player is still active
+                if not game.game_over and user_id in self.keno_sessions:
+                    chat_id = query.message.chat_id
+                    game_key = f"keno_{user_id}"
+                    self.reset_game_timeout(game_key, "keno", user_id, chat_id, game.wager,
+                                            bot=context.bot)
+                
                 await self._display_keno_state(update, context, user_id)
             
             elif data.startswith("keno_draw_"):
@@ -8165,6 +8478,14 @@ Total Won: ${total_won:,.2f}"""
                 
                 game = self.hilo_sessions[user_id]
                 game.make_prediction(action)
+                
+                # Reset timeout if game is still active
+                if not game.game_over and user_id in self.hilo_sessions:
+                    chat_id = query.message.chat_id
+                    game_key = f"hilo_{user_id}"
+                    self.reset_game_timeout(game_key, "hilo", user_id, chat_id, game.initial_wager,
+                                            bot=context.bot)
+                
                 await self._display_hilo_state(update, context, user_id)
             
             elif data.startswith("hilo_skip_"):
@@ -8181,6 +8502,13 @@ Total Won: ${total_won:,.2f}"""
                 
                 game = self.hilo_sessions[user_id]
                 game.skip_card()
+                
+                # Reset timeout since player is still active
+                if not game.game_over and user_id in self.hilo_sessions:
+                    chat_id = query.message.chat_id
+                    game_key = f"hilo_{user_id}"
+                    self.reset_game_timeout(game_key, "hilo", user_id, chat_id, game.initial_wager,
+                                            bot=context.bot)
                 await query.answer("⏭️ Card skipped!")
                 await self._display_hilo_state(update, context, user_id)
             
@@ -8224,6 +8552,13 @@ Total Won: ${total_won:,.2f}"""
                 
                 game = HiLoGame(user_id, wager)
                 self.hilo_sessions[user_id] = game
+                
+                # Start 30-second timeout for the game
+                chat_id = query.message.chat_id
+                game_key = f"hilo_{user_id}"
+                self.start_game_timeout(game_key, "hilo", user_id, chat_id, wager, 
+                                        bot=context.bot)
+                
                 await query.answer("🎮 New game started!")
                 await self._display_hilo_state(update, context, user_id)
             
@@ -8254,6 +8589,16 @@ Total Won: ${total_won:,.2f}"""
                 if 'error' in result:
                     await query.answer(result['error'], show_alert=True)
                     return
+                
+                # Reset timeout for the next player if game is still active
+                if not game.game_over and game_id in self.connect4_sessions:
+                    chat_id = query.message.chat_id
+                    game_key = f"connect4_{game_id}"
+                    next_player_id = game.get_current_player_id()
+                    other_player_id = game.player1_id if next_player_id == game.player2_id else game.player2_id
+                    self.reset_game_timeout(game_key, "connect4", next_player_id, chat_id, game.wager,
+                                            bot=context.bot, game_id=game_id, other_player_id=other_player_id,
+                                            is_pvp=True)
                 
                 await query.answer()
                 await self._display_connect4_state(update, context, game_id, is_new=False)
