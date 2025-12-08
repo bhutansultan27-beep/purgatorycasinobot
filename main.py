@@ -3266,16 +3266,10 @@ Total Won: ${total_won:,.2f}"""
             'banker_hand': f"{banker_cards} ({banker_value})"
         })
         
-        keyboard = [
-            [InlineKeyboardButton("🔵 Player", callback_data=f"bacc_{user_id}_{wager:.2f}_player"),
-             InlineKeyboardButton("🔴 Banker", callback_data=f"bacc_{user_id}_{wager:.2f}_banker"),
-             InlineKeyboardButton("🟢 Tie", callback_data=f"bacc_{user_id}_{wager:.2f}_tie")]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
+        self.button_ownership.pop((chat_id, query.message.message_id), None)
         
         await query.edit_message_text(message, parse_mode="Markdown")
-        sent_msg = await context.bot.send_message(chat_id=chat_id, text=result_text, reply_markup=reply_markup, parse_mode="Markdown")
-        self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+        await context.bot.send_message(chat_id=chat_id, text=result_text, parse_mode="Markdown")
 
     async def keno_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Start a Keno game"""
