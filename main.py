@@ -494,7 +494,6 @@ class GranTeseroCasinoBot:
         self.app.add_handler(CommandHandler("start", self.start_command))
         self.app.add_handler(CommandHandler("help", self.help_command))
         self.app.add_handler(CommandHandler("adminhelp", self.adminhelp_command))
-        self.app.add_handler(CommandHandler("support", self.support_command))
         self.app.add_handler(CommandHandler("balance", self.balance_command))
         self.app.add_handler(CommandHandler("bal", self.balance_command))
         self.app.add_handler(CommandHandler("bonus", self.bonus_command))
@@ -829,35 +828,22 @@ class GranTeseroCasinoBot:
                         parse_mode="Markdown"
                     )
         
-        welcome_text = f"""
-🎰 **Gran Tesero**
-💰 Balance: ${user_data['balance']:.2f}
+        welcome_text = f"""🎰 **Gran Tesero**
 
-**Games:**
-/dice 10 - Dice 🎲
-/darts 10 - Darts 🎯
-/basketball 10 - Basketball 🏀
-/soccer 10 - Soccer ⚽
-/bowling 10 - Bowling 🎳
-/flip 10 - Coin Flip 🪙
-/predict 10 #6 - Predict 🔮
-/roulette 10 - Roulette 🎡
-/slots 10 - Slots 🎰
-
-**Menu:**
-/bal - Balance
-/bonus - Get bonus
-/stats - Your stats
-/help - Shows all commands
+Welcome to the casino!
 """
         await update.message.reply_text(welcome_text, parse_mode="Markdown")
         
-        # Also show balance with deposit/withdraw buttons
-        balance_text = f"💰 **Balance: ${user_data['balance']:.2f}**"
+        # Show balance with new menu buttons
+        balance_text = f"🏦 **Menu**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose the action:"
         
         keyboard = [
-            [InlineKeyboardButton("Deposit", callback_data="deposit_mock"),
-             InlineKeyboardButton("Withdraw", callback_data="withdraw_mock")]
+            [InlineKeyboardButton("🎮 Play", callback_data="menu_play")],
+            [InlineKeyboardButton("💳 Deposit", callback_data="deposit_mock"),
+             InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")],
+            [InlineKeyboardButton("🎁 Bonuses", callback_data="menu_bonuses"),
+             InlineKeyboardButton("📚 More Content", callback_data="menu_more_content")],
+            [InlineKeyboardButton("📞 Contact Support", callback_data="menu_support")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -893,7 +879,6 @@ class GranTeseroCasinoBot:
 **Info:**
 /leaderboard - View top players
 /housebal - View house balance
-/support - Contact support
 """
         await update.message.reply_text(help_text, parse_mode="Markdown")
     
@@ -928,31 +913,20 @@ class GranTeseroCasinoBot:
 """
         await update.message.reply_text(admin_help_text, parse_mode="Markdown")
     
-    async def support_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Show support contact information"""
-        support_text = """📞 **Support**
-
-Need help? Contact our support team:
-
-🔹 Telegram: @GranTeseroSupport
-🔹 Issues with deposits/withdrawals
-🔹 Questions about games
-🔹 Report bugs or problems
-
-We're here to help 24/7!
-"""
-        await update.message.reply_text(support_text, parse_mode="Markdown")
-    
     async def balance_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Show balance with deposit/withdraw buttons"""
+        """Show balance with full menu buttons"""
         user_data = self.ensure_user_registered(update)
         user_id = update.effective_user.id
         
-        balance_text = f"💰 **Balance: ${user_data['balance']:.2f}**"
+        balance_text = f"🏦 **Menu**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose the action:"
         
         keyboard = [
-            [InlineKeyboardButton("Deposit", callback_data="deposit_mock"),
-             InlineKeyboardButton("Withdraw", callback_data="withdraw_mock")]
+            [InlineKeyboardButton("🎮 Play", callback_data="menu_play")],
+            [InlineKeyboardButton("💳 Deposit", callback_data="deposit_mock"),
+             InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")],
+            [InlineKeyboardButton("🎁 Bonuses", callback_data="menu_bonuses"),
+             InlineKeyboardButton("📚 More Content", callback_data="menu_more_content")],
+            [InlineKeyboardButton("📞 Contact Support", callback_data="menu_support")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -5601,7 +5575,149 @@ Your balance will be credited automatically after confirmations.
                 return
 
             elif data == "back_to_menu":
-                await query.edit_message_text("Use /start to see the main menu.", parse_mode="Markdown")
+                user_data = self.db.get_user(user_id)
+                balance_text = f"🏦 **Menu**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose the action:"
+                
+                keyboard = [
+                    [InlineKeyboardButton("🎮 Play", callback_data="menu_play")],
+                    [InlineKeyboardButton("💳 Deposit", callback_data="deposit_mock"),
+                     InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")],
+                    [InlineKeyboardButton("🎁 Bonuses", callback_data="menu_bonuses"),
+                     InlineKeyboardButton("📚 More Content", callback_data="menu_more_content")],
+                    [InlineKeyboardButton("📞 Contact Support", callback_data="menu_support")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(balance_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "menu_play":
+                game_menu_text = "🎮 **Game Menu**\n\nChoose the game you want to play:"
+                
+                keyboard = [
+                    [InlineKeyboardButton("🎲 Dice", callback_data="game_info_dice")],
+                    [InlineKeyboardButton("🎰 Slots", callback_data="game_info_slots")],
+                    [InlineKeyboardButton("🔮 Dice Prediction", callback_data="game_info_predict")],
+                    [InlineKeyboardButton("🎡 Roulette", callback_data="game_info_roulette")],
+                    [InlineKeyboardButton("🪙 Coinflip", callback_data="game_info_coinflip")],
+                    [InlineKeyboardButton("🎯 Darts", callback_data="game_info_darts")],
+                    [InlineKeyboardButton("🏀 Basketball", callback_data="game_info_basketball")],
+                    [InlineKeyboardButton("⚽ Soccer", callback_data="game_info_soccer")],
+                    [InlineKeyboardButton("🎳 Bowling", callback_data="game_info_bowling")],
+                    [InlineKeyboardButton("♠️ Blackjack", callback_data="game_info_blackjack")],
+                    [InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(game_menu_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "menu_more_content":
+                more_content_text = "📚 **More Content**"
+                
+                keyboard = [
+                    [InlineKeyboardButton("📊 Your Statistics", callback_data="more_stats"),
+                     InlineKeyboardButton("📅 Matches History", callback_data="more_history")],
+                    [InlineKeyboardButton("🏆 Leaderboard", callback_data="more_leaderboard")],
+                    [InlineKeyboardButton("🎟️ Raffle", callback_data="more_raffle")],
+                    [InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(more_content_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "menu_bonuses":
+                user_data = self.db.get_user(user_id)
+                bonus_text = "🎁 **Bonus**\n\n"
+                bonus_text += "In this section you can find bonuses that you can get by playing games!\n\n"
+                bonus_text += "💎 **Rakeback**\n"
+                bonus_text += "Play games and claim your rakeback bonus anytime!\n\n"
+                bonus_text += "💎 **Level Up Bonus**\n"
+                bonus_text += "Play games, level up and earn money!"
+                
+                keyboard = [
+                    [
+                        InlineKeyboardButton("🎁 Rakeback", callback_data="view_rakeback"),
+                        InlineKeyboardButton("🎁 Level Up Bonus", callback_data="view_level_bonus")
+                    ],
+                    [InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")]
+                ]
+                
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(bonus_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "menu_support":
+                support_text = """📞 **Support**
+
+Need help? Contact our support team:
+
+🔹 Telegram: @GranTeseroSupport
+🔹 Issues with deposits/withdrawals
+🔹 Questions about games
+🔹 Report bugs or problems
+
+We're here to help 24/7!"""
+                
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(support_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "more_stats":
+                user_data = self.db.get_user(user_id)
+                games_played = user_data.get('games_played', 0)
+                games_won = user_data.get('games_won', 0)
+                win_rate = (games_won / games_played * 100) if games_played > 0 else 0
+                total_wagered = user_data.get('total_wagered', 0)
+                total_pnl = user_data.get('total_pnl', 0)
+                total_won = total_wagered + total_pnl if total_pnl > 0 else total_wagered
+                
+                current_level = get_user_level(total_wagered, user_id, self.db)
+                next_level = get_next_level(total_wagered)
+                
+                stats_text = f"""{current_level['emoji']} **Level: {current_level['name']}**
+
+🎮 Games Played: {games_played}
+🏆 Win Rate: {win_rate:.0f}%
+💵 Total Wagered: ${total_wagered:.2f}
+💰 Total Won: ${total_won:.2f}"""
+
+                if next_level:
+                    progress = total_wagered / next_level['threshold'] * 100
+                    remaining = next_level['threshold'] - total_wagered
+                    stats_text += f"\n\n📈 **Next: {next_level['emoji']} {next_level['name']}**\nProgress: {progress:.1f}% (${remaining:.2f} more)"
+                
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="menu_more_content")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(stats_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "more_history":
+                await self._show_history_page(query.message, user_id, 1, edit_message=True)
+            
+            elif data == "more_leaderboard":
+                await self.show_leaderboard_wagered(update)
+            
+            elif data == "more_raffle":
+                raffle_text = "🎟️ **Raffle**\n\nRaffle feature coming soon! Stay tuned for exciting prizes."
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="menu_more_content")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(raffle_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data.startswith("game_info_"):
+                game_name = data.replace("game_info_", "")
+                game_info = {
+                    "dice": ("🎲 **Dice**", "Roll the dice against the bot!\n\nUsage: `/dice <amount>`\nExample: `/dice 10`"),
+                    "slots": ("🎰 **Slots**", "Spin the slot machine!\n\n• 777 Jackpot: 22x\n• Three of a kind: 8x\n• Two 7s: 2x\n\nUsage: `/slots <amount>`\nExample: `/slots 10`"),
+                    "predict": ("🔮 **Dice Prediction**", "Predict the dice roll (1-6) for 6x payout!\n\nUsage: `/predict <amount> #<number>`\nExample: `/predict 10 #6`"),
+                    "roulette": ("🎡 **Roulette**", "Bet on red, black, green, odd, even, or specific numbers!\n\nUsage: `/roulette <amount>`\nExample: `/roulette 10`"),
+                    "coinflip": ("🪙 **Coinflip**", "Flip a coin - heads or tails!\n\nUsage: `/flip <amount>`\nExample: `/flip 10`"),
+                    "darts": ("🎯 **Darts**", "Throw darts against the bot!\n\nUsage: `/darts <amount>`\nExample: `/darts 10`"),
+                    "basketball": ("🏀 **Basketball**", "Shoot hoops against the bot!\n\nUsage: `/basketball <amount>`\nExample: `/basketball 10`"),
+                    "soccer": ("⚽ **Soccer**", "Play soccer against the bot!\n\nUsage: `/soccer <amount>`\nExample: `/soccer 10`"),
+                    "bowling": ("🎳 **Bowling**", "Go bowling against the bot!\n\nUsage: `/bowling <amount>`\nExample: `/bowling 10`"),
+                    "blackjack": ("♠️ **Blackjack**", "Play blackjack with standard casino rules!\n\nUsage: `/blackjack <amount>`\nExample: `/blackjack 10`")
+                }
+                
+                title, description = game_info.get(game_name, ("Unknown Game", "Game not found."))
+                game_text = f"{title}\n\n{description}"
+                
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="menu_play")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(game_text, reply_markup=reply_markup, parse_mode="Markdown")
 
             # Deposit/Withdrawal buttons
             elif data == "deposit_mock":
