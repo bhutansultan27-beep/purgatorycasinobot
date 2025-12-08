@@ -3725,11 +3725,7 @@ Total Won: ${total_won:,.2f}"""
             message += f"**Cards Left:** {state['cards_remaining']}\n"
             message += f"**Round:** {state['round_number']}\n"
             message += f"**Multiplier:** {state['current_multiplier']:.2f}x\n"
-            message += f"**Potential Payout:** ${state['potential_payout']:.2f}\n\n"
-            message += f"**Odds:**\n"
-            message += f"⬆️ Higher: {odds['higher']['probability']:.1f}% ({odds['higher']['multiplier']:.2f}x)\n"
-            message += f"⬇️ Lower: {odds['lower']['probability']:.1f}% ({odds['lower']['multiplier']:.2f}x)\n"
-            message += f"🔄 Tie: {odds['tie']['probability']:.1f}% ({odds['tie']['multiplier']:.2f}x)"
+            message += f"**Potential Payout:** ${state['potential_payout']:.2f}"
         
         reply_markup = self._build_hilo_keyboard(game) if user_id in self.hilo_sessions else self._build_hilo_keyboard(game)
         
