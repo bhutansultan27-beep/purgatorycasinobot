@@ -530,9 +530,12 @@ class GranTeseroCasinoBot:
         # Dictionary to store active Connect 4 games: game_id -> Connect4Game instance
         self.connect4_sessions: Dict[str, Connect4Game] = {}
         
-        # Game timeout tracking: game_key -> asyncio.Task
+        # Game timeout tracking: game_key -> (asyncio.Task, token)
         # game_key format: "type_user_id" (e.g., "blackjack_123456", "connect4_gameid", "pvp_gameid")
-        self.game_timeout_tasks: Dict[str, asyncio.Task] = {}
+        self.game_timeout_tasks: Dict[str, tuple] = {}
+        
+        # Timeout token counter to prevent duplicate processing
+        self.timeout_token_counter = 0
         
         # Timeout duration in seconds
         self.GAME_TIMEOUT_SECONDS = 30
@@ -608,24 +611,28 @@ class GranTeseroCasinoBot:
         """Start a 30-second timeout for a game. If time expires, player forfeits."""
         self.cancel_game_timeout(game_key)
         
+        self.timeout_token_counter += 1
+        token = self.timeout_token_counter
+        
         async def timeout_handler():
             try:
                 await asyncio.sleep(self.GAME_TIMEOUT_SECONDS)
                 await self.handle_game_timeout(game_key, game_type, user_id, chat_id, 
-                                               wager, is_pvp, opponent_id, game_id, bot)
+                                               wager, is_pvp, opponent_id, game_id, bot, token)
             except asyncio.CancelledError:
                 pass
         
         task = asyncio.create_task(timeout_handler())
-        self.game_timeout_tasks[game_key] = task
-        logger.info(f"[TIMEOUT] Started {self.GAME_TIMEOUT_SECONDS}s timeout for {game_key}")
+        self.game_timeout_tasks[game_key] = (task, token)
+        logger.info(f"[TIMEOUT] Started {self.GAME_TIMEOUT_SECONDS}s timeout for {game_key} (token={token})")
 
     def cancel_game_timeout(self, game_key: str):
         """Cancel an existing timeout for a game."""
         if game_key in self.game_timeout_tasks:
-            self.game_timeout_tasks[game_key].cancel()
+            task, token = self.game_timeout_tasks[game_key]
+            task.cancel()
             del self.game_timeout_tasks[game_key]
-            logger.info(f"[TIMEOUT] Cancelled timeout for {game_key}")
+            logger.info(f"[TIMEOUT] Cancelled timeout for {game_key} (token={token})")
 
     def reset_game_timeout(self, game_key: str, game_type: str, user_id: int, chat_id: int,
                            wager: float, is_pvp: bool = False, opponent_id: int = None,
@@ -636,12 +643,20 @@ class GranTeseroCasinoBot:
 
     async def handle_game_timeout(self, game_key: str, game_type: str, user_id: int, 
                                    chat_id: int, wager: float, is_pvp: bool = False,
-                                   opponent_id: int = None, game_id: str = None, bot = None):
+                                   opponent_id: int = None, game_id: str = None, bot = None,
+                                   token: int = None):
         """Handle game timeout - forfeit wager to house, refund opponent in PvP."""
-        logger.info(f"[TIMEOUT] Game timeout triggered for {game_key}")
+        logger.info(f"[TIMEOUT] Game timeout triggered for {game_key} (token={token})")
         
         if game_key in self.game_timeout_tasks:
+            stored_task, stored_token = self.game_timeout_tasks[game_key]
+            if token != stored_token:
+                logger.info(f"[TIMEOUT] Ignoring stale timeout for {game_key} (token={token}, current={stored_token})")
+                return
             del self.game_timeout_tasks[game_key]
+        else:
+            logger.info(f"[TIMEOUT] Ignoring timeout for {game_key} - already processed or cancelled")
+            return
         
         user_data = self.db.get_user(user_id)
         username = user_data.get('username', f'User{user_id}')
@@ -680,6 +695,18 @@ class GranTeseroCasinoBot:
                 
                 self.db.add_transaction(user_id, "hilo_timeout", -forfeit_amount,
                                         f"Hi-Lo timeout - Forfeited ${forfeit_amount:.2f}")
+                
+                self.db.record_game({
+                    'type': 'hilo',
+                    'player_id': user_id,
+                    'username': username,
+                    'wager': forfeit_amount,
+                    'rounds': game.round_number,
+                    'result': 'timeout',
+                    'outcome': 'loss',
+                    'payout': 0,
+                    'balance_after': user_data['balance']
+                })
                 
                 if bot:
                     await bot.send_message(
@@ -741,6 +768,20 @@ class GranTeseroCasinoBot:
                     self.db.add_transaction(user_id, "mines_timeout", -forfeit_amount,
                                             f"Mines timeout - Forfeited ${forfeit_amount:.2f}")
                     
+                    self.db.record_game({
+                        'type': 'mines',
+                        'player_id': user_id,
+                        'username': username,
+                        'wager': forfeit_amount,
+                        'num_mines': game.num_mines,
+                        'tiles_revealed': 0,
+                        'multiplier': 1.0,
+                        'payout': 0,
+                        'result': 'timeout',
+                        'outcome': 'loss',
+                        'balance_after': user_data['balance']
+                    })
+                    
                     if bot:
                         await bot.send_message(
                             chat_id=chat_id,
@@ -758,6 +799,21 @@ class GranTeseroCasinoBot:
                 
                 self.db.add_transaction(user_id, "keno_timeout", -forfeit_amount,
                                         f"Keno timeout - Forfeited ${forfeit_amount:.2f}")
+                
+                self.db.record_game({
+                    'type': 'keno',
+                    'player_id': user_id,
+                    'username': username,
+                    'wager': forfeit_amount,
+                    'picks': list(game.picked_numbers),
+                    'drawn': [],
+                    'hits': 0,
+                    'multiplier': 0,
+                    'payout': 0,
+                    'result': 'timeout',
+                    'outcome': 'loss',
+                    'balance_after': user_data['balance']
+                })
                 
                 if bot:
                     await bot.send_message(
@@ -790,6 +846,21 @@ class GranTeseroCasinoBot:
                                         f"Connect 4 timeout - Forfeited ${game.wager:.2f}")
                 self.db.add_transaction(active_id, "connect4_refund", game.wager,
                                         f"Connect 4 refund - Opponent timed out")
+                
+                inactive_data = self.db.get_user(inactive_id)
+                self.db.record_game({
+                    'type': 'connect4',
+                    'player1_id': game.player1_id,
+                    'player2_id': game.player2_id,
+                    'winner_id': active_id,
+                    'loser_id': inactive_id,
+                    'wager': game.wager,
+                    'result': 'timeout',
+                    'winner_payout': game.wager,
+                    'loser_loss': game.wager,
+                    'balance_after_winner': active_data['balance'],
+                    'balance_after_loser': inactive_data['balance']
+                })
                 
                 del self.connect4_sessions[game_id]
                 

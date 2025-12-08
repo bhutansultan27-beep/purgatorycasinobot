@@ -59,11 +59,15 @@ The bot implements a 30-second inactivity timeout for all turn-based games to pr
 - **Behavior**: 
   - Solo games (blackjack, mines, keno, hilo): Wager is forfeited to the house
   - PvP games (connect4): Active player receives refund, inactive player forfeits to house
+  - **Mines special case**: If tiles have been revealed, player receives auto-cashout instead of forfeit
 - **Implementation Details**:
-  - Uses asyncio tasks stored in `game_timeouts` dictionary, keyed by game type and user/game ID
+  - Uses asyncio tasks stored in `game_timeout_tasks` dictionary as tuples of (task, token)
+  - **Token System**: Each timeout is assigned a unique incrementing token to prevent race conditions
+  - When a timeout fires, it verifies its token matches the current stored token before processing
+  - This prevents duplicate timeout processing when timeouts are rapidly reset
   - Timeout resets on each player action
   - Timeout cancels when game ends naturally
-  - `forfeit_game()` method handles the forfeit logic for each game type
+  - All timeout outcomes (forfeit, auto-cashout) are recorded via `record_game()` for match history
   - Game property names: MinesGame/KenoGame/HiLoGame use `wager`, BlackjackGame uses `initial_bet`
 
 ## External Dependencies
