@@ -964,7 +964,9 @@ Welcome to the casino!
         """Show player statistics"""
         user_data = self.ensure_user_registered(update)
         user_id = update.effective_user.id
+        username = update.effective_user.username or f"User{user_id}"
         
+        balance = user_data.get('balance', 0)
         games_played = user_data.get('games_played', 0)
         games_won = user_data.get('games_won', 0)
         win_rate = (games_won / games_played * 100) if games_played > 0 else 0
@@ -973,34 +975,18 @@ Welcome to the casino!
         total_won = total_wagered + total_pnl if total_pnl > 0 else total_wagered
         
         current_level = get_user_level(total_wagered, user_id, self.db)
-        next_level = get_next_level(total_wagered)
         
-        join_date = user_data.get('join_date')
-        first_game = user_data.get('first_wager_date')
-        last_game = user_data.get('last_game_date')
-        
-        def format_date(date_str):
-            if not date_str:
-                return "N/A"
-            try:
-                dt = datetime.fromisoformat(date_str)
-                return dt.strftime("%b %d, %Y")
-            except:
-                return "N/A"
-        
-        stats_text = f"""{current_level['emoji']} **Level: {current_level['name']}**
+        stats_text = f"""ℹ️ Stats of {username}
 
-🎮 Games Played: {games_played}
-🏆 Win Rate: {win_rate:.0f}%
-💵 Total Wagered: ${total_wagered:.2f}
-💰 Total Won: ${total_won:.2f}"""
+💰 Balance: ${balance:.2f}
 
-        if next_level:
-            progress = total_wagered / next_level['threshold'] * 100
-            remaining = next_level['threshold'] - total_wagered
-            stats_text += f"\n\n📈 **Next: {next_level['emoji']} {next_level['name']}**\nProgress: {progress:.1f}% (${remaining:.2f} more)"
+Level: {current_level['emoji']} {current_level['name']}
+Games Played: {games_played}
+Wins: {games_won} ({win_rate:.2f}%)
+Total Wagered: ${total_wagered:,.2f}
+Total Won: ${total_won:,.2f}"""
         
-        keyboard = [[InlineKeyboardButton("🔙 Back", callback_data="back_to_menu")]]
+        keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(stats_text, reply_markup=reply_markup, parse_mode="Markdown")
@@ -5677,6 +5663,8 @@ We're here to help 24/7!"""
             
             elif data == "more_stats":
                 user_data = self.db.get_user(user_id)
+                username = user_data.get('username', f"User{user_id}")
+                balance = user_data.get('balance', 0)
                 games_played = user_data.get('games_played', 0)
                 games_won = user_data.get('games_won', 0)
                 win_rate = (games_won / games_played * 100) if games_played > 0 else 0
@@ -5685,19 +5673,16 @@ We're here to help 24/7!"""
                 total_won = total_wagered + total_pnl if total_pnl > 0 else total_wagered
                 
                 current_level = get_user_level(total_wagered, user_id, self.db)
-                next_level = get_next_level(total_wagered)
                 
-                stats_text = f"""{current_level['emoji']} **Level: {current_level['name']}**
+                stats_text = f"""ℹ️ Stats of {username}
 
-🎮 Games Played: {games_played}
-🏆 Win Rate: {win_rate:.0f}%
-💵 Total Wagered: ${total_wagered:.2f}
-💰 Total Won: ${total_won:.2f}"""
+💰 Balance: ${balance:.2f}
 
-                if next_level:
-                    progress = total_wagered / next_level['threshold'] * 100
-                    remaining = next_level['threshold'] - total_wagered
-                    stats_text += f"\n\n📈 **Next: {next_level['emoji']} {next_level['name']}**\nProgress: {progress:.1f}% (${remaining:.2f} more)"
+Level: {current_level['emoji']} {current_level['name']}
+Games Played: {games_played}
+Wins: {games_won} ({win_rate:.2f}%)
+Total Wagered: ${total_wagered:,.2f}
+Total Won: ${total_won:,.2f}"""
                 
                 keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="menu_more_content")]]
                 reply_markup = InlineKeyboardMarkup(keyboard)
