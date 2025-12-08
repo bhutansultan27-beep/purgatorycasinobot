@@ -1051,7 +1051,7 @@ Total Won: ${total_won:,.2f}"""
             keyboard.append(nav_buttons)
         
         keyboard.append([InlineKeyboardButton("🎁 Claim Bonus", callback_data="view_level_bonus")])
-        keyboard.append([InlineKeyboardButton("🔙 Back", callback_data="back_to_menu")])
+        keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
         
         return levels_text, InlineKeyboardMarkup(keyboard)
     
@@ -5846,7 +5846,7 @@ Total Won: ${total_won:,.2f}"""
                         row = []
                 if row:
                     keyboard.append(row)
-                keyboard.append([InlineKeyboardButton("Cancel", callback_data="deposit_cancel")])
+                keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
                 
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
@@ -5871,7 +5871,7 @@ Total Won: ${total_won:,.2f}"""
                             row = []
                     if row:
                         keyboard.append(row)
-                    keyboard.append([InlineKeyboardButton("Cancel", callback_data="withdraw_cancel")])
+                    keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
                     reply_markup = InlineKeyboardMarkup(keyboard)
                     await query.edit_message_text(
                         f"Your balance: **${user_data['balance']:.2f}**\n\nSelect withdrawal currency:",
