@@ -10,6 +10,14 @@ The user prefers that all game results are displayed in a simplified, clean form
 
 **Important: The bot runs on Webdock (external VPS), NOT on Replit. Do not start or run the bot workflow on Replit as it will conflict with the production instance on Webdock. Replit is used only for code editing and development.**
 
+### Replit Workflow Configuration
+
+The "Casino Bot" workflow is configured but intentionally disabled. The workflow will show as "FAILED" status—this is expected and correct. The bot runs exclusively on the external Webdock VPS server, so:
+
+- ✅ Use Replit for: Code editing, viewing files, making changes
+- ❌ Do NOT use Replit for: Running the bot, testing live functionality
+- All code changes should be deployed to the Webdock VPS to take effect
+
 ## System Architecture
 
 The Gran Tesero Casino Bot is built using Python and the `python-telegram-bot` library, leveraging an asynchronous programming model for performance.
