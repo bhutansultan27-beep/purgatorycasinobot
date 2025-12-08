@@ -3229,52 +3229,40 @@ Your balance will be credited automatically after confirmations."""
     # --- ADMIN COMMANDS ---
     
     async def admin_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Check if user is an admin"""
+        """Show admin menu with buttons"""
         user_id = update.effective_user.id
         
         if self.is_admin(user_id):
             is_env_admin = user_id in self.env_admin_ids
             admin_type = "Permanent Admin" if is_env_admin else "Dynamic Admin"
             
-            admin_text = f"""✅ You are a {admin_type}!
+            house_balance = self.db.get_house_balance()
+            total_users = len(self.db.data.get('users', {}))
+            pending_withdraws = len([w for w in self.db.data.get('pending_withdrawals', []) if w.get('status') == 'pending'])
+            
+            admin_text = f"""🔐 **Admin Panel**
 
-📋 Admin Commands:
+You are a **{admin_type}**
 
-💰 Balance Management:
-• /givebal [@user or ID] [amount] - Give money
-• /setbal [@user or ID] [amount] - Set balance
-• /adddeposit [@user or ID] [amount] - Credit deposit
-• /sethousebal [amount] - Set house balance
+🏦 House Balance: **${house_balance:,.2f}**
+👥 Total Users: **{total_users}**
+💸 Pending Withdrawals: **{pending_withdraws}**
 
-👥 User Management:
-• /allusers - View all registered users
-• /allbalances - View all player balances
-• /userinfo [@user or ID] - View detailed user info
-
-👑 Admin Management:
-• /addadmin [user_id] - Make someone an admin
-• /removeadmin [user_id] - Remove admin access
-• /listadmins - List all admins
-
-💼 Withdrawal Approvers:
-• /addapprover [user_id] - Add withdrawal approver
-• /removeapprover [user_id] - Remove approver
-• /listapprovers - List all approvers
-
-💳 Wallet & Transactions:
-• /walletbal - View crypto wallet balances
-• /pendingdeposits - View pending deposits
-• /pendingwithdraws - View pending withdrawals
-• /biggestdeposits - View biggest deposits
-
-🛠️ System:
-• /backup - Download database backup
-• /saveroulette - Save roulette stickers
-
-Examples:
-/givebal @john 100
-/setbal 123456789 500"""
-            await update.message.reply_text(admin_text)
+Choose an option:"""
+            
+            keyboard = [
+                [InlineKeyboardButton("💰 Balance Management", callback_data="admin_balance_mgmt")],
+                [InlineKeyboardButton("👥 User Management", callback_data="admin_user_mgmt")],
+                [InlineKeyboardButton("💸 Withdrawals", callback_data="admin_withdrawals"),
+                 InlineKeyboardButton("💳 Deposits", callback_data="admin_deposits")],
+                [InlineKeyboardButton("👑 Admin Management", callback_data="admin_admin_mgmt")],
+                [InlineKeyboardButton("🛠️ System", callback_data="admin_system")],
+                [InlineKeyboardButton("📋 All Commands", callback_data="admin_all_commands")]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            sent_msg = await update.message.reply_text(admin_text, reply_markup=reply_markup, parse_mode="Markdown")
+            self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
         else:
             await update.message.reply_text("❌ You are not an admin.")
     
@@ -5752,6 +5740,323 @@ We're here to help 24/7!"""
                 keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")]]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(support_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            # --- ADMIN MENU CALLBACKS ---
+            elif data == "back_to_admin_menu":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                is_env_admin = user_id in self.env_admin_ids
+                admin_type = "Permanent Admin" if is_env_admin else "Dynamic Admin"
+                
+                house_balance = self.db.get_house_balance()
+                total_users = len(self.db.data.get('users', {}))
+                pending_withdraws = len([w for w in self.db.data.get('pending_withdrawals', []) if w.get('status') == 'pending'])
+                
+                admin_text = f"""🔐 **Admin Panel**
+
+You are a **{admin_type}**
+
+🏦 House Balance: **${house_balance:,.2f}**
+👥 Total Users: **{total_users}**
+💸 Pending Withdrawals: **{pending_withdraws}**
+
+Choose an option:"""
+                
+                keyboard = [
+                    [InlineKeyboardButton("💰 Balance Management", callback_data="admin_balance_mgmt")],
+                    [InlineKeyboardButton("👥 User Management", callback_data="admin_user_mgmt")],
+                    [InlineKeyboardButton("💸 Withdrawals", callback_data="admin_withdrawals"),
+                     InlineKeyboardButton("💳 Deposits", callback_data="admin_deposits")],
+                    [InlineKeyboardButton("👑 Admin Management", callback_data="admin_admin_mgmt")],
+                    [InlineKeyboardButton("🛠️ System", callback_data="admin_system")],
+                    [InlineKeyboardButton("📋 All Commands", callback_data="admin_all_commands")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(admin_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "admin_balance_mgmt":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                balance_text = """💰 **Balance Management**
+
+Commands to manage user balances:
+
+• `/givebal @user amount` - Give money to user
+• `/setbal @user amount` - Set user's balance
+• `/adddeposit @user amount` - Credit a deposit
+• `/sethousebal amount` - Set house balance
+
+Examples:
+`/givebal @john 100`
+`/setbal 123456789 500`"""
+                
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="back_to_admin_menu")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(balance_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "admin_user_mgmt":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                total_users = len(self.db.data.get('users', {}))
+                total_balance = sum(u.get('balance', 0) for u in self.db.data.get('users', {}).values())
+                
+                user_text = f"""👥 **User Management**
+
+📊 **Stats:**
+Total Users: **{total_users}**
+Total Balances: **${total_balance:,.2f}**
+
+Commands:
+• `/allusers` - View all registered users
+• `/allbalances` - View all player balances
+• `/userinfo @user` - View detailed user info
+• `/userid @user` - Get user's ID
+• `/userhistory @user` - View user's game history"""
+                
+                keyboard = [
+                    [InlineKeyboardButton("📋 View All Users", callback_data="admin_view_all_users")],
+                    [InlineKeyboardButton("💰 View All Balances", callback_data="admin_view_all_balances")],
+                    [InlineKeyboardButton("⬅️ Back", callback_data="back_to_admin_menu")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(user_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "admin_view_all_users":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                users = list(self.db.data.get('users', {}).values())[:20]
+                if not users:
+                    text = "👥 **All Users**\n\nNo users registered yet."
+                else:
+                    text = "👥 **All Users** (Top 20)\n\n"
+                    for i, u in enumerate(users, 1):
+                        username = u.get('username', f"User{u['user_id']}")
+                        text += f"{i}. @{username} (ID: `{u['user_id']}`)\n"
+                
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="admin_user_mgmt")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "admin_view_all_balances":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                users = sorted(self.db.data.get('users', {}).values(), key=lambda x: x.get('balance', 0), reverse=True)[:20]
+                if not users:
+                    text = "💰 **All Balances**\n\nNo users registered yet."
+                else:
+                    text = "💰 **All Balances** (Top 20)\n\n"
+                    for i, u in enumerate(users, 1):
+                        username = u.get('username', f"User{u['user_id']}")
+                        balance = u.get('balance', 0)
+                        text += f"{i}. @{username}: **${balance:,.2f}**\n"
+                
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="admin_user_mgmt")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "admin_withdrawals":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                pending = [w for w in self.db.data.get('pending_withdrawals', []) if w.get('status') == 'pending']
+                
+                if pending:
+                    text = f"💸 **Pending Withdrawals** ({len(pending)})\n\n"
+                    for i, w in enumerate(pending[:10], 1):
+                        username = w.get('username', f"User{w['user_id']}")
+                        amount = w.get('amount', 0)
+                        currency = w.get('currency', 'LTC')
+                        text += f"{i}. @{username}: **${amount:.2f}** ({currency})\n"
+                    if len(pending) > 10:
+                        text += f"\n... and {len(pending) - 10} more"
+                else:
+                    text = "💸 **Pending Withdrawals**\n\nNo pending withdrawals."
+                
+                text += "\n\nCommands:\n• `/pendingwithdraws` - Detailed view"
+                
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="back_to_admin_menu")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "admin_deposits":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                deposits = self.db.get_biggest_deposits("week")[:10]
+                
+                if deposits:
+                    text = "💳 **Recent Deposits** (This Week)\n\n"
+                    for i, d in enumerate(deposits, 1):
+                        username = d.get('username', f"User{d['user_id']}")
+                        amount = d.get('amount', 0)
+                        text += f"{i}. @{username}: **${amount:,.2f}**\n"
+                else:
+                    text = "💳 **Recent Deposits**\n\nNo deposits this week."
+                
+                text += "\n\nCommands:\n• `/pendingdeposits` - View pending deposits\n• `/biggestdeposits` - All-time biggest"
+                
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="back_to_admin_menu")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "admin_admin_mgmt":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                env_count = len(self.env_admin_ids)
+                dyn_count = len(self.dynamic_admin_ids)
+                approver_count = len(self.withdrawal_approvers)
+                
+                text = f"""👑 **Admin Management**
+
+📊 **Current Admins:**
+Permanent Admins: **{env_count}**
+Dynamic Admins: **{dyn_count}**
+Withdrawal Approvers: **{approver_count}**
+
+Commands:
+• `/addadmin user_id` - Add new admin
+• `/removeadmin user_id` - Remove admin
+• `/listadmins` - List all admins
+• `/addapprover user_id` - Add withdrawal approver
+• `/removeapprover user_id` - Remove approver
+• `/listapprovers` - List all approvers"""
+                
+                keyboard = [
+                    [InlineKeyboardButton("📋 List Admins", callback_data="admin_list_admins")],
+                    [InlineKeyboardButton("📋 List Approvers", callback_data="admin_list_approvers")],
+                    [InlineKeyboardButton("⬅️ Back", callback_data="back_to_admin_menu")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "admin_list_admins":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                text = "👑 **All Admins**\n\n"
+                
+                if self.env_admin_ids:
+                    text += "**Permanent Admins:**\n"
+                    for aid in sorted(self.env_admin_ids):
+                        text += f"• `{aid}`\n"
+                
+                if self.dynamic_admin_ids:
+                    text += "\n**Dynamic Admins:**\n"
+                    for aid in sorted(self.dynamic_admin_ids):
+                        text += f"• `{aid}`\n"
+                
+                if not self.env_admin_ids and not self.dynamic_admin_ids:
+                    text += "No admins configured."
+                
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="admin_admin_mgmt")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "admin_list_approvers":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                text = "💼 **Withdrawal Approvers**\n\n"
+                
+                if self.withdrawal_approvers:
+                    for aid in sorted(self.withdrawal_approvers):
+                        text += f"• `{aid}`\n"
+                else:
+                    text += "No approvers configured."
+                
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="admin_admin_mgmt")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "admin_system":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                house_balance = self.db.get_house_balance()
+                
+                text = f"""🛠️ **System**
+
+🏦 House Balance: **${house_balance:,.2f}**
+
+Commands:
+• `/backup` - Download database backup
+• `/sethousebal amount` - Set house balance
+• `/housebal` - View house balance
+• `/saveroulette` - Save roulette stickers
+• `/ltcrate` - View LTC rate
+• `/setltcrate price` - Set manual LTC rate"""
+                
+                keyboard = [
+                    [InlineKeyboardButton("💾 Create Backup", callback_data="admin_backup")],
+                    [InlineKeyboardButton("⬅️ Back", callback_data="back_to_admin_menu")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "admin_backup":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                await query.answer("Creating backup... Use /backup command for file download.", show_alert=True)
+            
+            elif data == "admin_all_commands":
+                if not self.is_admin(user_id):
+                    await query.answer("❌ Admin only.", show_alert=True)
+                    return
+                
+                text = """📋 **All Admin Commands**
+
+**Balance:**
+• `/givebal @user amount`
+• `/setbal @user amount`
+• `/adddeposit @user amount`
+• `/sethousebal amount`
+
+**Users:**
+• `/allusers` • `/allbalances`
+• `/userinfo @user` • `/userid @user`
+• `/userhistory @user`
+
+**Admins:**
+• `/addadmin ID` • `/removeadmin ID`
+• `/listadmins`
+
+**Approvers:**
+• `/addapprover ID` • `/removeapprover ID`
+• `/listapprovers`
+
+**Transactions:**
+• `/pendingdeposits`
+• `/pendingwithdraws`
+• `/biggestdeposits`
+• `/walletbal`
+
+**System:**
+• `/backup` • `/housebal`
+• `/ltcrate` • `/setltcrate price`
+• `/saveroulette`"""
+                
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="back_to_admin_menu")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(text, reply_markup=reply_markup, parse_mode="Markdown")
             
             elif data == "more_stats":
                 user_data = self.db.get_user(user_id)
