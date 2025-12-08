@@ -730,8 +730,7 @@ class GranTeseroCasinoBot:
                     if bot:
                         await bot.send_message(
                             chat_id=chat_id,
-                            text=f"⏰ @{username} timed out - auto cashout!\n"
-                                 f"💰 Credited **${cashout_amount:.2f}** ({game.current_multiplier:.2f}x)",
+                            text=f"@{username} timed out - won ${cashout_amount:.2f}",
                             parse_mode="Markdown"
                         )
                 else:
