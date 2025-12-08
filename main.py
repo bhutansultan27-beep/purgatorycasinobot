@@ -2799,7 +2799,10 @@ Your balance will be credited automatically after confirmations."""
             currency = context.user_data.get('pending_withdraw_method', 'ltc').upper()
             crypto_info = SUPPORTED_WITHDRAWAL_CRYPTOS.get(currency, {'name': currency})
             
-            keyboard = [[InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]]
+            keyboard = [
+                [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_amount")],
+                [InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]
+            ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
             sent_msg = await update.message.reply_text(
@@ -2818,7 +2821,10 @@ Your balance will be credited automatically after confirmations."""
             crypto_info = SUPPORTED_WITHDRAWAL_CRYPTOS.get(currency, {'name': currency})
             
             if len(wallet_address) < 20:
-                keyboard = [[InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]]
+                keyboard = [
+                    [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_amount")],
+                    [InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]
+                ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
                 sent_msg = await update.message.reply_text(
@@ -5905,7 +5911,10 @@ Total Won: ${total_won:,.2f}"""
                 
                 context.user_data['pending_withdraw_method'] = currency.lower()
                 
-                keyboard = [[InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]]
+                keyboard = [
+                    [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_currency")],
+                    [InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]
+                ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
                 await query.edit_message_text(
@@ -5922,6 +5931,51 @@ Total Won: ${total_won:,.2f}"""
                 context.user_data.pop('pending_withdraw_method', None)
                 context.user_data.pop('pending_withdraw_amount', None)
                 await query.edit_message_text("Withdraw cancelled.")
+            
+            elif data == "withdraw_back_to_currency":
+                # Clear pending state and go back to currency selection
+                context.user_data.pop('pending_withdraw_method', None)
+                context.user_data.pop('pending_withdraw_amount', None)
+                
+                user_data = self.db.get_user(user_id)
+                keyboard = []
+                row = []
+                for code in SUPPORTED_WITHDRAWAL_CRYPTOS.keys():
+                    btn = InlineKeyboardButton(code, callback_data=f"withdraw_method_{code.lower()}")
+                    row.append(btn)
+                    if len(row) == 3:
+                        keyboard.append(row)
+                        row = []
+                if row:
+                    keyboard.append(row)
+                keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(
+                    f"Your balance: **${user_data['balance']:.2f}**\n\nSelect withdrawal currency:",
+                    parse_mode="Markdown",
+                    reply_markup=reply_markup
+                )
+            
+            elif data == "withdraw_back_to_amount":
+                # Clear amount and go back to entering amount
+                context.user_data.pop('pending_withdraw_amount', None)
+                currency = context.user_data.get('pending_withdraw_method', 'ltc').upper()
+                crypto_info = SUPPORTED_WITHDRAWAL_CRYPTOS.get(currency, {'name': currency})
+                
+                user_data = self.db.get_user(user_id)
+                balance = user_data['balance']
+                
+                keyboard = [
+                    [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_currency")],
+                    [InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                await query.edit_message_text(
+                    f"💸 **Withdraw {crypto_info['name']}**\n\nYour balance: **${balance:.2f}**\n\nEnter the amount you want to withdraw:",
+                    parse_mode="Markdown",
+                    reply_markup=reply_markup
+                )
             
             elif data.startswith("withdraw_approve_"):
                 parts = data.split('_')
