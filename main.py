@@ -2369,12 +2369,14 @@ Total Won: ${total_won:,.2f}"""
                 'balance_after': user_data['balance']
             })
             
+            # Store original bet before removing session
+            original_bet = game.initial_bet
+            
             # Remove session
             del self.blackjack_sessions[user_id]
             
-            # Add Play Again button with the same bet amount
-            total_bet = sum(h['bet'] for h in state['player_hands'])
-            keyboard = [[InlineKeyboardButton(f"🔄 Play Again (${total_bet:.2f})", callback_data=f"bj_{user_id}_playagain_{total_bet:.2f}")]]
+            # Add Play Again button with the ORIGINAL bet amount (not doubled/split amount)
+            keyboard = [[InlineKeyboardButton(f"🔄 Play Again (${original_bet:.2f})", callback_data=f"bj_{user_id}_playagain_{original_bet:.2f}")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
             # Edit message if from callback, otherwise reply
@@ -2418,6 +2420,77 @@ Total Won: ${total_won:,.2f}"""
             sent_msg = await update.effective_message.reply_text(message, reply_markup=reply_markup, parse_mode="Markdown")
             if reply_markup:
                 self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+    
+    async def _display_blackjack_state_new_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int):
+        """Display the current Blackjack game state as a NEW message (for Play Again)"""
+        if user_id not in self.blackjack_sessions:
+            return
+        
+        game = self.blackjack_sessions[user_id]
+        state = game.get_game_state()
+        
+        # Build message text
+        message = "🃏 **Blackjack**\n\n"
+        message += f"**Dealer:** {state['dealer']['cards']} "
+        if state['game_over']:
+            message += f"(Value: {state['dealer']['value']})\n\n"
+        else:
+            message += f"(Showing: {state['dealer']['value']})\n\n"
+        
+        # Display all player hands
+        for hand in state['player_hands']:
+            hand_status = ""
+            if len(state['player_hands']) > 1:
+                hand_status = f"**Hand {hand['id'] + 1}:** "
+            
+            hand_status += f"{hand['cards']} (Value: {hand['value']}) "
+            hand_status += f"- Bet: ${hand['bet']:.2f}"
+            
+            if hand['status'] == 'Blackjack':
+                hand_status += " 🎉 BLACKJACK!"
+            elif hand['status'] == 'Bust':
+                hand_status += " 💥 BUST"
+            elif hand['is_current_turn']:
+                hand_status += " ⬅️ Your turn"
+            
+            message += hand_status + "\n"
+        
+        # Insurance info
+        if state['is_insurance_available']:
+            message += f"\n**Insurance available:** ${state['insurance_bet']:.2f}\n"
+        
+        # Build action buttons for current hand
+        keyboard = []
+        current_hand = state['player_hands'][state['current_hand_index']]
+        
+        if current_hand['is_current_turn']:
+            actions = current_hand.get('actions', {})
+            
+            # Always show Hit and Stand
+            keyboard.append([
+                InlineKeyboardButton("Hit", callback_data=f"bj_{user_id}_hit"),
+                InlineKeyboardButton("Stand", callback_data=f"bj_{user_id}_stand")
+            ])
+            
+            # Double Down button
+            if actions.get('can_double'):
+                keyboard.append([InlineKeyboardButton("Double Down", callback_data=f"bj_{user_id}_double")])
+            
+            # Split button
+            if actions.get('can_split'):
+                keyboard.append([InlineKeyboardButton("Split", callback_data=f"bj_{user_id}_split")])
+        
+        # Insurance button
+        if state['is_insurance_available']:
+            keyboard.append([InlineKeyboardButton("Take Insurance", callback_data=f"bj_{user_id}_insurance")])
+        
+        reply_markup = InlineKeyboardMarkup(keyboard) if keyboard else None
+        
+        # Always send as a NEW message
+        chat_id = update.effective_chat.id
+        sent_msg = await context.bot.send_message(chat_id, message, reply_markup=reply_markup, parse_mode="Markdown")
+        if reply_markup:
+            self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
     
     async def mines_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Start a Mines game"""
@@ -6682,6 +6755,13 @@ Total Won: ${total_won:,.2f}"""
                         await query.answer(f"❌ Insufficient balance! You have ${user_data['balance']:.2f}", show_alert=True)
                         return
                     
+                    # Remove the Play Again button from the old message
+                    try:
+                        old_text = query.message.text
+                        await query.edit_message_text(old_text, parse_mode="Markdown")
+                    except:
+                        pass
+                    
                     # Deduct wager
                     user_data['balance'] -= wager
                     self.db.update_user(user_id, user_data)
@@ -6691,8 +6771,8 @@ Total Won: ${total_won:,.2f}"""
                     new_game.start_game()
                     self.blackjack_sessions[user_id] = new_game
                     
-                    # Display new game state
-                    await self._display_blackjack_state(update, context, user_id)
+                    # Send a NEW message for the new game (not editing)
+                    await self._display_blackjack_state_new_message(update, context, user_id)
                     return
                 
                 if game_user_id not in self.blackjack_sessions:
