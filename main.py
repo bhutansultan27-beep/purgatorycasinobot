@@ -2575,7 +2575,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 row = []
         if row:
             keyboard.append(row)
-        keyboard.append([InlineKeyboardButton("Cancel", callback_data="deposit_cancel")])
+        keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -2684,7 +2684,7 @@ Your balance will be credited automatically after confirmations."""
                 row = []
         if row:
             keyboard.append(row)
-        keyboard.append([InlineKeyboardButton("Cancel", callback_data="withdraw_cancel")])
+        keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(
@@ -5305,9 +5305,21 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
                 currency = data.replace("deposit_crypto_", "")
                 await self.show_deposit_address(update, context, currency)
             
-            # Deposit Cancel - just dismiss
-            elif data == "deposit_cancel":
-                await query.edit_message_text("Deposit cancelled.", parse_mode="Markdown")
+            # Back to Main Menu
+            elif data == "back_to_main_menu":
+                user_data = self.db.get_user(user_id)
+                balance_text = f"🏦 **Menu**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose the action:"
+                keyboard = [
+                    [InlineKeyboardButton("🎮 Play", callback_data="menu_play")],
+                    [InlineKeyboardButton("💳 Deposit", callback_data="deposit_mock"),
+                     InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")],
+                    [InlineKeyboardButton("🎁 Bonuses", callback_data="menu_bonuses"),
+                     InlineKeyboardButton("📚 More Content", callback_data="menu_more_content")],
+                    [InlineKeyboardButton("⚙️ Commands", callback_data="menu_commands"),
+                     InlineKeyboardButton("📞 Support", callback_data="menu_support")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(balance_text, reply_markup=reply_markup, parse_mode="Markdown")
             
             # Deposit Back to Currency Selection
             elif data == "deposit_back":
@@ -5322,7 +5334,7 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
                         row = []
                 if row:
                     keyboard.append(row)
-                keyboard.append([InlineKeyboardButton("Cancel", callback_data="deposit_cancel")])
+                keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
                     f"Your balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
