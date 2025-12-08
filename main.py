@@ -6371,7 +6371,7 @@ Total Won: ${total_won:,.2f}"""
                     "soccer": "Usage: `/soccer <amount|all>`",
                     "bowling": "Usage: `/bowling <amount|all>`",
                     "blackjack": "Usage: `/blackjack <amount|all>`",
-                    "mines": "💣 **Mines**\n\nFind gems in the minefield! More mines = higher multipliers.\n\n**Usage:** `/mines <amount|all>`"
+                    "mines": "Usage: `/mines <amount|all>`"
                 }
                 
                 usage_text = game_usage.get(game_name, "Game not found.")
