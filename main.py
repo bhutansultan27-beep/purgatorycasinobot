@@ -2609,7 +2609,7 @@ Total Won: ${total_won:,.2f}"""
                 message += f"**Bet:** ${game.wager:.2f}"
                 
                 # Separate result message
-                result_message = f"💣 **BOOM!** You hit a mine!\n❌ **Lost ${game.wager:.2f}**"
+                result_message = f"**Lost ${game.wager:.2f}**"
                 
                 # Update stats
                 user_data = self.db.get_user(user_id)
