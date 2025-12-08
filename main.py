@@ -2794,7 +2794,7 @@ Total Won: ${total_won:,.2f}"""
             del self.blackjack_sessions[user_id]
             
             # Add Play Again button with the ORIGINAL bet amount (not doubled/split amount)
-            keyboard = [[InlineKeyboardButton(f"🔄 Play Again (${original_bet:.2f})", callback_data=f"bj_{user_id}_playagain_{original_bet:.2f}")]]
+            keyboard = [[InlineKeyboardButton(f"Play Again (${original_bet:.2f})", callback_data=f"bj_{user_id}_playagain_{original_bet:.2f}")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
             # Build the result message with @username format
