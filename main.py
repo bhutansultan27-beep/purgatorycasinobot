@@ -829,14 +829,32 @@ class GranTeseroCasinoBot:
                         parse_mode="Markdown"
                     )
         
-        welcome_text = f"""🎰 **Gran Tesero**
+        welcome_text = f"""🎰 **Gran Tesero Casino**
 
-Welcome to the casino!
-"""
-        await update.message.reply_text(welcome_text, parse_mode="Markdown")
-        
-        # Show balance with new menu buttons
-        balance_text = f"🏦 **Menu**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose the action:"
+Hey there! Ready to play?
+
+**Getting Started:**
+1. Deposit funds using the button below
+2. Pick a game and place your wager
+3. Win big and withdraw anytime!
+
+**Available Games:**
+🎲 Dice - /dice
+🎯 Darts - /darts
+🏀 Basketball - /basketball
+⚽ Soccer - /soccer
+🎳 Bowling - /bowling
+🪙 Coinflip - /flip
+🔮 Prediction - /predict
+🎡 Roulette - /roulette
+🎰 Slots - /slots
+♠️ Blackjack - /blackjack
+
+Good luck! 🍀
+
+━━━━━━━━━━━━━━━━━━━━
+
+💰 **Balance:** **${user_data['balance']:.2f}**"""
         
         keyboard = [
             [InlineKeyboardButton("🎮 Play", callback_data="menu_play")],
@@ -849,7 +867,7 @@ Welcome to the casino!
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        sent_msg = await update.message.reply_text(balance_text, reply_markup=reply_markup, parse_mode="Markdown")
+        sent_msg = await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
         self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user.id
     
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
