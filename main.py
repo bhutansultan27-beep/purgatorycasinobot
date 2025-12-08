@@ -147,13 +147,14 @@ LEVELS.insert(0, {"id": "unranked", "name": "Unranked", "emoji": "⚪", "thresho
 # --- Supported Crypto Currencies for Deposits & Withdrawals (Plisio) ---
 SUPPORTED_CRYPTOS = {
     'LTC': {'name': 'Litecoin', 'emoji': '💎', 'plisio_code': 'LTC'},
+    'SOL': {'name': 'Solana', 'emoji': '💜', 'plisio_code': 'SOL'},
 }
 
 SUPPORTED_DEPOSIT_CRYPTOS = SUPPORTED_CRYPTOS
 SUPPORTED_WITHDRAWAL_CRYPTOS = SUPPORTED_CRYPTOS
 
-# House fee percentage on deposits and withdrawals (0.5%)
-HOUSE_FEE_PERCENT = 0.005
+# House fee percentage on deposits and withdrawals (2% to cover network fees and price volatility)
+HOUSE_FEE_PERCENT = 0.02
 
 def get_user_level(total_wagered: float, user_id: Optional[int] = None, db = None) -> dict:
     """Returns the current level data based on total wagered amount."""

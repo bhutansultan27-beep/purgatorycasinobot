@@ -11,6 +11,8 @@ from telegram import Update
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+SUPPORTED_CURRENCIES = ['LTC', 'SOL']
+
 class WebhookServer:
     def __init__(self, bot, port=None):
         self.bot = bot
@@ -74,20 +76,25 @@ class WebhookServer:
             status = data.get('status', '')
             order_number = data.get('order_number', '')
             source_amount = data.get('source_amount')
+            currency = data.get('currency', 'LTC').upper()
             
             if status not in ['completed', 'mismatch']:
                 logger.info(f"Webhook status: {status} - waiting for completed")
                 return web.json_response({"status": "pending", "message": f"Status: {status}"})
             
             user_id = None
+            detected_currency = currency
             if order_number and order_number.startswith('user_'):
                 try:
-                    user_id = int(order_number.split('_')[1])
+                    parts = order_number.split('_')
+                    user_id = int(parts[1])
+                    if len(parts) >= 3 and parts[2] in SUPPORTED_CURRENCIES:
+                        detected_currency = parts[2]
                 except (IndexError, ValueError):
                     pass
             
             if not user_id:
-                user_id = self.find_user_by_deposit_address(address)
+                user_id, detected_currency = self.find_user_by_deposit_address(address)
             
             if not user_id:
                 logger.warning(f"No user found for deposit address: {address}")
@@ -100,7 +107,7 @@ class WebhookServer:
             if source_amount:
                 credited_amount = round(float(source_amount), 2)
             else:
-                logger.warning("No source_amount from Plisio, using LTC amount as USD")
+                logger.warning(f"No source_amount from Plisio, using {detected_currency} amount as USD")
                 credited_amount = round(amount, 2)
             
             user_data = self.bot.db.get_user(user_id)
@@ -108,23 +115,26 @@ class WebhookServer:
             self.bot.db.update_user(user_id, user_data)
             
             tx_display = tx_id[:16] if tx_id and len(tx_id) > 16 else tx_id
-            self.bot.db.add_transaction(user_id, "deposit", credited_amount, f"LTC Deposit (Auto) - TX: {tx_display}...")
+            self.bot.db.add_transaction(user_id, "deposit", credited_amount, f"{detected_currency} Deposit (Auto) - TX: {tx_display}...")
             
-            self.mark_deposit_processed(tx_id, user_id, amount, credited_amount)
+            self.mark_deposit_processed(tx_id, user_id, amount, credited_amount, detected_currency)
+            
+            currency_names = {'LTC': 'Litecoin', 'SOL': 'Solana'}
+            currency_name = currency_names.get(detected_currency, detected_currency)
             
             try:
                 await self.bot.app.bot.send_message(
                     chat_id=user_id,
-                    text=f"✅ **Deposit Confirmed!**\n\nReceived: {amount:.8f} LTC\nCredited: **${credited_amount:.2f}**\n\nNew Balance: ${user_data['balance']:.2f}",
+                    text=f"✅ **Deposit Confirmed!**\n\nReceived: {amount:.8f} {detected_currency}\nCredited: **${credited_amount:.2f}**\n\nNew Balance: ${user_data['balance']:.2f}",
                     parse_mode="Markdown"
                 )
             except Exception as e:
                 logger.error(f"Failed to notify user {user_id}: {e}")
             
-            await self.generate_new_address_for_user(user_id)
+            await self.generate_new_address_for_user(user_id, detected_currency)
             
-            logger.info(f"Deposit processed: User {user_id}, Amount ${credited_amount:.2f}")
-            return web.json_response({"status": "ok", "credited": credited_amount})
+            logger.info(f"Deposit processed: User {user_id}, Amount ${credited_amount:.2f} ({detected_currency})")
+            return web.json_response({"status": "ok", "credited": credited_amount, "currency": detected_currency})
             
         except Exception as e:
             logger.error(f"Webhook error: {e}")
@@ -132,15 +142,17 @@ class WebhookServer:
     
     def find_user_by_deposit_address(self, address):
         for user_id, user_data in self.bot.db.data['users'].items():
-            if user_data.get('ltc_deposit_address') == address:
-                return int(user_id)
-        return None
+            for currency in SUPPORTED_CURRENCIES:
+                address_key = f'{currency.lower()}_deposit_address'
+                if user_data.get(address_key) == address:
+                    return int(user_id), currency
+        return None, None
     
     def is_deposit_processed(self, tx_id):
         processed = self.bot.db.data.get('processed_deposits', [])
         return tx_id in processed
     
-    def mark_deposit_processed(self, tx_id, user_id, ltc_amount, usd_amount):
+    def mark_deposit_processed(self, tx_id, user_id, crypto_amount, usd_amount, currency='LTC'):
         if 'processed_deposits' not in self.bot.db.data:
             self.bot.db.data['processed_deposits'] = []
         if 'deposit_history' not in self.bot.db.data:
@@ -150,7 +162,8 @@ class WebhookServer:
         self.bot.db.data['deposit_history'].append({
             'tx_id': tx_id,
             'user_id': user_id,
-            'ltc_amount': ltc_amount,
+            'crypto_amount': crypto_amount,
+            'currency': currency,
             'usd_amount': usd_amount,
             'timestamp': datetime.now().isoformat()
         })
@@ -160,24 +173,28 @@ class WebhookServer:
         
         self.bot.db.save_data()
     
-    async def generate_new_address_for_user(self, user_id):
+    async def generate_new_address_for_user(self, user_id, currency='LTC'):
         """Generate a new deposit address for the user after their deposit was processed."""
         try:
-            address_data = await self.bot.generate_coinremitter_address(user_id)
+            address_data = await self.bot.generate_coinremitter_address(user_id, currency)
             
             if address_data:
                 user_data = self.bot.db.get_user(user_id)
-                user_data['ltc_deposit_address'] = address_data.get('address')
-                user_data['ltc_qr_code'] = address_data.get('qr_code')
-                user_data['ltc_address_expires'] = address_data.get('expire_on')
+                address_key = f'{currency.lower()}_deposit_address'
+                qr_key = f'{currency.lower()}_qr_code'
+                expires_key = f'{currency.lower()}_address_expires'
+                
+                user_data[address_key] = address_data.get('address')
+                user_data[qr_key] = address_data.get('qr_code')
+                user_data[expires_key] = address_data.get('expire_on')
                 self.bot.db.update_user(user_id, user_data)
                 self.bot.db.save_data()
                 
-                logger.info(f"Generated new deposit address for user {user_id}: {user_data['ltc_deposit_address']}")
+                logger.info(f"Generated new {currency} deposit address for user {user_id}: {user_data[address_key]}")
             else:
-                logger.warning(f"Could not generate new address for user {user_id}")
+                logger.warning(f"Could not generate new {currency} address for user {user_id}")
         except Exception as e:
-            logger.error(f"Error generating new address for user {user_id}: {e}")
+            logger.error(f"Error generating new {currency} address for user {user_id}: {e}")
     
     async def start(self):
         runner = web.AppRunner(self.app)
