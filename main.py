@@ -830,7 +830,7 @@ class GranTeseroCasinoBot:
                         parse_mode="Markdown"
                     )
         
-        welcome_text = f"""🎰 **Gran Tesero Casino**
+        welcome_text = """🎰 **Gran Tesero Casino**
 
 Hey there! Ready to play?
 
@@ -853,11 +853,11 @@ Hey there! Ready to play?
 
 📋 /menu - Open the main menu
 
-Good luck! 🍀
-
-━━━━━━━━━━━━━━━━━━━━
-
-💰 **Balance:** **${user_data['balance']:.2f}**"""
+Good luck! 🍀"""
+        
+        await update.message.reply_text(welcome_text, parse_mode="Markdown")
+        
+        balance_text = f"💰 **Balance:** **${user_data['balance']:.2f}**"
         
         keyboard = [
             [InlineKeyboardButton("🎮 Play", callback_data="menu_play")],
@@ -870,7 +870,7 @@ Good luck! 🍀
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        sent_msg = await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
+        sent_msg = await update.message.reply_text(balance_text, reply_markup=reply_markup, parse_mode="Markdown")
         self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user.id
     
     async def menu_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
