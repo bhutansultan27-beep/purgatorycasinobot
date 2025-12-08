@@ -20,6 +20,12 @@ from blackjack import BlackjackGame
 # Import Mines game logic
 from mines import MinesGame
 
+# Import Baccarat game logic
+from baccarat import BaccaratGame
+
+# Import Keno game logic
+from keno import KenoGame
+
 # External dependencies (assuming they are installed via pip install python-telegram-bot)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -504,15 +510,22 @@ class GranTeseroCasinoBot:
         
         # Dictionary to store active Mines games: user_id -> MinesGame instance
         self.mines_sessions: Dict[int, MinesGame] = {}
+        
+        # Dictionary to store active Keno games: user_id -> KenoGame instance
+        self.keno_sessions: Dict[int, KenoGame] = {}
 
     def user_has_active_game(self, user_id: int) -> bool:
-        """Check if a user already has an active game (PvP, blackjack, mines, or pending opponent selection)"""
+        """Check if a user already has an active game (PvP, blackjack, mines, keno, or pending opponent selection)"""
         if user_id in self.blackjack_sessions:
             logger.info(f"[ACTIVE_GAME] User {user_id} has active blackjack session")
             return True
         
         if user_id in self.mines_sessions:
             logger.info(f"[ACTIVE_GAME] User {user_id} has active mines session")
+            return True
+        
+        if user_id in self.keno_sessions:
+            logger.info(f"[ACTIVE_GAME] User {user_id} has active keno session")
             return True
         
         if user_id in self.pending_opponent_selection:
@@ -556,6 +569,9 @@ class GranTeseroCasinoBot:
         self.app.add_handler(CommandHandler("blackjack", self.blackjack_command))
         self.app.add_handler(CommandHandler("bj", self.blackjack_command))
         self.app.add_handler(CommandHandler("mines", self.mines_command))
+        self.app.add_handler(CommandHandler("baccarat", self.baccarat_command))
+        self.app.add_handler(CommandHandler("bacc", self.baccarat_command))
+        self.app.add_handler(CommandHandler("keno", self.keno_command))
         self.app.add_handler(CommandHandler("tip", self.tip_command))
         self.app.add_handler(CommandHandler("deposit", self.deposit_command))
         self.app.add_handler(CommandHandler("withdraw", self.withdraw_command))
@@ -2693,6 +2709,295 @@ Total Won: ${total_won:,.2f}"""
             if not game.game_over:
                 self.button_ownership[(update.callback_query.message.chat_id, update.callback_query.message.message_id)] = user_id
             # Send separate result message after the game ends
+            if result_message:
+                await context.bot.send_message(chat_id=update.callback_query.message.chat_id, text=result_message, parse_mode="Markdown")
+        else:
+            sent_msg = await update.effective_message.reply_text(message, reply_markup=reply_markup, parse_mode="Markdown")
+            if not game.game_over:
+                self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+
+    async def baccarat_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Start a Baccarat game"""
+        user_data = self.ensure_user_registered(update)
+        user_id = update.effective_user.id
+        
+        if not context.args:
+            await update.message.reply_text(
+                "**Usage:** `/baccarat <amount>`\n\n"
+                "Bet on Player, Banker, or Tie!",
+                parse_mode="Markdown"
+            )
+            return
+        
+        using_all = context.args[0].lower() == "all"
+        wager = 0.0
+        if using_all:
+            wager = round(user_data['balance'], 2)
+        else:
+            try:
+                wager = round(float(context.args[0]), 2)
+            except ValueError:
+                await update.message.reply_text("❌ Invalid amount")
+                return
+        
+        if wager < 0.01:
+            await update.message.reply_text("❌ Min: $0.01")
+            return
+        
+        if wager > user_data['balance']:
+            await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
+            return
+        
+        keyboard = [
+            [InlineKeyboardButton("🔵 Player (2x)", callback_data=f"bacc_{user_id}_{wager:.2f}_player")],
+            [InlineKeyboardButton("🔴 Banker (1.95x)", callback_data=f"bacc_{user_id}_{wager:.2f}_banker")],
+            [InlineKeyboardButton("🟢 Tie (9x)", callback_data=f"bacc_{user_id}_{wager:.2f}_tie")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        sent_msg = await update.message.reply_text(
+            f"🃏 **Baccarat** - Wager: ${wager:.2f}\n\n"
+            f"**Choose your bet:**\n\n"
+            f"• Player pays 2x\n"
+            f"• Banker pays 1.95x (5% commission)\n"
+            f"• Tie pays 9x",
+            reply_markup=reply_markup,
+            parse_mode="Markdown"
+        )
+        self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+
+    async def _play_baccarat(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, wager: float, bet_type: str):
+        """Play a baccarat round"""
+        query = update.callback_query
+        chat_id = query.message.chat_id
+        
+        user_data = self.db.get_user(user_id)
+        if wager > user_data['balance']:
+            await query.edit_message_text(f"❌ Balance: ${user_data['balance']:.2f}")
+            return
+        
+        user_data['balance'] -= wager
+        self.db.update_user(user_id, user_data)
+        
+        game = BaccaratGame(wager, bet_type)
+        state = game.play_round()
+        
+        player_cards = state['player_hand']['cards']
+        player_value = state['player_hand']['value']
+        banker_cards = state['banker_hand']['cards']
+        banker_value = state['banker_hand']['value']
+        
+        result_emoji = "🔵" if state['result'] == 'player' else "🔴" if state['result'] == 'banker' else "🟢"
+        result_name = state['result'].capitalize()
+        
+        message = f"🃏 **Baccarat**\n\n"
+        message += f"**Player:** {player_cards} = {player_value}\n"
+        message += f"**Banker:** {banker_cards} = {banker_value}\n\n"
+        message += f"**Result:** {result_emoji} {result_name} wins!\n"
+        message += f"**Your bet:** {bet_type.capitalize()}\n\n"
+        
+        payout = state['payout']
+        profit = state['profit']
+        
+        if payout > 0:
+            user_data = self.db.get_user(user_id)
+            user_data['balance'] += payout
+            user_data['total_wagered'] += wager
+            user_data['games_played'] += 1
+            user_data['games_won'] += 1
+            user_data['total_pnl'] += profit
+            self.db.update_user(user_id, user_data)
+            self.db.update_house_balance(-profit)
+            
+            result_text = f"@{user_data.get('username', 'Player')} won ${profit:.2f}"
+        else:
+            user_data = self.db.get_user(user_id)
+            user_data['total_wagered'] += wager
+            user_data['games_played'] += 1
+            user_data['total_pnl'] -= wager
+            self.db.update_user(user_id, user_data)
+            self.db.update_house_balance(wager)
+            
+            result_text = f"Lost ${wager:.2f}"
+        
+        self.db.record_game({
+            'type': 'baccarat',
+            'player_id': user_id,
+            'username': user_data.get('username', 'Unknown'),
+            'wager': wager,
+            'bet_type': bet_type,
+            'player_value': player_value,
+            'banker_value': banker_value,
+            'result': state['result'],
+            'payout': payout,
+            'balance_after': user_data['balance']
+        })
+        
+        keyboard = [
+            [InlineKeyboardButton("🔵 Player", callback_data=f"bacc_{user_id}_{wager:.2f}_player"),
+             InlineKeyboardButton("🔴 Banker", callback_data=f"bacc_{user_id}_{wager:.2f}_banker"),
+             InlineKeyboardButton("🟢 Tie", callback_data=f"bacc_{user_id}_{wager:.2f}_tie")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await query.edit_message_text(message, parse_mode="Markdown")
+        sent_msg = await context.bot.send_message(chat_id=chat_id, text=result_text, reply_markup=reply_markup, parse_mode="Markdown")
+        self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+
+    async def keno_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Start a Keno game"""
+        user_data = self.ensure_user_registered(update)
+        user_id = update.effective_user.id
+        
+        if self.user_has_active_game(user_id):
+            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            return
+        
+        if not context.args:
+            await update.message.reply_text(
+                "**Usage:** `/keno <amount>`\n\n"
+                "Pick up to 10 numbers from 1-40!",
+                parse_mode="Markdown"
+            )
+            return
+        
+        using_all = context.args[0].lower() == "all"
+        wager = 0.0
+        if using_all:
+            wager = round(user_data['balance'], 2)
+        else:
+            try:
+                wager = round(float(context.args[0]), 2)
+            except ValueError:
+                await update.message.reply_text("❌ Invalid amount")
+                return
+        
+        if wager < 0.01:
+            await update.message.reply_text("❌ Min: $0.01")
+            return
+        
+        if wager > user_data['balance']:
+            await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
+            return
+        
+        user_data['balance'] -= wager
+        self.db.update_user(user_id, user_data)
+        
+        game = KenoGame(user_id, wager)
+        self.keno_sessions[user_id] = game
+        
+        await self._display_keno_state(update, context, user_id, is_new=True)
+
+    def _build_keno_grid_keyboard(self, game: KenoGame) -> InlineKeyboardMarkup:
+        """Build the keno number grid keyboard"""
+        user_id = game.user_id
+        keyboard = []
+        
+        for row in range(5):
+            row_buttons = []
+            for col in range(8):
+                num = row * 8 + col + 1
+                if num > 40:
+                    continue
+                
+                if game.game_over:
+                    if num in game.picked_numbers and num in game.drawn_numbers:
+                        label = f"✅{num}"
+                    elif num in game.drawn_numbers:
+                        label = f"🔵{num}"
+                    elif num in game.picked_numbers:
+                        label = f"❌{num}"
+                    else:
+                        label = f"{num}"
+                    row_buttons.append(InlineKeyboardButton(label, callback_data="keno_noop"))
+                else:
+                    if num in game.picked_numbers:
+                        label = f"⭐{num}"
+                    else:
+                        label = "\u3164"
+                    row_buttons.append(InlineKeyboardButton(label, callback_data=f"keno_pick_{user_id}_{num}"))
+            keyboard.append(row_buttons)
+        
+        if not game.game_over:
+            action_row = []
+            if len(game.picked_numbers) > 0:
+                action_row.append(InlineKeyboardButton("🎰 Draw!", callback_data=f"keno_draw_{user_id}"))
+                action_row.append(InlineKeyboardButton("🗑️ Clear", callback_data=f"keno_clear_{user_id}"))
+            keyboard.append(action_row)
+        else:
+            keyboard.append([
+                InlineKeyboardButton("🔄 Play Again", callback_data=f"keno_again_{user_id}_{game.wager}")
+            ])
+        
+        return InlineKeyboardMarkup(keyboard)
+
+    async def _display_keno_state(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, is_new: bool = False):
+        """Display the current Keno game state"""
+        if user_id not in self.keno_sessions:
+            return
+        
+        game = self.keno_sessions[user_id]
+        result_message = None
+        
+        picks = len(game.picked_numbers)
+        picked_str = ", ".join(str(n) for n in sorted(game.picked_numbers)) if picks > 0 else "None"
+        
+        if game.game_over:
+            drawn_str = ", ".join(str(n) for n in sorted(game.drawn_numbers))
+            message = f"🎱 **Keno**\n\n"
+            message += f"**Your picks:** {picked_str}\n"
+            message += f"**Drawn:** {drawn_str}\n"
+            message += f"**Hits:** {game.hits}/{picks}\n"
+            message += f"**Bet:** ${game.wager:.2f}\n"
+            
+            if game.payout > 0:
+                user_data = self.db.get_user(user_id)
+                user_data['balance'] += game.payout
+                user_data['total_wagered'] += game.wager
+                user_data['games_played'] += 1
+                user_data['games_won'] += 1
+                user_data['total_pnl'] += game.get_profit()
+                self.db.update_user(user_id, user_data)
+                self.db.update_house_balance(-game.get_profit())
+                
+                result_message = f"@{user_data.get('username', 'Player')} won ${game.payout:.2f} ({game.get_multiplier():.0f}x)"
+            else:
+                user_data = self.db.get_user(user_id)
+                user_data['total_wagered'] += game.wager
+                user_data['games_played'] += 1
+                user_data['total_pnl'] -= game.wager
+                self.db.update_user(user_id, user_data)
+                self.db.update_house_balance(game.wager)
+                
+                result_message = f"Lost ${game.wager:.2f}"
+            
+            self.db.record_game({
+                'type': 'keno',
+                'player_id': user_id,
+                'username': user_data.get('username', 'Unknown'),
+                'wager': game.wager,
+                'picks': list(game.picked_numbers),
+                'drawn': list(game.drawn_numbers),
+                'hits': game.hits,
+                'multiplier': game.get_multiplier(),
+                'payout': game.payout,
+                'result': 'win' if game.payout > 0 else 'loss',
+                'balance_after': user_data['balance']
+            })
+            
+            del self.keno_sessions[user_id]
+        else:
+            message = f"🎱 **Keno** - Pick up to 10 numbers\n\n"
+            message += f"**Picked ({picks}/10):** {picked_str}\n"
+            message += f"**Bet:** ${game.wager:.2f}\n\n"
+            message += f"Tap numbers to pick, then hit Draw!"
+        
+        reply_markup = self._build_keno_grid_keyboard(game)
+        
+        if update.callback_query:
+            await update.callback_query.edit_message_text(message, reply_markup=reply_markup, parse_mode="Markdown")
+            if not game.game_over:
+                self.button_ownership[(update.callback_query.message.chat_id, update.callback_query.message.message_id)] = user_id
             if result_message:
                 await context.bot.send_message(chat_id=update.callback_query.message.chat_id, text=result_message, parse_mode="Markdown")
         else:
@@ -5335,6 +5640,10 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         mines_buttons = ["mines_start_", "mines_reveal_", "mines_cashout_", "mines_again_", "mines_change_", "mines_noop"]
         # Blackjack buttons (they verify ownership internally via user_id in callback data)
         blackjack_buttons = ["bj_"]
+        # Baccarat buttons
+        baccarat_buttons = ["bacc_"]
+        # Keno buttons (they verify ownership internally via user_id in callback data)
+        keno_buttons = ["keno_pick_", "keno_draw_", "keno_clear_", "keno_again_", "keno_noop"]
         # Withdrawal approval buttons (only admins/approvers can use)
         withdrawal_buttons = ["withdraw_approve_", "withdraw_deny_"]
         
@@ -5343,10 +5652,12 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         is_withdrawal_button = any(data.startswith(prefix) for prefix in withdrawal_buttons)
         is_mines_button = any(data.startswith(prefix) or data == prefix for prefix in mines_buttons)
         is_blackjack_button = any(data.startswith(prefix) for prefix in blackjack_buttons)
+        is_baccarat_button = any(data.startswith(prefix) for prefix in baccarat_buttons)
+        is_keno_button = any(data.startswith(prefix) or data == prefix for prefix in keno_buttons)
         
         ownership_key = (chat_id, message_id)
         # Block button if it's NOT public AND (not registered OR not owned by user)
-        if not is_pvp_accept and not is_global_public and not is_mines_button and not is_blackjack_button:
+        if not is_pvp_accept and not is_global_public and not is_mines_button and not is_blackjack_button and not is_baccarat_button and not is_keno_button:
             # Withdrawal buttons bypass ownership but require approval permission
             if is_withdrawal_button:
                 if not self.can_approve_withdrawals(user_id):
@@ -6991,6 +7302,93 @@ Total Won: ${total_won:,.2f}"""
             
             elif data == "mines_noop":
                 # Just acknowledge the click but do nothing (for revealed/disabled tiles)
+                await query.answer()
+            
+            # Baccarat callbacks
+            elif data.startswith("bacc_"):
+                parts = data.split('_')
+                game_user_id = int(parts[1])
+                wager = float(parts[2])
+                bet_type = parts[3]
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                await self._play_baccarat(update, context, user_id, wager, bet_type)
+            
+            # Keno callbacks
+            elif data.startswith("keno_pick_"):
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                number = int(parts[3])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if user_id not in self.keno_sessions:
+                    await query.answer("❌ No active game!", show_alert=True)
+                    return
+                
+                game = self.keno_sessions[user_id]
+                success, msg = game.pick_number(number)
+                await self._display_keno_state(update, context, user_id)
+            
+            elif data.startswith("keno_draw_"):
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if user_id not in self.keno_sessions:
+                    await query.answer("❌ No active game!", show_alert=True)
+                    return
+                
+                game = self.keno_sessions[user_id]
+                game.start_draw()
+                await self._display_keno_state(update, context, user_id)
+            
+            elif data.startswith("keno_clear_"):
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if user_id not in self.keno_sessions:
+                    await query.answer("❌ No active game!", show_alert=True)
+                    return
+                
+                game = self.keno_sessions[user_id]
+                game.picked_numbers.clear()
+                await self._display_keno_state(update, context, user_id)
+            
+            elif data.startswith("keno_again_"):
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                wager = float(parts[3])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                user_data = self.db.get_user(user_id)
+                if user_data['balance'] < wager:
+                    await query.answer(f"❌ Insufficient balance! Need ${wager:.2f}", show_alert=True)
+                    return
+                
+                user_data['balance'] -= wager
+                self.db.update_user(user_id, user_data)
+                
+                self.keno_sessions[user_id] = KenoGame(user_id, wager)
+                await query.answer("🎮 New game started!")
+                await self._display_keno_state(update, context, user_id)
+            
+            elif data == "keno_noop":
                 await query.answer()
             
             else:
