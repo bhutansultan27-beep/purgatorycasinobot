@@ -15,3 +15,7 @@ APScheduler
 python-dotenv
 APScheduler
 python-dotenv
+aiohttp
+APScheduler
+python-dotenv
+python-telegram-bot
