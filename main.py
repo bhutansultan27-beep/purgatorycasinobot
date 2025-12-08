@@ -3816,7 +3816,7 @@ Total Won: ${total_won:,.2f}"""
         asyncio.create_task(delete_challenge_after_timeout())
     
     async def _accept_connect4_challenge(self, update: Update, context: ContextTypes.DEFAULT_TYPE, game_id: str):
-        """Accept a Connect 4 challenge and start the game."""
+        """Accept a Connect 4 challenge and start the dice rolling phase."""
         query = update.callback_query
         user_id = query.from_user.id
         
@@ -3851,39 +3851,89 @@ Total Won: ${total_won:,.2f}"""
         self.db.update_user(challenger_id, {'balance': challenger_data['balance']})
         self.db.update_user(user_id, {'balance': opponent_data['balance']})
         
-        del self.pending_pvp[game_id]
+        challenge['dice_phase'] = True
+        challenge['p1_roll'] = None
+        challenge['p2_roll'] = None
         
-        game = Connect4Game(challenger_id, user_id, wager)
-        self.connect4_sessions[game_id] = game
+        keyboard = [[InlineKeyboardButton("🎲 Roll Dice", callback_data=f"connect4_roll_{game_id}_1")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
         
-        p1_roll = random.randint(1, 6)
-        p2_roll = random.randint(1, 6)
-        
-        while p1_roll == p2_roll:
-            p1_roll = random.randint(1, 6)
-            p2_roll = random.randint(1, 6)
-        
-        game.set_dice_rolls(p1_roll, p2_roll)
-        
-        first_player_id = game.get_current_player_id()
-        first_username = challenge['challenger_username'] if first_player_id == challenger_id else challenge['opponent_username']
-        
-        roll_message = f"**Connect 4** - ${wager:.2f}\n\n"
-        roll_message += f"🎲 @{challenge['challenger_username']} rolled: {p1_roll}\n"
-        roll_message += f"🎲 @{challenge['opponent_username']} rolled: {p2_roll}\n\n"
-        roll_message += f"@{first_username} goes first!"
-        
-        await query.edit_message_text(roll_message, parse_mode="Markdown")
-        
-        # Start 30-second timeout for the first player
+        await query.edit_message_text(
+            f"**Connect 4** - ${wager:.2f}\n\n"
+            f"@{challenge['challenger_username']}, roll your dice!",
+            reply_markup=reply_markup,
+            parse_mode="Markdown"
+        )
+    
+    async def _handle_connect4_dice_roll(self, update: Update, context: ContextTypes.DEFAULT_TYPE, game_id: str, player_num: int):
+        """Handle a player rolling their dice for Connect 4."""
+        query = update.callback_query
+        user_id = query.from_user.id
         chat_id = query.message.chat_id
-        game_key = f"connect4_{game_id}"
-        self.start_game_timeout(game_key, "connect4", first_player_id, chat_id, wager, 
-                                bot=context.bot, game_id=game_id, 
-                                other_player_id=challenger_id if first_player_id == user_id else user_id,
-                                is_pvp=True)
         
-        await self._display_connect4_state(update, context, game_id)
+        if game_id not in self.pending_pvp:
+            await query.edit_message_text("Game expired")
+            return
+        
+        challenge = self.pending_pvp[game_id]
+        challenger_id = challenge['challenger']
+        opponent_id = challenge['opponent']
+        wager = challenge['wager']
+        
+        if player_num == 1:
+            if user_id != challenger_id:
+                await query.answer("It's not your turn to roll!", show_alert=True)
+                return
+            
+            roll = random.randint(1, 6)
+            challenge['p1_roll'] = roll
+            
+            keyboard = [[InlineKeyboardButton("🎲 Roll Dice", callback_data=f"connect4_roll_{game_id}_2")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            await query.edit_message_text(
+                f"**Connect 4** - ${wager:.2f}\n\n"
+                f"🎲 @{challenge['challenger_username']} rolled: {roll}\n\n"
+                f"@{challenge['opponent_username']}, roll your dice!",
+                reply_markup=reply_markup,
+                parse_mode="Markdown"
+            )
+        else:
+            if user_id != opponent_id:
+                await query.answer("It's not your turn to roll!", show_alert=True)
+                return
+            
+            roll = random.randint(1, 6)
+            challenge['p2_roll'] = roll
+            p1_roll = challenge['p1_roll']
+            
+            while roll == p1_roll:
+                roll = random.randint(1, 6)
+            challenge['p2_roll'] = roll
+            
+            del self.pending_pvp[game_id]
+            
+            game = Connect4Game(challenger_id, opponent_id, wager)
+            self.connect4_sessions[game_id] = game
+            game.set_dice_rolls(p1_roll, roll)
+            
+            first_player_id = game.get_current_player_id()
+            first_username = challenge['challenger_username'] if first_player_id == challenger_id else challenge['opponent_username']
+            
+            roll_message = f"**Connect 4** - ${wager:.2f}\n\n"
+            roll_message += f"🎲 @{challenge['challenger_username']} rolled: {p1_roll}\n"
+            roll_message += f"🎲 @{challenge['opponent_username']} rolled: {roll}\n\n"
+            roll_message += f"@{first_username} goes first!"
+            
+            await query.edit_message_text(roll_message, parse_mode="Markdown")
+            
+            game_key = f"connect4_{game_id}"
+            self.start_game_timeout(game_key, "connect4", first_player_id, chat_id, wager, 
+                                    bot=context.bot, game_id=game_id, 
+                                    other_player_id=challenger_id if first_player_id == opponent_id else opponent_id,
+                                    is_pvp=True)
+            
+            await self._display_connect4_state(update, context, game_id)
     
     def _build_connect4_keyboard(self, game: Connect4Game, game_id: str) -> InlineKeyboardMarkup:
         """Build the full grid keyboard for Connect 4 with clickable invisible buttons."""
@@ -6657,7 +6707,7 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         # Hi-Lo buttons
         hilo_buttons = ["hilo_higher_", "hilo_lower_", "hilo_tie_", "hilo_skip_", "hilo_cashout_", "hilo_again_"]
         # Connect 4 buttons
-        connect4_buttons = ["connect4_accept_", "connect4_drop_", "connect4_noop"]
+        connect4_buttons = ["connect4_accept_", "connect4_drop_", "connect4_roll_", "connect4_noop"]
         # Withdrawal approval buttons (only admins/approvers can use)
         withdrawal_buttons = ["withdraw_approve_", "withdraw_deny_"]
         
@@ -8643,6 +8693,12 @@ Total Won: ${total_won:,.2f}"""
             elif data.startswith("connect4_accept_"):
                 game_id = data.replace("connect4_accept_", "")
                 await self._accept_connect4_challenge(update, context, game_id)
+            
+            elif data.startswith("connect4_roll_"):
+                parts = data.split('_')
+                player_num = int(parts[-1])
+                game_id = '_'.join(parts[2:-1])
+                await self._handle_connect4_dice_roll(update, context, game_id, player_num)
             
             elif data.startswith("connect4_drop_"):
                 prefix_len = len("connect4_drop_")
