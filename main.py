@@ -6625,8 +6625,57 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
                             return
                     await query.edit_message_text("no active game found")
                     return
+                elif game_type == "limbo":
+                    if user_id in self.limbo_sessions:
+                        del self.limbo_sessions[user_id]
+                    await query.edit_message_text("game session cleared - you can start a new game now")
+                    return
+                elif game_type == "pvp":
+                    self.pending_opponent_selection.discard(user_id)
+                    challenges_to_remove = []
+                    for game_id, challenge in self.pending_pvp.items():
+                        challenger = challenge.get('challenger')
+                        opponent = challenge.get('opponent')
+                        player = challenge.get('player')
+                        if challenger == user_id or opponent == user_id or player == user_id:
+                            challenges_to_remove.append(game_id)
+                    for game_id in challenges_to_remove:
+                        challenge = self.pending_pvp[game_id]
+                        challenger_id = challenge.get('challenger') or challenge.get('player')
+                        wager = challenge.get('wager', 0)
+                        if challenger_id and wager > 0:
+                            challenger_data = self.db.get_user(challenger_id)
+                            if challenger_data:
+                                challenger_data['balance'] += wager
+                                self.db.update_user(challenger_id, {'balance': challenger_data['balance']})
+                        del self.pending_pvp[game_id]
+                    await query.edit_message_text("pending challenge cancelled - you can start a new game now")
+                    return
                 else:
-                    await query.edit_message_text("no active game found")
+                    self.pending_opponent_selection.discard(user_id)
+                    if user_id in self.limbo_sessions:
+                        del self.limbo_sessions[user_id]
+                    challenges_to_remove = []
+                    for game_id, challenge in self.pending_pvp.items():
+                        challenger = challenge.get('challenger')
+                        opponent = challenge.get('opponent')
+                        player = challenge.get('player')
+                        if challenger == user_id or opponent == user_id or player == user_id:
+                            challenges_to_remove.append(game_id)
+                    for game_id in challenges_to_remove:
+                        challenge = self.pending_pvp[game_id]
+                        challenger_id = challenge.get('challenger') or challenge.get('player')
+                        wager = challenge.get('wager', 0)
+                        if challenger_id and wager > 0:
+                            challenger_data = self.db.get_user(challenger_id)
+                            if challenger_data:
+                                challenger_data['balance'] += wager
+                                self.db.update_user(challenger_id, {'balance': challenger_data['balance']})
+                        del self.pending_pvp[game_id]
+                    if self.user_has_active_game(user_id):
+                        await query.edit_message_text("no active game found")
+                    else:
+                        await query.edit_message_text("game session cleared - you can start a new game now")
                 return
             
             # Game Callbacks (Dice vs Bot)
