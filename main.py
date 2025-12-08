@@ -857,7 +857,7 @@ Good luck! 🍀"""
         
         await update.message.reply_text(welcome_text, parse_mode="Markdown")
         
-        balance_text = f"💰 **Balance:** **${user_data['balance']:.2f}**"
+        balance_text = f"🏦 **Menu**\n\n💰 Balance: **${user_data['balance']:.2f}**"
         
         keyboard = [
             [InlineKeyboardButton("🎮 Play", callback_data="menu_play")],
