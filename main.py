@@ -1398,7 +1398,18 @@ Total Won: ${total_won:,.2f}"""
                     balance_after = game.get('opponent_balance_after')
             balance_str = f" | Bal: ${balance_after:.2f}" if balance_after is not None else ""
             
-            if 'bot' in game_type or game_type in ['roulette', 'blackjack', 'dice_predict', 'slots', 'slots_bot']:
+            if game_type == 'mines':
+                result_emoji = "✅" if result == "win" else "❌"
+                num_mines = game.get('num_mines', '?')
+                tiles_revealed = game.get('tiles_revealed', 0)
+                payout = game.get('payout', 0)
+                multiplier = game.get('multiplier', 1.0)
+                history_text += f"{result_emoji} **Mines** - ${wager:.2f}\n"
+                if result == "win":
+                    history_text += f"   {num_mines} mines | {tiles_revealed} revealed | {multiplier:.2f}x | Won ${payout:.2f} | {time_str}{balance_str}\n\n"
+                else:
+                    history_text += f"   {num_mines} mines | {tiles_revealed} revealed | {time_str}{balance_str}\n\n"
+            elif 'bot' in game_type or game_type in ['roulette', 'blackjack', 'dice_predict', 'slots', 'slots_bot']:
                 result_emoji = "✅" if result == "win" else "❌" if result == "loss" else "🤝"
                 
                 if game_type == 'dice_bot':
