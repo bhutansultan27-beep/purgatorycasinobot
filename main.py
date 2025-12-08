@@ -2372,11 +2372,16 @@ Total Won: ${total_won:,.2f}"""
             # Remove session
             del self.blackjack_sessions[user_id]
             
+            # Add Play Again button with the same bet amount
+            total_bet = sum(h['bet'] for h in state['player_hands'])
+            keyboard = [[InlineKeyboardButton(f"🔄 Play Again (${total_bet:.2f})", callback_data=f"bj_{user_id}_playagain_{total_bet:.2f}")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
             # Edit message if from callback, otherwise reply
             if update.callback_query:
-                await update.callback_query.edit_message_text(message, parse_mode="Markdown")
+                await update.callback_query.edit_message_text(message, reply_markup=reply_markup, parse_mode="Markdown")
             else:
-                await update.effective_message.reply_text(message, parse_mode="Markdown")
+                await update.effective_message.reply_text(message, reply_markup=reply_markup, parse_mode="Markdown")
             return
         
         # Build action buttons for current hand
@@ -6661,6 +6666,33 @@ Total Won: ${total_won:,.2f}"""
                 # Verify this is the correct user's game
                 if user_id != game_user_id:
                     await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                # Handle Play Again separately (session already deleted)
+                if action == "playagain":
+                    wager = float(parts[3])
+                    user_data = self.db.get_user(user_id)
+                    
+                    # Check if user has another active game
+                    if self.user_has_active_game(user_id):
+                        await query.answer("❌ You already have an active game!", show_alert=True)
+                        return
+                    
+                    if user_data['balance'] < wager:
+                        await query.answer(f"❌ Insufficient balance! You have ${user_data['balance']:.2f}", show_alert=True)
+                        return
+                    
+                    # Deduct wager
+                    user_data['balance'] -= wager
+                    self.db.update_user(user_id, user_data)
+                    
+                    # Create new game
+                    new_game = BlackjackGame(bet_amount=wager)
+                    new_game.start_game()
+                    self.blackjack_sessions[user_id] = new_game
+                    
+                    # Display new game state
+                    await self._display_blackjack_state(update, context, user_id)
                     return
                 
                 if game_user_id not in self.blackjack_sessions:
