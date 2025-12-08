@@ -26,6 +26,12 @@ from baccarat import BaccaratGame
 # Import Keno game logic
 from keno import KenoGame
 
+# Import Limbo game logic
+from limbo import LimboGame, get_preset_multipliers
+
+# Import Hi-Lo game logic
+from hilo import HiLoGame
+
 # External dependencies (assuming they are installed via pip install python-telegram-bot)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -513,6 +519,12 @@ class GranTeseroCasinoBot:
         
         # Dictionary to store active Keno games: user_id -> KenoGame instance
         self.keno_sessions: Dict[int, KenoGame] = {}
+        
+        # Dictionary to store active Limbo games: user_id -> LimboGame instance
+        self.limbo_sessions: Dict[int, LimboGame] = {}
+        
+        # Dictionary to store active Hi-Lo games: user_id -> HiLoGame instance
+        self.hilo_sessions: Dict[int, HiLoGame] = {}
 
     def user_has_active_game(self, user_id: int) -> bool:
         """Check if a user already has an active game (PvP, blackjack, mines, keno, or pending opponent selection)"""
@@ -526,6 +538,14 @@ class GranTeseroCasinoBot:
         
         if user_id in self.keno_sessions:
             logger.info(f"[ACTIVE_GAME] User {user_id} has active keno session")
+            return True
+        
+        if user_id in self.limbo_sessions:
+            logger.info(f"[ACTIVE_GAME] User {user_id} has active limbo session")
+            return True
+        
+        if user_id in self.hilo_sessions:
+            logger.info(f"[ACTIVE_GAME] User {user_id} has active hilo session")
             return True
         
         if user_id in self.pending_opponent_selection:
@@ -572,6 +592,8 @@ class GranTeseroCasinoBot:
         self.app.add_handler(CommandHandler("baccarat", self.baccarat_command))
         self.app.add_handler(CommandHandler("bacc", self.baccarat_command))
         self.app.add_handler(CommandHandler("keno", self.keno_command))
+        self.app.add_handler(CommandHandler("limbo", self.limbo_command))
+        self.app.add_handler(CommandHandler("hilo", self.hilo_command))
         self.app.add_handler(CommandHandler("tip", self.tip_command))
         self.app.add_handler(CommandHandler("deposit", self.deposit_command))
         self.app.add_handler(CommandHandler("withdraw", self.withdraw_command))
@@ -3021,6 +3043,290 @@ Total Won: ${total_won:,.2f}"""
             sent_msg = await update.effective_message.reply_text(message, reply_markup=reply_markup, parse_mode="Markdown")
             if not game.game_over:
                 self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+    
+    async def limbo_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Start a Limbo game"""
+        user_data = self.ensure_user_registered(update)
+        user_id = update.effective_user.id
+        
+        if self.user_has_active_game(user_id):
+            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            return
+        
+        if len(context.args) < 2:
+            presets = get_preset_multipliers()
+            preset_str = " | ".join([f"{m:.2f}x" for m in presets[:5]])
+            await update.message.reply_text(
+                f"**Usage:** `/limbo <amount> <target_multiplier>`\n\n"
+                f"**Example:** `/limbo 1 2.00`\n"
+                f"(Bet $1 that the result will be 2.00x or higher)\n\n"
+                f"**Popular targets:** {preset_str}\n\n"
+                f"Higher target = Higher payout but lower chance!",
+                parse_mode="Markdown"
+            )
+            return
+        
+        using_all = context.args[0].lower() == "all"
+        wager = 0.0
+        if using_all:
+            wager = round(user_data['balance'], 2)
+            if wager <= 0:
+                await update.message.reply_text("❌ You have no balance to bet!")
+                return
+        else:
+            try:
+                wager = round(float(context.args[0]), 2)
+            except ValueError:
+                await update.message.reply_text("❌ Invalid amount")
+                return
+        
+        try:
+            target_multiplier = round(float(context.args[1]), 2)
+        except (ValueError, IndexError):
+            await update.message.reply_text("❌ Invalid target multiplier")
+            return
+        
+        if wager < 0.01:
+            await update.message.reply_text("❌ Min: $0.01")
+            return
+        
+        if not using_all and wager > user_data['balance']:
+            await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
+            return
+        
+        if target_multiplier < 1.01:
+            await update.message.reply_text("❌ Minimum target multiplier is 1.01x")
+            return
+        
+        if target_multiplier > 1000000:
+            await update.message.reply_text("❌ Maximum target multiplier is 1,000,000x")
+            return
+        
+        user_data['balance'] -= wager
+        self.db.update_user(user_id, {'balance': user_data['balance']})
+        
+        game = LimboGame(user_id, wager, target_multiplier)
+        self.limbo_sessions[user_id] = game
+        
+        result = game.play()
+        
+        win_prob = result['win_probability'] * 100
+        
+        if result['won']:
+            user_data['balance'] += result['payout']
+            user_data['total_wagered'] += wager
+            user_data['games_played'] += 1
+            user_data['games_won'] += 1
+            user_data['total_pnl'] += result['profit']
+            user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + wager
+            self.db.update_user(user_id, user_data)
+            self.db.update_house_balance(-result['profit'])
+            
+            result_emoji = "🟢"
+            result_text = f"@{user_data.get('username', 'Player')} won ${result['payout']:.2f} ({target_multiplier:.2f}x)"
+        else:
+            user_data['total_wagered'] += wager
+            user_data['games_played'] += 1
+            user_data['total_pnl'] -= wager
+            user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + wager
+            self.db.update_user(user_id, user_data)
+            self.db.update_house_balance(wager)
+            
+            result_emoji = "🔴"
+            result_text = f"Lost ${wager:.2f}"
+        
+        self.db.record_game({
+            'type': 'limbo',
+            'player_id': user_id,
+            'username': user_data.get('username', 'Unknown'),
+            'wager': wager,
+            'target_multiplier': target_multiplier,
+            'result_multiplier': result['result_multiplier'],
+            'won': result['won'],
+            'payout': result['payout'],
+            'result': 'win' if result['won'] else 'loss',
+            'balance_after': user_data['balance']
+        })
+        
+        del self.limbo_sessions[user_id]
+        
+        keyboard = [[InlineKeyboardButton("🔄 Play Again", callback_data=f"limbo_again_{user_id}_{wager}_{target_multiplier}")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        message = f"🚀 **Limbo**\n\n"
+        message += f"**Target:** {target_multiplier:.2f}x ({win_prob:.1f}% chance)\n"
+        message += f"**Result:** {result['result_multiplier']:.2f}x {result_emoji}\n"
+        message += f"**Bet:** ${wager:.2f}\n\n"
+        message += result_text
+        
+        await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="Markdown")
+    
+    async def hilo_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Start a Hi-Lo game"""
+        user_data = self.ensure_user_registered(update)
+        user_id = update.effective_user.id
+        
+        if self.user_has_active_game(user_id):
+            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            return
+        
+        if not context.args:
+            await update.message.reply_text(
+                "**Usage:** `/hilo <amount>`\n\n"
+                "Predict if the next card is higher or lower!\n"
+                "• Ace is lowest (1), King is highest (13)\n"
+                "• Same value counts as a win for Higher/Lower\n"
+                "• Cash out anytime to secure your winnings!\n"
+                "• Each correct prediction increases your multiplier",
+                parse_mode="Markdown"
+            )
+            return
+        
+        using_all = context.args[0].lower() == "all"
+        wager = 0.0
+        if using_all:
+            wager = round(user_data['balance'], 2)
+            if wager <= 0:
+                await update.message.reply_text("❌ You have no balance to bet!")
+                return
+        else:
+            try:
+                wager = round(float(context.args[0]), 2)
+            except ValueError:
+                await update.message.reply_text("❌ Invalid amount")
+                return
+        
+        if wager < 0.01:
+            await update.message.reply_text("❌ Min: $0.01")
+            return
+        
+        if not using_all and wager > user_data['balance']:
+            await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
+            return
+        
+        user_data['balance'] -= wager
+        self.db.update_user(user_id, {'balance': user_data['balance']})
+        
+        game = HiLoGame(user_id, wager)
+        self.hilo_sessions[user_id] = game
+        
+        await self._display_hilo_state(update, context, user_id, is_new=True)
+    
+    def _build_hilo_keyboard(self, game: HiLoGame) -> InlineKeyboardMarkup:
+        """Build the Hi-Lo game keyboard"""
+        user_id = game.user_id
+        odds = game.get_odds()
+        
+        if game.game_over:
+            keyboard = [[InlineKeyboardButton("🔄 Play Again", callback_data=f"hilo_again_{user_id}_{game.initial_wager}")]]
+        else:
+            keyboard = [
+                [
+                    InlineKeyboardButton(f"⬆️ Higher ({odds['higher']['multiplier']:.2f}x)", callback_data=f"hilo_higher_{user_id}"),
+                    InlineKeyboardButton(f"⬇️ Lower ({odds['lower']['multiplier']:.2f}x)", callback_data=f"hilo_lower_{user_id}")
+                ],
+                [
+                    InlineKeyboardButton(f"🔄 Tie ({odds['tie']['multiplier']:.2f}x)", callback_data=f"hilo_tie_{user_id}"),
+                    InlineKeyboardButton("⏭️ Skip", callback_data=f"hilo_skip_{user_id}")
+                ]
+            ]
+            if game.round_number > 0:
+                payout = game.get_potential_payout()
+                keyboard.append([InlineKeyboardButton(f"💰 Cash Out ${payout:.2f}", callback_data=f"hilo_cashout_{user_id}")])
+        
+        return InlineKeyboardMarkup(keyboard)
+    
+    async def _display_hilo_state(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, is_new: bool = False):
+        """Display the current Hi-Lo game state"""
+        if user_id not in self.hilo_sessions:
+            return
+        
+        game = self.hilo_sessions[user_id]
+        state = game.get_game_state()
+        result_message = None
+        
+        card_display = state['current_card'] if state['current_card'] else "?"
+        
+        if game.game_over:
+            if game.won or game.cashed_out:
+                payout = game.get_payout()
+                profit = game.get_profit()
+                
+                user_data = self.db.get_user(user_id)
+                user_data['balance'] += payout
+                user_data['total_wagered'] += game.initial_wager
+                user_data['games_played'] += 1
+                user_data['games_won'] += 1
+                user_data['total_pnl'] += profit
+                user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + game.initial_wager
+                self.db.update_user(user_id, user_data)
+                self.db.update_house_balance(-profit)
+                
+                result_message = f"@{user_data.get('username', 'Player')} won ${payout:.2f} ({game.current_multiplier:.2f}x)"
+                
+                message = f"🎴 **Hi-Lo** - {'Cashed Out!' if game.cashed_out else 'You Win!'}\n\n"
+                message += f"**Rounds:** {game.round_number}\n"
+                message += f"**Final Multiplier:** {game.current_multiplier:.2f}x\n"
+                message += f"**Bet:** ${game.initial_wager:.2f}\n"
+                message += f"**Payout:** ${payout:.2f} (+${profit:.2f})"
+            else:
+                user_data = self.db.get_user(user_id)
+                user_data['total_wagered'] += game.initial_wager
+                user_data['games_played'] += 1
+                user_data['total_pnl'] -= game.initial_wager
+                user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + game.initial_wager
+                self.db.update_user(user_id, user_data)
+                self.db.update_house_balance(game.initial_wager)
+                
+                result_message = f"Lost ${game.initial_wager:.2f}"
+                
+                last_round = game.history[-1] if game.history else {}
+                message = f"🎴 **Hi-Lo** - Bust!\n\n"
+                message += f"**Current Card:** {last_round.get('current_card', '?')}\n"
+                message += f"**Next Card:** {last_round.get('next_card', '?')}\n"
+                message += f"**Your Prediction:** {last_round.get('prediction', '?').title()}\n"
+                message += f"**Rounds Completed:** {game.round_number}\n"
+                message += f"**Lost:** ${game.initial_wager:.2f}"
+            
+            self.db.record_game({
+                'type': 'hilo',
+                'player_id': user_id,
+                'username': user_data.get('username', 'Unknown'),
+                'wager': game.initial_wager,
+                'rounds': game.round_number,
+                'final_multiplier': game.current_multiplier,
+                'cashed_out': game.cashed_out,
+                'payout': game.get_payout(),
+                'result': 'win' if (game.won or game.cashed_out) else 'loss',
+                'balance_after': user_data['balance']
+            })
+            
+            del self.hilo_sessions[user_id]
+        else:
+            odds = state['odds']
+            message = f"🎴 **Hi-Lo**\n\n"
+            message += f"**Current Card:** {card_display}\n"
+            message += f"**Cards Left:** {state['cards_remaining']}\n"
+            message += f"**Round:** {state['round_number']}\n"
+            message += f"**Multiplier:** {state['current_multiplier']:.2f}x\n"
+            message += f"**Potential Payout:** ${state['potential_payout']:.2f}\n\n"
+            message += f"**Odds:**\n"
+            message += f"⬆️ Higher: {odds['higher']['probability']:.1f}% ({odds['higher']['multiplier']:.2f}x)\n"
+            message += f"⬇️ Lower: {odds['lower']['probability']:.1f}% ({odds['lower']['multiplier']:.2f}x)\n"
+            message += f"🔄 Tie: {odds['tie']['probability']:.1f}% ({odds['tie']['multiplier']:.2f}x)"
+        
+        reply_markup = self._build_hilo_keyboard(game) if user_id in self.hilo_sessions else self._build_hilo_keyboard(game)
+        
+        if is_new or not update.callback_query:
+            sent_msg = await update.effective_message.reply_text(message, reply_markup=reply_markup, parse_mode="Markdown")
+            if user_id in self.hilo_sessions:
+                self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+        else:
+            await update.callback_query.edit_message_text(message, reply_markup=reply_markup, parse_mode="Markdown")
+            if user_id in self.hilo_sessions:
+                self.button_ownership[(update.callback_query.message.chat_id, update.callback_query.message.message_id)] = user_id
+            if result_message:
+                await context.bot.send_message(chat_id=update.callback_query.message.chat_id, text=result_message, parse_mode="Markdown")
     
     async def tip_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Send money to another player."""
@@ -5661,6 +5967,10 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         baccarat_buttons = ["bacc_"]
         # Keno buttons (they verify ownership internally via user_id in callback data)
         keno_buttons = ["keno_pick_", "keno_draw_", "keno_clear_", "keno_again_", "keno_noop"]
+        # Limbo buttons
+        limbo_buttons = ["limbo_play_", "limbo_again_"]
+        # Hi-Lo buttons
+        hilo_buttons = ["hilo_higher_", "hilo_lower_", "hilo_tie_", "hilo_skip_", "hilo_cashout_", "hilo_again_"]
         # Withdrawal approval buttons (only admins/approvers can use)
         withdrawal_buttons = ["withdraw_approve_", "withdraw_deny_"]
         
@@ -7407,6 +7717,156 @@ Total Won: ${total_won:,.2f}"""
             
             elif data == "keno_noop":
                 await query.answer()
+            
+            # Limbo callbacks
+            elif data.startswith("limbo_again_"):
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                wager = float(parts[3])
+                target_multiplier = float(parts[4])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                user_data = self.db.get_user(user_id)
+                if user_data['balance'] < wager:
+                    await query.answer(f"❌ Insufficient balance! Need ${wager:.2f}", show_alert=True)
+                    return
+                
+                user_data['balance'] -= wager
+                self.db.update_user(user_id, {'balance': user_data['balance']})
+                
+                game = LimboGame(user_id, wager, target_multiplier)
+                self.limbo_sessions[user_id] = game
+                result = game.play()
+                
+                win_prob = result['win_probability'] * 100
+                
+                if result['won']:
+                    user_data['balance'] += result['payout']
+                    user_data['total_wagered'] += wager
+                    user_data['games_played'] += 1
+                    user_data['games_won'] += 1
+                    user_data['total_pnl'] += result['profit']
+                    user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + wager
+                    self.db.update_user(user_id, user_data)
+                    self.db.update_house_balance(-result['profit'])
+                    result_emoji = "🟢"
+                    result_text = f"@{user_data.get('username', 'Player')} won ${result['payout']:.2f} ({target_multiplier:.2f}x)"
+                else:
+                    user_data['total_wagered'] += wager
+                    user_data['games_played'] += 1
+                    user_data['total_pnl'] -= wager
+                    user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + wager
+                    self.db.update_user(user_id, user_data)
+                    self.db.update_house_balance(wager)
+                    result_emoji = "🔴"
+                    result_text = f"Lost ${wager:.2f}"
+                
+                self.db.record_game({
+                    'type': 'limbo',
+                    'player_id': user_id,
+                    'username': user_data.get('username', 'Unknown'),
+                    'wager': wager,
+                    'target_multiplier': target_multiplier,
+                    'result_multiplier': result['result_multiplier'],
+                    'won': result['won'],
+                    'payout': result['payout'],
+                    'result': 'win' if result['won'] else 'loss',
+                    'balance_after': user_data['balance']
+                })
+                
+                del self.limbo_sessions[user_id]
+                
+                keyboard = [[InlineKeyboardButton("🔄 Play Again", callback_data=f"limbo_again_{user_id}_{wager}_{target_multiplier}")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                message = f"🚀 **Limbo**\n\n"
+                message += f"**Target:** {target_multiplier:.2f}x ({win_prob:.1f}% chance)\n"
+                message += f"**Result:** {result['result_multiplier']:.2f}x {result_emoji}\n"
+                message += f"**Bet:** ${wager:.2f}\n\n"
+                message += result_text
+                
+                await query.edit_message_text(message, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            # Hi-Lo callbacks
+            elif data.startswith("hilo_higher_") or data.startswith("hilo_lower_") or data.startswith("hilo_tie_"):
+                parts = data.split('_')
+                action = parts[1]
+                game_user_id = int(parts[2])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if user_id not in self.hilo_sessions:
+                    await query.answer("❌ No active game!", show_alert=True)
+                    return
+                
+                game = self.hilo_sessions[user_id]
+                game.make_prediction(action)
+                await self._display_hilo_state(update, context, user_id)
+            
+            elif data.startswith("hilo_skip_"):
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if user_id not in self.hilo_sessions:
+                    await query.answer("❌ No active game!", show_alert=True)
+                    return
+                
+                game = self.hilo_sessions[user_id]
+                game.skip_card()
+                await query.answer("⏭️ Card skipped!")
+                await self._display_hilo_state(update, context, user_id)
+            
+            elif data.startswith("hilo_cashout_"):
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if user_id not in self.hilo_sessions:
+                    await query.answer("❌ No active game!", show_alert=True)
+                    return
+                
+                game = self.hilo_sessions[user_id]
+                result = game.cash_out()
+                if 'error' in result:
+                    await query.answer(f"❌ {result['error']}", show_alert=True)
+                    return
+                
+                await query.answer("💰 Cashing out!")
+                await self._display_hilo_state(update, context, user_id)
+            
+            elif data.startswith("hilo_again_"):
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                wager = float(parts[3])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                user_data = self.db.get_user(user_id)
+                if user_data['balance'] < wager:
+                    await query.answer(f"❌ Insufficient balance! Need ${wager:.2f}", show_alert=True)
+                    return
+                
+                user_data['balance'] -= wager
+                self.db.update_user(user_id, {'balance': user_data['balance']})
+                
+                game = HiLoGame(user_id, wager)
+                self.hilo_sessions[user_id] = game
+                await query.answer("🎮 New game started!")
+                await self._display_hilo_state(update, context, user_id)
             
             else:
                 await query.edit_message_text("Something went wrong or this button is for a different command!")

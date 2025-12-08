@@ -30,12 +30,14 @@ The Gran Tesero Casino Bot is built using Python and the `python-telegram-bot` l
 - **Streamlined Messaging**: Win/loss messages are in lowercase, and button labels are simplified.
 
 ### Technical Implementations
-- **Game Mechanics**: Includes twelve casino games:
+- **Game Mechanics**: Includes fourteen casino games:
   - Dice, Darts, Basketball, Soccer, Bowling, Slots, Predict, Coinflip, Roulette
   - Blackjack with standard casino rules (hit, stand, double down, split, insurance)
   - **Mines**: Interactive 5x5 grid minefield game using Telegram buttons. Players choose number of mines (3-24), reveal tiles to find gems, and cash out anytime. Higher mine counts give higher multipliers (up to 24,750x with 24 mines).
   - **Baccarat**: Standard 8-deck Baccarat with Player/Banker/Tie betting. Follows traditional third-card rules. Player pays 2x, Banker pays 1.95x (5% commission), Tie pays 9x. Proper push handling when betting player/banker and result is tie.
   - **Keno**: Interactive 40-number grid game using invisible Telegram buttons (similar to Mines). Players pick up to 10 numbers, then draw 10 numbers randomly. Payouts based on number of hits with multipliers up to 100,000x for hitting 10/10.
+  - **Limbo**: Fast-paced crypto-style game where players bet on a target multiplier. The game generates a random multiplier - if it's >= the target, the player wins their bet x target multiplier. Supports target multipliers from 1.01x up to 1,000,000x. RTP ~97%.
+  - **Hi-Lo**: Card-based prediction game using a 52-card deck. Players predict if the next card is higher or lower than the current card. Features: Ace is lowest (1), King is highest (13). Same value counts as win for Higher/Lower. Tie bet available for higher payouts. Cash out anytime to secure winnings. Win multiplier increases with each correct prediction. Cards are burned (3 discarded) after each round. RTP ~96-98%.
 - **Bonus System**: Features a $5 locked first-time bonus and a 1% daily bonus based on wagered amounts with a 24-hour cooldown and playthrough requirements.
 - **Referral Program**: Users get unique referral links, earning a 1% commission on their referrals' wagered volume.
 - **Leaderboard**: A paginated leaderboard displays top players based on total wagered amounts.
