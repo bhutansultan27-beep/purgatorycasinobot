@@ -2568,7 +2568,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items():
             btn = InlineKeyboardButton(info['name'], callback_data=f"deposit_crypto_{code}")
             keyboard.append([btn])
-        keyboard.append([InlineKeyboardButton("Back", callback_data="back_to_main_menu")])
+        keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -2678,7 +2678,7 @@ Your balance will be credited automatically after confirmations."""
         for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items():
             btn = InlineKeyboardButton(info['name'], callback_data=f"withdraw_method_{code.lower()}")
             keyboard.append([btn])
-        keyboard.append([InlineKeyboardButton("Back", callback_data="back_to_main_menu")])
+        keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(
@@ -5385,7 +5385,7 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
                 for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items():
                     btn = InlineKeyboardButton(info['name'], callback_data=f"deposit_crypto_{code}")
                     keyboard.append([btn])
-                keyboard.append([InlineKeyboardButton("Back", callback_data="back_to_main_menu")])
+                keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
                     f"💰 **Deposit**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
@@ -6222,7 +6222,7 @@ Total Won: ${total_won:,.2f}"""
                 for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items():
                     btn = InlineKeyboardButton(info['name'], callback_data=f"deposit_crypto_{code}")
                     keyboard.append([btn])
-                keyboard.append([InlineKeyboardButton("Back", callback_data="back_to_menu")])
+                keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
                 
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
@@ -6245,7 +6245,7 @@ Total Won: ${total_won:,.2f}"""
                     for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items():
                         btn = InlineKeyboardButton(info['name'], callback_data=f"withdraw_method_{code.lower()}")
                         keyboard.append([btn])
-                    keyboard.append([InlineKeyboardButton("Back", callback_data="back_to_menu")])
+                    keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
                     reply_markup = InlineKeyboardMarkup(keyboard)
                     await query.edit_message_text(
                         f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
@@ -6297,7 +6297,7 @@ Total Won: ${total_won:,.2f}"""
                 for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items():
                     btn = InlineKeyboardButton(info['name'], callback_data=f"withdraw_method_{code.lower()}")
                     keyboard.append([btn])
-                keyboard.append([InlineKeyboardButton("Back", callback_data="back_to_menu")])
+                keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
                     f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
