@@ -2930,11 +2930,12 @@ Total Won: ${total_won:,.2f}"""
                 message += f"**Mines:** {game.num_mines} | **Revealed:** {revealed}/{safe_tiles}\n"
                 message += f"**Bet:** ${game.wager:.2f}"
                 
-                # Separate result message
-                result_message = f"**Lost ${game.wager:.2f}**"
-                
                 # Update stats
                 user_data = self.db.get_user(user_id)
+                username = user_data.get('username', 'Player')
+                
+                # Separate result message
+                result_message = f"@{username} lost ${game.wager:.2f}"
                 user_data['total_wagered'] += game.wager
                 user_data['total_pnl'] -= game.wager
                 user_data['games_played'] += 1
@@ -3141,7 +3142,7 @@ Total Won: ${total_won:,.2f}"""
             self.db.update_user(user_id, user_data)
             self.db.update_house_balance(wager)
             
-            result_text = f"Lost ${wager:.2f}"
+            result_text = f"@{user_data.get('username', 'Player')} lost ${wager:.2f}"
         
         outcome = 'push' if is_push else ('win' if payout > 0 else 'loss')
         self.db.record_game({
@@ -3302,7 +3303,7 @@ Total Won: ${total_won:,.2f}"""
                 self.db.update_user(user_id, user_data)
                 self.db.update_house_balance(game.wager)
                 
-                result_message = f"Lost ${game.wager:.2f}"
+                result_message = f"@{user_data.get('username', 'Player')} lost ${game.wager:.2f}"
             
             self.db.record_game({
                 'type': 'keno',
@@ -3431,7 +3432,7 @@ Total Won: ${total_won:,.2f}"""
             self.db.update_house_balance(wager)
             
             result_emoji = "🔴"
-            result_text = f"Lost ${wager:.2f}"
+            result_text = f"@{user_data.get('username', 'Player')} lost ${wager:.2f}"
         
         self.db.record_game({
             'type': 'limbo',
@@ -3582,7 +3583,7 @@ Total Won: ${total_won:,.2f}"""
                 self.db.update_user(user_id, user_data)
                 self.db.update_house_balance(game.initial_wager)
                 
-                result_message = f"Lost ${game.initial_wager:.2f}"
+                result_message = f"@{user_data.get('username', 'Player')} lost ${game.initial_wager:.2f}"
                 
                 last_round = game.history[-1] if game.history else {}
                 message = f"🎴 **Hi-Lo** - Bust!\n\n"
@@ -8483,7 +8484,7 @@ Total Won: ${total_won:,.2f}"""
                     self.db.update_user(user_id, user_data)
                     self.db.update_house_balance(wager)
                     result_emoji = "🔴"
-                    result_text = f"Lost ${wager:.2f}"
+                    result_text = f"@{user_data.get('username', 'Player')} lost ${wager:.2f}"
                 
                 self.db.record_game({
                     'type': 'limbo',
