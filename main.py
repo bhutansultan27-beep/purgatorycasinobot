@@ -2216,11 +2216,13 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         keyboard = [
             [InlineKeyboardButton("Red (2x)", callback_data=f"roulette_{wager:.2f}_red"),
              InlineKeyboardButton("Black (2x)", callback_data=f"roulette_{wager:.2f}_black")],
-            [InlineKeyboardButton("Green (14x)", callback_data=f"roulette_{wager:.2f}_green")],
             [InlineKeyboardButton("Odd (2x)", callback_data=f"roulette_{wager:.2f}_odd"),
              InlineKeyboardButton("Even (2x)", callback_data=f"roulette_{wager:.2f}_even")],
             [InlineKeyboardButton("Low (2x)", callback_data=f"roulette_{wager:.2f}_low"),
-             InlineKeyboardButton("High (2x)", callback_data=f"roulette_{wager:.2f}_high")]
+             InlineKeyboardButton("High (2x)", callback_data=f"roulette_{wager:.2f}_high")],
+            [InlineKeyboardButton("0 (35x)", callback_data=f"roulette_{wager:.2f}_zero"),
+             InlineKeyboardButton("00 (35x)", callback_data=f"roulette_{wager:.2f}_doublezero")],
+            [InlineKeyboardButton("Green (14x)", callback_data=f"roulette_{wager:.2f}_green")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -2231,9 +2233,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             f"**Choose your bet:**\n"
             f"• Red/Black: 2x payout\n"
             f"• Odd/Even: 2x payout\n"
-            f"• Green (0/00): 14x payout\n"
-            f"• Low (1-18)/High (19-36): 2x payout\n\n"
-            f"*Tip: Bet on a specific number with `/roulette <amount> #<number>` for 36x payout!*",
+            f"• Low (1-18)/High (19-36): 2x payout\n"
+            f"• 0/00: 35x payout\n"
+            f"• Green (0/00): 14x payout\n\n"
+            f"*Tip: Bet on a specific number with `/roulette <amount> #<number>` for 35x payout!*",
             reply_markup=reply_markup,
             parse_mode="Markdown"
         )
@@ -4985,6 +4988,14 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
             won = True
             multiplier = 2
             bet_description = "HIGH (19-36)"
+        elif choice == "zero" and result_num == 0:
+            won = True
+            multiplier = 36
+            bet_description = "0"
+        elif choice == "doublezero" and result_num == 37:
+            won = True
+            multiplier = 36
+            bet_description = "00"
         
         if won:
             profit = wager * (multiplier - 1)
@@ -5014,11 +5025,13 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
         keyboard = [
             [InlineKeyboardButton("Red (2x)", callback_data=f"roulette_{wager:.2f}_red"),
              InlineKeyboardButton("Black (2x)", callback_data=f"roulette_{wager:.2f}_black")],
-            [InlineKeyboardButton("Green (14x)", callback_data=f"roulette_{wager:.2f}_green")],
             [InlineKeyboardButton("Odd (2x)", callback_data=f"roulette_{wager:.2f}_odd"),
              InlineKeyboardButton("Even (2x)", callback_data=f"roulette_{wager:.2f}_even")],
             [InlineKeyboardButton("Low (2x)", callback_data=f"roulette_{wager:.2f}_low"),
-             InlineKeyboardButton("High (2x)", callback_data=f"roulette_{wager:.2f}_high")]
+             InlineKeyboardButton("High (2x)", callback_data=f"roulette_{wager:.2f}_high")],
+            [InlineKeyboardButton("0 (35x)", callback_data=f"roulette_{wager:.2f}_zero"),
+             InlineKeyboardButton("00 (35x)", callback_data=f"roulette_{wager:.2f}_doublezero")],
+            [InlineKeyboardButton("Green (14x)", callback_data=f"roulette_{wager:.2f}_green")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
