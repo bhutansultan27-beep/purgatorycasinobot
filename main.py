@@ -2489,6 +2489,13 @@ Total Won: ${total_won:,.2f}"""
             payout = game.get_potential_payout()
             keyboard.append([InlineKeyboardButton(f"💰 Cash Out ${payout:.2f}", callback_data=f"mines_cashout_{user_id}")])
         
+        # Add play again options if game is over
+        if game.game_over:
+            keyboard.append([
+                InlineKeyboardButton("🔄 Play Again", callback_data=f"mines_again_{user_id}_{game.wager}_{game.num_mines}"),
+                InlineKeyboardButton("💣 Change Mines", callback_data=f"mines_change_{user_id}_{game.wager}")
+            ])
+        
         return InlineKeyboardMarkup(keyboard)
     
     async def _display_mines_state(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, is_new: bool = False):
@@ -6764,6 +6771,71 @@ Total Won: ${total_won:,.2f}"""
                 
                 # Update display
                 await self._display_mines_state(update, context, user_id)
+            
+            elif data.startswith("mines_again_"):
+                # mines_again_<user_id>_<wager>_<num_mines> - Play again with same settings
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                wager = float(parts[3])
+                num_mines = int(parts[4])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                # Check if user has enough balance
+                user_data = self.db.get_user(user_id)
+                if user_data['balance'] < wager:
+                    await query.answer(f"❌ Insufficient balance! Need ${wager:.2f}", show_alert=True)
+                    return
+                
+                # Deduct wager
+                user_data['balance'] -= wager
+                self.db.update_user(user_id, user_data)
+                
+                # Start new game with same settings
+                from mines import MinesGame
+                self.mines_sessions[user_id] = MinesGame(wager, num_mines)
+                
+                await query.answer("🎮 New game started!")
+                await self._display_mines_state(update, context, user_id, is_new=True)
+            
+            elif data.startswith("mines_change_"):
+                # mines_change_<user_id>_<wager> - Pick new mines count
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                wager = float(parts[3])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                # Check if user has enough balance
+                user_data = self.db.get_user(user_id)
+                if user_data['balance'] < wager:
+                    await query.answer(f"❌ Insufficient balance! Need ${wager:.2f}", show_alert=True)
+                    return
+                
+                # Show mines selection keyboard
+                mines_options = [1, 3, 5, 10, 15, 20, 24]
+                keyboard = []
+                row = []
+                for m in mines_options:
+                    row.append(InlineKeyboardButton(f"💣 {m}", callback_data=f"mines_start_{wager}_{m}"))
+                    if len(row) == 4:
+                        keyboard.append(row)
+                        row = []
+                if row:
+                    keyboard.append(row)
+                
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(
+                    f"💣 **Mines** - Select number of mines\n\n"
+                    f"**Bet:** ${wager:.2f}\n\n"
+                    f"More mines = higher risk = higher rewards!",
+                    reply_markup=reply_markup,
+                    parse_mode="Markdown"
+                )
             
             elif data == "mines_noop":
                 # Just acknowledge the click but do nothing (for revealed/disabled tiles)
