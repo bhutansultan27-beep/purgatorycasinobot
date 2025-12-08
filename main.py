@@ -955,6 +955,11 @@ Hey there! Ready to play?
 🎰 Slots - /slots
 ♠️ Blackjack - /blackjack
 💣 Mines - /mines
+🃏 Baccarat - /baccarat
+🎱 Keno - /keno
+🚀 Limbo - /limbo
+📈 Hi-Lo - /hilo
+🔴 Connect 4 - /connect
 
 📋 /menu - Open the main menu
 
@@ -3508,17 +3513,49 @@ Total Won: ${total_won:,.2f}"""
         await self._display_connect4_state(update, context, game_id)
     
     def _build_connect4_keyboard(self, game: Connect4Game, game_id: str) -> InlineKeyboardMarkup:
-        """Build the column selection keyboard for Connect 4."""
+        """Build the full grid keyboard for Connect 4 with clickable buttons."""
         valid_cols = game.get_valid_columns()
-        col_buttons = []
+        keyboard = []
         
+        for row in range(6):
+            row_buttons = []
+            for col in range(7):
+                cell = game.board[row][col]
+                if cell == game.EMPTY:
+                    if col in valid_cols:
+                        row_buttons.append(InlineKeyboardButton("⚪", callback_data=f"connect4_drop_{game_id}_{col}"))
+                    else:
+                        row_buttons.append(InlineKeyboardButton("⚪", callback_data="connect4_noop"))
+                elif cell == game.PLAYER1:
+                    row_buttons.append(InlineKeyboardButton("🔴", callback_data="connect4_noop"))
+                else:
+                    row_buttons.append(InlineKeyboardButton("🟡", callback_data="connect4_noop"))
+            keyboard.append(row_buttons)
+        
+        col_labels = []
         for col in range(7):
-            if col in valid_cols:
-                col_buttons.append(InlineKeyboardButton(f"{col + 1}", callback_data=f"connect4_drop_{game_id}_{col}"))
-            else:
-                col_buttons.append(InlineKeyboardButton("X", callback_data="connect4_noop"))
+            col_labels.append(InlineKeyboardButton(f"{col + 1}", callback_data="connect4_noop"))
+        keyboard.append(col_labels)
         
-        return InlineKeyboardMarkup([col_buttons])
+        return InlineKeyboardMarkup(keyboard)
+    
+    def _build_connect4_final_board(self, game: Connect4Game) -> InlineKeyboardMarkup:
+        """Build the final board display for Connect 4 (non-clickable)."""
+        keyboard = []
+        
+        for row in range(6):
+            row_buttons = []
+            for col in range(7):
+                cell = game.board[row][col]
+                if cell == game.EMPTY:
+                    row_buttons.append(InlineKeyboardButton("⚪", callback_data="connect4_noop"))
+                elif cell == game.PLAYER1:
+                    row_buttons.append(InlineKeyboardButton("🔴", callback_data="connect4_noop"))
+                else:
+                    row_buttons.append(InlineKeyboardButton("🟡", callback_data="connect4_noop"))
+            keyboard.append(row_buttons)
+        
+        return InlineKeyboardMarkup(keyboard)
     
     async def _display_connect4_state(self, update: Update, context: ContextTypes.DEFAULT_TYPE, game_id: str, is_new: bool = True):
         """Display the current Connect 4 game state."""
@@ -3537,12 +3574,12 @@ Total Won: ${total_won:,.2f}"""
         
         message = f"**Connect 4** - ${game.wager:.2f}\n\n"
         message += f"🔴 @{p1_username}\n"
-        message += f"🟡 @{p2_username}\n\n"
-        message += f"{state['board']}\n\n"
+        message += f"🟡 @{p2_username}\n"
         
         if game.game_over:
+            final_board = self._build_connect4_final_board(game)
             if game.is_draw:
-                message += "**Draw!** Wagers returned."
+                message += "\n**Draw!** Wagers returned."
                 
                 p1_data['balance'] += game.wager
                 p2_data['balance'] += game.wager
@@ -3550,7 +3587,7 @@ Total Won: ${total_won:,.2f}"""
                 self.db.update_user(game.player2_id, {'balance': p2_data['balance']})
                 
                 del self.connect4_sessions[game_id]
-                reply_markup = None
+                reply_markup = final_board
             else:
                 winner_id = state['winner_id']
                 loser_id = game.player2_id if winner_id == game.player1_id else game.player1_id
@@ -3574,7 +3611,7 @@ Total Won: ${total_won:,.2f}"""
                 self.db.update_user(winner_id, winner_data)
                 self.db.update_user(loser_id, loser_data)
                 
-                message += f"**{winner_emoji} @{winner_username} wins ${total_pot:.2f}!**"
+                message += f"\n**{winner_emoji} @{winner_username} wins ${total_pot:.2f}!**"
                 
                 self.db.record_game({
                     'type': 'connect4',
@@ -3588,10 +3625,10 @@ Total Won: ${total_won:,.2f}"""
                 })
                 
                 del self.connect4_sessions[game_id]
-                reply_markup = None
+                reply_markup = final_board
         else:
             current_emoji = "🔴" if game.current_player == game.PLAYER1 else "🟡"
-            message += f"{current_emoji} @{current_username}'s turn"
+            message += f"\n{current_emoji} @{current_username}'s turn"
             reply_markup = self._build_connect4_keyboard(game, game_id)
         
         chat_id = update.effective_chat.id
@@ -6956,6 +6993,11 @@ Your balance will be credited automatically after confirmations.
 /slots - Play slots 🎰
 /blackjack - Play blackjack ♠️
 /mines - Play mines 💣
+/baccarat - Play baccarat 🃏
+/keno - Play keno 🎱
+/limbo - Play limbo 🚀
+/hilo - Play hi-lo 📈
+/connect - Connect 4 🔴
 
 **Account:**
 /bal - Check your balance
@@ -6990,6 +7032,11 @@ Your balance will be credited automatically after confirmations.
                     [InlineKeyboardButton("🎳 Bowling", callback_data="game_info_bowling")],
                     [InlineKeyboardButton("♠️ Blackjack", callback_data="game_info_blackjack")],
                     [InlineKeyboardButton("💣 Mines", callback_data="game_info_mines")],
+                    [InlineKeyboardButton("🃏 Baccarat", callback_data="game_info_baccarat")],
+                    [InlineKeyboardButton("🎱 Keno", callback_data="game_info_keno")],
+                    [InlineKeyboardButton("🚀 Limbo", callback_data="game_info_limbo")],
+                    [InlineKeyboardButton("📈 Hi-Lo", callback_data="game_info_hilo")],
+                    [InlineKeyboardButton("🔴 Connect 4", callback_data="game_info_connect4")],
                     [InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
@@ -7435,7 +7482,12 @@ Total Won: ${total_won:,.2f}"""
                     "soccer": "Usage: `/soccer <amount|all>`",
                     "bowling": "Usage: `/bowling <amount|all>`",
                     "blackjack": "Usage: `/blackjack <amount|all>`",
-                    "mines": "Usage: `/mines <amount|all>`"
+                    "mines": "Usage: `/mines <amount|all>`",
+                    "baccarat": "🃏 **Baccarat**\n\nBet on Player, Banker, or Tie!\n\n**Usage:** `/baccarat <amount|all>`",
+                    "keno": "🎱 **Keno**\n\nPick up to 10 numbers and match the draw!\n\n**Usage:** `/keno <amount|all>`",
+                    "limbo": "🚀 **Limbo**\n\nSet a target multiplier and hope the roll beats it!\n\n**Usage:** `/limbo <amount|all>`",
+                    "hilo": "📈 **Hi-Lo**\n\nPredict if the next card is higher or lower!\n\n**Usage:** `/hilo <amount|all>`",
+                    "connect4": "🔴 **Connect 4**\n\nChallenge another player to Connect 4!\n\n**Usage:** `/connect @user <amount>`"
                 }
                 
                 usage_text = game_usage.get(game_name, "Game not found.")
