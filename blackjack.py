@@ -134,12 +134,10 @@ class BlackjackGame:
         # Check for immediate Blackjack
         if self.player_hands[0]['hand'].is_blackjack():
             self.player_hands[0]['status'] = 'Blackjack'
-            # If dealer upcard is Ace, check hole card before resolving
-            if self.dealer_hand.cards[0].rank == 'A':
-                return "Dealer shows an Ace. You have Blackjack! Checking for Push (Dealer Blackjack)..."
-            else:
-                self._resolve_game()
-                return "Blackjack! Game over."
+            # Always resolve immediately when player has blackjack
+            # This checks if dealer also has blackjack (push) or pays out 3:2
+            self._resolve_game()
+            return "Blackjack! Game over."
 
         self._check_available_actions()
         return "Game started. Your turn."
