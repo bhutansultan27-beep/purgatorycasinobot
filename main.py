@@ -2745,12 +2745,8 @@ Your balance will be credited automatically after confirmations."""
         
         # Step 1: User is entering withdrawal amount
         if 'pending_withdraw_method' in context.user_data and 'pending_withdraw_amount' not in context.user_data:
-            # Create cancel button for error messages
-            cancel_keyboard = [[InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]]
-            cancel_markup = InlineKeyboardMarkup(cancel_keyboard)
-            
             async def send_error_with_ownership(msg_text):
-                sent_msg = await update.message.reply_text(msg_text, reply_markup=cancel_markup)
+                sent_msg = await update.message.reply_text(msg_text)
                 self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
             
             try:
@@ -2779,8 +2775,7 @@ Your balance will be credited automatically after confirmations."""
             crypto_info = SUPPORTED_WITHDRAWAL_CRYPTOS.get(currency, {'name': currency})
             
             keyboard = [
-                [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_amount")],
-                [InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]
+                [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_amount")]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
@@ -2801,8 +2796,7 @@ Your balance will be credited automatically after confirmations."""
             
             if len(wallet_address) < 20:
                 keyboard = [
-                    [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_amount")],
-                    [InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]
+                    [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_amount")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
@@ -5903,8 +5897,7 @@ Total Won: ${total_won:,.2f}"""
                 context.user_data['pending_withdraw_method'] = currency.lower()
                 
                 keyboard = [
-                    [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_currency")],
-                    [InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]
+                    [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_currency")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
@@ -5957,8 +5950,7 @@ Total Won: ${total_won:,.2f}"""
                 balance = user_data['balance']
                 
                 keyboard = [
-                    [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_currency")],
-                    [InlineKeyboardButton("Cancel", callback_data="withdraw_cancel_flow")]
+                    [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_currency")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
