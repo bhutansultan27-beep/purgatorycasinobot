@@ -2450,13 +2450,14 @@ Total Won: ${total_won:,.2f}"""
             keyboard = [[InlineKeyboardButton(f"🔄 Play Again (${original_bet:.2f})", callback_data=f"bj_{user_id}_playagain_{original_bet:.2f}")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
-            # Build the result message
+            # Build the result message with @username format
+            username = update.effective_user.username or update.effective_user.first_name or f"User{user_id}"
             if total_payout > 0:
-                result_message = f"✅ **You won ${total_payout:.2f}!**"
+                result_message = f"@{username} won ${total_payout:.2f}"
             elif total_payout < 0:
-                result_message = f"❌ **You lost ${abs(total_payout):.2f}**"
+                result_message = f"@{username} lost ${abs(total_payout):.2f}"
             else:
-                result_message = "🤝 **Push** - Bet returned"
+                result_message = f"@{username} push - bet returned"
             
             # Edit the game message (without result) and send result as separate message
             chat_id = update.effective_chat.id
