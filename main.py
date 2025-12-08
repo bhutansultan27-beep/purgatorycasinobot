@@ -3313,8 +3313,18 @@ Your balance will be credited automatically after confirmations."""
             self.db.save_data()
             
             tx_id = result.get('tx_id', '')
+            tx_url = result.get('tx_url', '')
             tx_info = f"\nTX: `{tx_id}`" if tx_id else ""
-            explorer_link = f"\n[View on Blockchain]({get_blockchain_explorer_url('LTC', tx_id)})" if tx_id else ""
+            explorer_link = f"\n[View on Blockchain]({tx_url})" if tx_url else ""
+            
+            if tx_id:
+                if 'processed_withdrawal_txids' not in self.db.data:
+                    self.db.data['processed_withdrawal_txids'] = []
+                self.db.data['processed_withdrawal_txids'].append(tx_id)
+                if len(self.db.data['processed_withdrawal_txids']) > 1000:
+                    self.db.data['processed_withdrawal_txids'] = self.db.data['processed_withdrawal_txids'][-1000:]
+                self.db.save_data()
+            
             await update.message.reply_text(
                 f"✅ **Withdrawal Sent!**\n\nUser ID: {target_user_id}\nAmount: ${withdrawal['amount']:.2f}\nTo: `{withdrawal['ltc_address']}`{tx_info}{explorer_link}",
                 parse_mode="Markdown",
@@ -6582,12 +6592,21 @@ Total Won: ${total_won:,.2f}"""
                     if result['success']:
                         withdrawal['status'] = 'processed'
                         withdrawal['tx_id'] = result.get('tx_id')
+                        withdrawal['tx_url'] = result.get('tx_url')
                         self.db.add_transaction(target_user_id, "withdrawal", -amount, f"{currency} Withdrawal to {wallet_address[:20]}...")
-                        self.db.save_data()
                         
                         tx_id = result.get('tx_id', '')
+                        tx_url = result.get('tx_url', '')
+                        if tx_id:
+                            if 'processed_withdrawal_txids' not in self.db.data:
+                                self.db.data['processed_withdrawal_txids'] = []
+                            self.db.data['processed_withdrawal_txids'].append(tx_id)
+                            if len(self.db.data['processed_withdrawal_txids']) > 1000:
+                                self.db.data['processed_withdrawal_txids'] = self.db.data['processed_withdrawal_txids'][-1000:]
+                        self.db.save_data()
+                        
                         tx_info = f"\nTX: `{tx_id}`" if tx_id else ""
-                        explorer_link = f"\n[View on Blockchain]({get_blockchain_explorer_url(currency, tx_id)})" if tx_id else ""
+                        explorer_link = f"\n[View on Blockchain]({tx_url})" if tx_url else ""
                         await query.edit_message_text(
                             f"✅ **Withdrawal Sent!**\n\nUser: @{username} (ID: `{target_user_id}`)\nAmount: **${amount:.2f}**\nCurrency: **{currency}**\nTo: `{wallet_address}`{tx_info}{explorer_link}\n\nApproved by @{update.effective_user.username or update.effective_user.first_name}",
                             parse_mode="Markdown",

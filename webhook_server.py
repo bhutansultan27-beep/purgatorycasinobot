@@ -110,6 +110,10 @@ class WebhookServer:
                 logger.info(f"Deposit already processed: {tx_id}")
                 return web.json_response({"status": "ok", "message": "Already processed"})
             
+            if self.is_withdrawal_transaction(tx_id):
+                logger.info(f"Ignoring withdrawal transaction: {tx_id}")
+                return web.json_response({"status": "ok", "message": "Withdrawal transaction ignored"})
+            
             if source_rate and float(source_rate) > 0:
                 raw_amount = round(actual_crypto_amount / float(source_rate), 2)
                 logger.info(f"Calculated USD from actual crypto received: {actual_crypto_amount} / {source_rate} = ${raw_amount}")
@@ -172,6 +176,11 @@ class WebhookServer:
     def is_deposit_processed(self, tx_id):
         processed = self.bot.db.data.get('processed_deposits', [])
         return tx_id in processed
+    
+    def is_withdrawal_transaction(self, tx_id):
+        """Check if this transaction ID belongs to a processed withdrawal."""
+        withdrawal_txids = self.bot.db.data.get('processed_withdrawal_txids', [])
+        return tx_id in withdrawal_txids
     
     def mark_deposit_processed(self, tx_id, user_id, crypto_amount, usd_amount, currency='LTC'):
         if 'processed_deposits' not in self.bot.db.data:
