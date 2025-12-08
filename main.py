@@ -2360,30 +2360,22 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                         logger.info(f"[PLISIO DEBUG] Full data response: {data}")
                         
                         txn_id = data.get('txn_id')
+                        invoice_url = data.get('invoice_url')
                         address = data.get('wallet_hash') or data.get('wallet') or data.get('address')
                         qr_code = data.get('qr_code')
                         
-                        # If wallet_hash not in invoice response, fetch from operation details
-                        if not address and txn_id:
-                            logger.info(f"[PLISIO DEBUG] wallet_hash not in invoice response, fetching from operation details...")
-                            op_url = f"https://api.plisio.net/api/v1/operations/{txn_id}"
-                            op_params = {'api_key': api_key}
-                            async with session.get(op_url, params=op_params, timeout=15) as op_response:
-                                op_result = await op_response.json()
-                                logger.info(f"[PLISIO DEBUG] Operation response: {op_result}")
-                                if op_result.get('status') == 'success':
-                                    op_data = op_result.get('data', {})
-                                    address = op_data.get('wallet_hash') or op_data.get('wallet') or op_data.get('address')
-                                    if not qr_code:
-                                        qr_code = op_data.get('qr_code')
-                                    logger.info(f"[PLISIO DEBUG] Got address from operation: {address}")
+                        # Use invoice_url if no direct wallet address available
+                        if not address and invoice_url:
+                            logger.info(f"[PLISIO DEBUG] Using invoice URL for deposit: {invoice_url}")
+                            address = invoice_url  # Store invoice URL as the "address"
                         
-                        logger.info(f"[PLISIO DEBUG] Generated {currency} address: {address}")
+                        logger.info(f"[PLISIO DEBUG] Generated {currency} deposit info: {address}")
                         return {
                             'address': address,
                             'qr_code': qr_code,
                             'expire_on': data.get('expire_utc'),
                             'txn_id': txn_id,
+                            'invoice_url': invoice_url,
                             'currency': currency
                         }
                     else:
@@ -2462,10 +2454,30 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             await query.edit_message_text(f"❌ {currency} deposits temporarily unavailable. Contact admin.")
             return
         
-        keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="deposit_back")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
+        # Check if it's an invoice URL (Plisio payment page) or direct wallet address
+        is_invoice_url = user_deposit_address.startswith('http')
         
-        deposit_text = f"""{crypto_info['name']} Deposit
+        if is_invoice_url:
+            # Show button to open Plisio payment page
+            keyboard = [
+                [InlineKeyboardButton(f"💳 Open {currency} Payment Page", url=user_deposit_address)],
+                [InlineKeyboardButton("⬅️ Back", callback_data="deposit_back")]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            deposit_text = f"""{crypto_info['name']} Deposit
+
+Click the button below to open your payment page.
+
+You'll see your unique {currency} wallet address on the payment page.
+
+Your balance will be credited automatically after confirmations."""
+        else:
+            # Show direct wallet address
+            keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="deposit_back")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            
+            deposit_text = f"""{crypto_info['name']} Deposit
 
 Your unique {currency} deposit address:
 
