@@ -105,10 +105,14 @@ class WebhookServer:
                 return web.json_response({"status": "ok", "message": "Already processed"})
             
             if source_amount:
-                credited_amount = round(float(source_amount), 2)
+                raw_amount = round(float(source_amount), 2)
             else:
                 logger.warning(f"No source_amount from Plisio, using {detected_currency} amount as USD")
-                credited_amount = round(amount, 2)
+                raw_amount = round(amount, 2)
+            
+            # Apply 1% deposit fee (not shown to user)
+            deposit_fee = 0.01
+            credited_amount = round(raw_amount * (1 - deposit_fee), 2)
             
             user_data = self.bot.db.get_user(user_id)
             user_data['balance'] += credited_amount
@@ -129,7 +133,7 @@ class WebhookServer:
             try:
                 await self.bot.app.bot.send_message(
                     chat_id=user_id,
-                    text=f"✅ **Deposit Confirmed!**\n\nReceived: {amount:.8f} {detected_currency}\nCredited: **${credited_amount:.2f}**\n\nNew Balance: ${user_data['balance']:.2f}",
+                    text=f"✅ **Deposit Confirmed!**\n\nAmount: **${raw_amount:.2f}**\n\nNew Balance: ${user_data['balance']:.2f}",
                     parse_mode="Markdown"
                 )
             except Exception as e:
