@@ -494,7 +494,6 @@ class GranTeseroCasinoBot:
         """Setup all command and callback handlers"""
         self.app.add_handler(CommandHandler("start", self.start_command))
         self.app.add_handler(CommandHandler("menu", self.menu_command))
-        self.app.add_handler(CommandHandler("help", self.help_command))
         self.app.add_handler(CommandHandler("adminhelp", self.adminhelp_command))
         self.app.add_handler(CommandHandler("balance", self.balance_command))
         self.app.add_handler(CommandHandler("bal", self.balance_command))
@@ -816,20 +815,6 @@ class GranTeseroCasinoBot:
                 self.db.update_user(user.id, {"username": user.username})
             user_data = self.db.get_user(user.id) # Reload data if updated
         
-        # Check for referral link in /start arguments
-        if context.args and context.args[0].startswith('ref_'):
-            ref_code = context.args[0].split('_', 1)[1]
-            if user_data.get('referred_by') is None:
-                referrer_data = self.db.data['users'].get(self.db.data['users'].get(ref_code))
-                if referrer_data and referrer_data['user_id'] != user.id:
-                    self.db.update_user(user.id, {'referred_by': ref_code})
-                    self.db.update_user(referrer_data['user_id'], {'referral_count': referrer_data.get('referral_count', 0) + 1})
-                    await context.bot.send_message(
-                        chat_id=referrer_data['user_id'],
-                        text=f"🎉 **New Referral!** Your link brought in @{user.username or user.first_name}.",
-                        parse_mode="Markdown"
-                    )
-        
         welcome_text = """🎰 **Gran Tesero Casino**
 
 Hey there! Ready to play?
@@ -897,43 +882,6 @@ Good luck! 🍀"""
         
         sent_msg = await update.message.reply_text(menu_text, reply_markup=reply_markup, parse_mode="Markdown")
         self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user.id
-    
-    async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Show all player commands"""
-        help_text = """🎰 **Gran Tesero - Commands**
-
-**General:**
-/start - Start the bot
-/menu - Open the main menu
-/help - Show this help message
-
-**Games:**
-/dice - Roll dice 🎲
-/darts - Play darts 🎯
-/basketball (/bball) - Shoot hoops 🏀
-/soccer (/football) - Play soccer ⚽
-/bowling - Go bowling 🎳
-/coinflip (/flip) - Flip a coin 🪙
-/predict - Dice prediction 🔮
-/roulette - Play roulette 🎡
-/slots - Play slots 🎰
-/blackjack (/bj) - Play blackjack ♠️
-
-**Account:**
-/balance (/bal) - Check your balance
-/bonus - Get your bonuses
-/stats - View your stats
-/levels - View level rewards
-/history - View game history
-/deposit - Deposit funds
-/withdraw - Withdraw funds
-/tip @user amount - Tip another player
-
-**Info:**
-/leaderboard - View top players
-/housebal - View house balance
-"""
-        await update.message.reply_text(help_text, parse_mode="Markdown")
     
     async def adminhelp_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show all admin commands - admin only"""
