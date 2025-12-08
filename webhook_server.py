@@ -124,9 +124,8 @@ class WebhookServer:
                 logger.warning(f"No source_rate from Plisio, using actual crypto amount as USD: {actual_crypto_amount}")
                 raw_amount = round(actual_crypto_amount, 2)
             
-            # Apply 1% deposit fee (not shown to user)
-            deposit_fee = 0.01
-            credited_amount = round(raw_amount * (1 - deposit_fee), 2)
+            # Credit full deposit amount (no fee)
+            credited_amount = round(raw_amount, 2)
             
             user_data = self.bot.db.get_user(user_id)
             user_data['balance'] += credited_amount

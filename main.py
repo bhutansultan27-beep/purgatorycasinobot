@@ -1600,9 +1600,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             await update.message.reply_text("Usage: `/dice <amount|all>`", parse_mode="Markdown")
             return
         
+        using_all = context.args[0].lower() == "all"
         wager = 0.0
-        if context.args[0].lower() == "all":
-            wager = user_data['balance']
+        if using_all:
+            wager = round(user_data['balance'], 2)
         else:
             try:
                 wager = round(float(context.args[0]), 2)
@@ -1610,11 +1611,11 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 await update.message.reply_text("❌ Invalid amount")
                 return
         
-        if wager <= 0.01:
+        if wager < 0.01:
             await update.message.reply_text("❌ Min: $0.01")
             return
         
-        if wager > user_data['balance']:
+        if not using_all and wager > user_data['balance']:
             await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
             return
         
@@ -1646,9 +1647,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             await update.message.reply_text("Usage: `/darts <amount|all>`", parse_mode="Markdown")
             return
         
+        using_all = context.args[0].lower() == "all"
         wager = 0.0
-        if context.args[0].lower() == "all":
-            wager = user_data['balance']
+        if using_all:
+            wager = round(user_data['balance'], 2)
         else:
             try:
                 wager = round(float(context.args[0]), 2)
@@ -1656,11 +1658,11 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 await update.message.reply_text("❌ Invalid amount")
                 return
         
-        if wager <= 0.01:
+        if wager < 0.01:
             await update.message.reply_text("❌ Min: $0.01")
             return
         
-        if wager > user_data['balance']:
+        if not using_all and wager > user_data['balance']:
             await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
             return
         
@@ -1692,9 +1694,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             await update.message.reply_text("Usage: `/basketball <amount|all>`", parse_mode="Markdown")
             return
         
+        using_all = context.args[0].lower() == "all"
         wager = 0.0
-        if context.args[0].lower() == "all":
-            wager = user_data['balance']
+        if using_all:
+            wager = round(user_data['balance'], 2)
         else:
             try:
                 wager = round(float(context.args[0]), 2)
@@ -1702,11 +1705,11 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 await update.message.reply_text("❌ Invalid amount")
                 return
         
-        if wager <= 0.01:
+        if wager < 0.01:
             await update.message.reply_text("❌ Min: $0.01")
             return
         
-        if wager > user_data['balance']:
+        if not using_all and wager > user_data['balance']:
             await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
             return
         
@@ -1738,9 +1741,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             await update.message.reply_text("Usage: `/soccer <amount|all>`", parse_mode="Markdown")
             return
         
+        using_all = context.args[0].lower() == "all"
         wager = 0.0
-        if context.args[0].lower() == "all":
-            wager = user_data['balance']
+        if using_all:
+            wager = round(user_data['balance'], 2)
         else:
             try:
                 wager = round(float(context.args[0]), 2)
@@ -1748,11 +1752,11 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 await update.message.reply_text("❌ Invalid amount")
                 return
         
-        if wager <= 0.01:
+        if wager < 0.01:
             await update.message.reply_text("❌ Min: $0.01")
             return
         
-        if wager > user_data['balance']:
+        if not using_all and wager > user_data['balance']:
             await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
             return
         
@@ -1784,9 +1788,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             await update.message.reply_text("Usage: `/bowling <amount|all>`", parse_mode="Markdown")
             return
         
+        using_all = context.args[0].lower() == "all"
         wager = 0.0
-        if context.args[0].lower() == "all":
-            wager = user_data['balance']
+        if using_all:
+            wager = round(user_data['balance'], 2)
         else:
             try:
                 wager = round(float(context.args[0]), 2)
@@ -1794,11 +1799,11 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 await update.message.reply_text("❌ Invalid amount")
                 return
         
-        if wager <= 0.01:
+        if wager < 0.01:
             await update.message.reply_text("❌ Min: $0.01")
             return
         
-        if wager > user_data['balance']:
+        if not using_all and wager > user_data['balance']:
             await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
             return
         
@@ -1835,9 +1840,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             )
             return
         
+        using_all = context.args[0].lower() == "all"
         wager = 0.0
-        if context.args[0].lower() == "all":
-            wager = user_data['balance']
+        if using_all:
+            wager = round(user_data['balance'], 2)
         else:
             try:
                 wager = round(float(context.args[0]), 2)
@@ -1845,11 +1851,11 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 await update.message.reply_text("❌ Invalid amount")
                 return
         
-        if wager <= 0.01:
+        if wager < 0.01:
             await update.message.reply_text("❌ Min: $0.01")
             return
         
-        if wager > user_data['balance']:
+        if not using_all and wager > user_data['balance']:
             await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
             return
         
@@ -1936,9 +1942,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             )
             return
         
+        using_all = context.args[0].lower() == "all"
         wager = 0.0
-        if context.args[0].lower() == "all":
-            wager = user_data['balance']
+        if using_all:
+            wager = round(user_data['balance'], 2)
         else:
             try:
                 wager = round(float(context.args[0]), 2)
@@ -1946,11 +1953,11 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 await update.message.reply_text("Invalid amount")
                 return
         
-        if wager <= 0.01:
+        if wager < 0.01:
             await update.message.reply_text("Min: $0.01")
             return
         
-        if wager > user_data['balance']:
+        if not using_all and wager > user_data['balance']:
             await update.message.reply_text(f"Balance: ${user_data['balance']:.2f}")
             return
         
@@ -2124,9 +2131,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             await update.message.reply_text("Usage: `/flip <amount|all>`", parse_mode="Markdown")
             return
         
+        using_all = context.args[0].lower() == "all"
         wager = 0.0
-        if context.args[0].lower() == "all":
-            wager = user_data['balance']
+        if using_all:
+            wager = round(user_data['balance'], 2)
         else:
             try:
                 wager = round(float(context.args[0]), 2)
@@ -2134,11 +2142,11 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 await update.message.reply_text("❌ Invalid amount")
                 return
             
-        if wager <= 0.01:
+        if wager < 0.01:
             await update.message.reply_text("❌ Min: $0.01")
             return
         
-        if wager > user_data['balance']:
+        if not using_all and wager > user_data['balance']:
             await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
             return
         
@@ -2179,9 +2187,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             await update.message.reply_text("Usage: `/roulette <amount|all>` or `/roulette <amount> #<number>`", parse_mode="Markdown")
             return
         
+        using_all = context.args[0].lower() == "all"
         wager = 0.0
-        if context.args[0].lower() == "all":
-            wager = user_data['balance']
+        if using_all:
+            wager = round(user_data['balance'], 2)
         else:
             try:
                 wager = round(float(context.args[0]), 2)
@@ -2189,11 +2198,11 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 await update.message.reply_text("❌ Invalid amount")
                 return
         
-        if wager <= 0.01:
+        if wager < 0.01:
             await update.message.reply_text("❌ Min: $0.01")
             return
         
-        if wager > user_data['balance']:
+        if not using_all and wager > user_data['balance']:
             await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
             return
         
@@ -2260,9 +2269,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             return
         
         # Parse wager
+        using_all = context.args[0].lower() == "all"
         wager = 0.0
-        if context.args[0].lower() == "all":
-            wager = user_data['balance']
+        if using_all:
+            wager = round(user_data['balance'], 2)
         else:
             try:
                 wager = round(float(context.args[0]), 2)
@@ -2270,11 +2280,11 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 await update.message.reply_text("❌ Invalid amount")
                 return
         
-        if wager <= 0.01:
+        if wager < 0.01:
             await update.message.reply_text("❌ Min: $0.01")
             return
         
-        if wager > user_data['balance']:
+        if not using_all and wager > user_data['balance']:
             await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
             return
         
@@ -2432,9 +2442,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             return
         
         # Parse wager
+        using_all = context.args[0].lower() == "all"
         wager = 0.0
-        if context.args[0].lower() == "all":
-            wager = user_data['balance']
+        if using_all:
+            wager = round(user_data['balance'], 2)
         else:
             try:
                 wager = round(float(context.args[0]), 2)
@@ -2442,11 +2453,11 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 await update.message.reply_text("❌ Invalid amount")
                 return
         
-        if wager <= 0.01:
+        if wager < 0.01:
             await update.message.reply_text("❌ Min: $0.01")
             return
         
-        if wager > user_data['balance']:
+        if not using_all and wager > user_data['balance']:
             await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
             return
         
