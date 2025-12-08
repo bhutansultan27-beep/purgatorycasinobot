@@ -78,8 +78,8 @@ class WebhookServer:
             source_amount = data.get('source_amount')
             currency = data.get('currency', 'LTC').upper()
             
-            if status not in ['completed', 'mismatch']:
-                logger.info(f"Webhook status: {status} - waiting for completed")
+            if status not in ['completed', 'mismatch', 'overpaid']:
+                logger.info(f"Webhook status: {status} - waiting for completed/overpaid")
                 return web.json_response({"status": "pending", "message": f"Status: {status}"})
             
             user_id = None
