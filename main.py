@@ -561,6 +561,35 @@ class GranTeseroCasinoBot:
                 return True
         return False
 
+    def get_active_game_type(self, user_id: int) -> str:
+        """Get the type of active game for a user"""
+        if user_id in self.blackjack_sessions:
+            return "blackjack"
+        if user_id in self.mines_sessions:
+            return "mines"
+        if user_id in self.keno_sessions:
+            return "keno"
+        if user_id in self.limbo_sessions:
+            return "limbo"
+        if user_id in self.hilo_sessions:
+            return "hilo"
+        if user_id in self.pending_opponent_selection:
+            return "pvp"
+        for game_id, challenge in self.pending_pvp.items():
+            challenger = challenge.get('challenger')
+            opponent = challenge.get('opponent')
+            player = challenge.get('player')
+            if challenger == user_id or opponent == user_id or player == user_id:
+                return "pvp"
+        return ""
+
+    def get_resume_game_keyboard(self, user_id: int) -> InlineKeyboardMarkup:
+        """Get keyboard with button to resume current game"""
+        game_type = self.get_active_game_type(user_id)
+        callback_data = f"resume_{game_type}_{user_id}"
+        keyboard = [[InlineKeyboardButton("resume game", callback_data=callback_data)]]
+        return InlineKeyboardMarkup(keyboard)
+
     def setup_handlers(self):
         """Setup all command and callback handlers"""
         self.app.add_handler(CommandHandler("start", self.start_command))
@@ -1622,7 +1651,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -1669,7 +1698,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -1716,7 +1745,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -1763,7 +1792,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -1810,7 +1839,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -1857,7 +1886,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -1956,7 +1985,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -2153,7 +2182,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -2209,7 +2238,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -2287,7 +2316,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -2538,7 +2567,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -2887,7 +2916,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -3050,7 +3079,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if len(context.args) < 2:
@@ -3167,7 +3196,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
             return
         
         if not context.args:
@@ -5971,6 +6000,8 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         limbo_buttons = ["limbo_play_", "limbo_again_"]
         # Hi-Lo buttons
         hilo_buttons = ["hilo_higher_", "hilo_lower_", "hilo_tie_", "hilo_skip_", "hilo_cashout_", "hilo_again_"]
+        # Resume game buttons
+        resume_buttons = ["resume_"]
         # Withdrawal approval buttons (only admins/approvers can use)
         withdrawal_buttons = ["withdraw_approve_", "withdraw_deny_"]
         
@@ -5981,10 +6012,11 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         is_blackjack_button = any(data.startswith(prefix) for prefix in blackjack_buttons)
         is_baccarat_button = any(data.startswith(prefix) for prefix in baccarat_buttons)
         is_keno_button = any(data.startswith(prefix) or data == prefix for prefix in keno_buttons)
+        is_resume_button = any(data.startswith(prefix) for prefix in resume_buttons)
         
         ownership_key = (chat_id, message_id)
         # Block button if it's NOT public AND (not registered OR not owned by user)
-        if not is_pvp_accept and not is_global_public and not is_mines_button and not is_blackjack_button and not is_baccarat_button and not is_keno_button:
+        if not is_pvp_accept and not is_global_public and not is_mines_button and not is_blackjack_button and not is_baccarat_button and not is_keno_button and not is_resume_button:
             # Withdrawal buttons bypass ownership but require approval permission
             if is_withdrawal_button:
                 if not self.can_approve_withdrawals(user_id):
@@ -6009,6 +6041,28 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
             self.pending_opponent_selection.discard(user_id)
         
         try:
+            # Resume game callbacks
+            if data.startswith("resume_"):
+                parts = data.split('_')
+                game_type = parts[1]
+                target_user_id = int(parts[2])
+                
+                if target_user_id != user_id:
+                    await query.answer("This button is not for you!", show_alert=True)
+                    return
+                
+                if game_type == "blackjack" and user_id in self.blackjack_sessions:
+                    await self._display_blackjack_state(update, context, user_id)
+                elif game_type == "mines" and user_id in self.mines_sessions:
+                    await self._display_mines_state(update, context, user_id)
+                elif game_type == "keno" and user_id in self.keno_sessions:
+                    await self._display_keno_state(update, context, user_id)
+                elif game_type == "hilo" and user_id in self.hilo_sessions:
+                    await self._display_hilo_state(update, context, user_id)
+                else:
+                    await query.edit_message_text("no active game found")
+                return
+            
             # Game Callbacks (Dice vs Bot)
             if data.startswith("dice_bot_"):
                 wager = float(data.split('_')[2])
