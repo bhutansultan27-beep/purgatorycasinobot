@@ -364,30 +364,22 @@ class BlackjackGame:
             payout = 0
             
             if status == 'Blackjack':
-                # Player Blackjack pays 6:5 unless dealer also has Blackjack (Push)
+                # Player Blackjack (Ace + 10-value card, exactly 2 cards) pays 3:2 unless dealer also has Blackjack (Push)
                 if self.dealer_hand.is_blackjack():
                     payout = 0 
                 else:
-                    payout = bet * 1.2 
+                    payout = bet * 1.5
             
             elif status == 'Bust':
                 payout = -bet # Player loses bet
             
             elif dealer_busted:
-                # 21 on split hand pays 1.5x, otherwise 1:1
-                if hand.value == 21 and hand.is_split:
-                    payout = bet * 1.5
-                else:
-                    payout = bet # Dealer bust, player wins 1:1
+                payout = bet # Dealer bust, player wins 1:1
                 
             else:
                 player_value = hand.value
                 if player_value > dealer_value:
-                    # 21 on split hand pays 1.5x, otherwise 1:1
-                    if player_value == 21 and hand.is_split:
-                        payout = bet * 1.5
-                    else:
-                        payout = bet # Win 1:1
+                    payout = bet # Win 1:1
                 elif player_value < dealer_value:
                     payout = -bet # Loss
                 else:
