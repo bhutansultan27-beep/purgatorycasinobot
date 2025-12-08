@@ -5377,7 +5377,18 @@ Your balance will be credited automatically after confirmations.
                 
                 self.db.add_transaction(user_id, "bonus_claim", bonus_amount, "Bonus Claim")
                 
-                await query.edit_message_text(f"✅ **Bonus Claimed!**\nYou received **${bonus_amount:.2f}**.\n\nYour new balance is ${user_data['balance']:.2f}.", parse_mode="Markdown")
+                # Show updated rakeback view with success message
+                rakeback_text = f"✅ **Bonus Claimed!** You received **${bonus_amount:.2f}**\n\n"
+                rakeback_text += "💎 **Rakeback**\n\n"
+                rakeback_text += f"Your current rakeback: **$0.00**\n\n"
+                rakeback_text += "Play games and claim your rakeback bonus anytime!"
+                
+                keyboard = [
+                    [InlineKeyboardButton("💸 Play to earn!", callback_data="no_rakeback")],
+                    [InlineKeyboardButton("⬅️ Back", callback_data="back_to_bonus")]
+                ]
+                
+                await query.edit_message_text(rakeback_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
             elif data == "claim_referral":
                 user_data = self.db.get_user(user_id)
