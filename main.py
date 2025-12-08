@@ -3881,7 +3881,7 @@ Total Won: ${total_won:,.2f}"""
         await self._display_connect4_state(update, context, game_id)
     
     def _build_connect4_keyboard(self, game: Connect4Game, game_id: str) -> InlineKeyboardMarkup:
-        """Build the full grid keyboard for Connect 4 with clickable buttons."""
+        """Build the full grid keyboard for Connect 4 with clickable invisible buttons."""
         valid_cols = game.get_valid_columns()
         keyboard = []
         
@@ -3891,19 +3891,14 @@ Total Won: ${total_won:,.2f}"""
                 cell = game.board[row][col]
                 if cell == game.EMPTY:
                     if col in valid_cols:
-                        row_buttons.append(InlineKeyboardButton("⚪", callback_data=f"connect4_drop_{game_id}_{col}"))
+                        row_buttons.append(InlineKeyboardButton("\u3164", callback_data=f"connect4_drop_{game_id}_{col}"))
                     else:
-                        row_buttons.append(InlineKeyboardButton("⚪", callback_data="connect4_noop"))
+                        row_buttons.append(InlineKeyboardButton("\u3164", callback_data="connect4_noop"))
                 elif cell == game.PLAYER1:
                     row_buttons.append(InlineKeyboardButton("🔴", callback_data="connect4_noop"))
                 else:
                     row_buttons.append(InlineKeyboardButton("🟡", callback_data="connect4_noop"))
             keyboard.append(row_buttons)
-        
-        col_labels = []
-        for col in range(7):
-            col_labels.append(InlineKeyboardButton(f"{col + 1}", callback_data="connect4_noop"))
-        keyboard.append(col_labels)
         
         return InlineKeyboardMarkup(keyboard)
     
@@ -3916,7 +3911,7 @@ Total Won: ${total_won:,.2f}"""
             for col in range(7):
                 cell = game.board[row][col]
                 if cell == game.EMPTY:
-                    row_buttons.append(InlineKeyboardButton("⚪", callback_data="connect4_noop"))
+                    row_buttons.append(InlineKeyboardButton("\u3164", callback_data="connect4_noop"))
                 elif cell == game.PLAYER1:
                     row_buttons.append(InlineKeyboardButton("🔴", callback_data="connect4_noop"))
                 else:
