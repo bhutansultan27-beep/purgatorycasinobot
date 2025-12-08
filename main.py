@@ -2264,8 +2264,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                 "• Hit: Take another card\n"
                 "• Stand: Keep current hand\n"
                 "• Double: Double bet, get 1 card\n"
-                "• Split: Split pairs into 2 hands\n"
-                "• Surrender: Forfeit and lose half bet\n\n"
+                "• Split: Split pairs into 2 hands\n\n"
                 "**Usage:** `/blackjack <amount|all>`",
                 parse_mode="Markdown"
             )
@@ -2409,10 +2408,6 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             # Split button
             if actions.get('can_split'):
                 keyboard.append([InlineKeyboardButton("Split", callback_data=f"bj_{user_id}_split")])
-            
-            # Surrender button
-            if actions.get('can_surrender'):
-                keyboard.append([InlineKeyboardButton("Surrender", callback_data=f"bj_{user_id}_surrender")])
         
         # Insurance button
         if state['is_insurance_available']:
@@ -6073,8 +6068,6 @@ Total Won: ${total_won:,.2f}"""
                     self.db.update_user(user_id, user_data)
                     
                     game.split()
-                elif action == "surrender":
-                    game.surrender()
                 elif action == "insurance":
                     # Check if user has enough balance for insurance
                     user_data = self.db.get_user(user_id)

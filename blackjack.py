@@ -109,7 +109,7 @@ class BlackjackGame:
         self.deck = deck if deck else Deck()
         # Player Hands: List of dictionaries to support splitting
         self.player_hands: List[Dict[str, Any]] = [
-            {'hand': Hand(), 'bet': bet_amount, 'status': 'Playing', 'actions': {'can_split': False, 'can_double': False, 'can_surrender': False}}
+            {'hand': Hand(), 'bet': bet_amount, 'status': 'Playing', 'actions': {'can_split': False, 'can_double': False}}
         ]
         self.dealer_hand = Hand()
         self.current_hand_index = 0
@@ -153,19 +153,15 @@ class BlackjackGame:
         hand = current_state['hand']
         
         # Reset actions
-        current_state['actions'] = {'can_split': False, 'can_double': False, 'can_surrender': False}
+        current_state['actions'] = {'can_split': False, 'can_double': False}
 
         # Actions are only available if the hand is 'Playing' and not busted
         if current_state['status'] != 'Playing':
             return
             
-        # Surrender, Double, and Split are only available on the initial two cards
+        # Double and Split are only available on the initial two cards
         if len(hand.cards) == 2:
             current_state['actions']['can_double'] = True
-            
-            # Surrender only allowed on the *very first* hand
-            if self.current_hand_index == 0:
-                current_state['actions']['can_surrender'] = True
             
             # Split only allowed if ranks are equal
             if hand.cards[0].rank == hand.cards[1].rank:
@@ -176,7 +172,7 @@ class BlackjackGame:
         self.current_hand_index += 1
         
         if self.current_hand_index >= len(self.player_hands):
-            # All player hands resolved (Stood, Busted, Doubled, Surrendered, or Blackjack)
+            # All player hands resolved (Stood, Busted, Doubled, or Blackjack)
             self._dealer_turn()
         else:
             # Move to the next hand
@@ -264,7 +260,7 @@ class BlackjackGame:
             'bet': bet, 
             'status': 'Playing',
             # Re-splitting Aces is often disallowed, so we keep actions disabled for now.
-            'actions': {'can_split': False, 'can_double': True, 'can_surrender': False} 
+            'actions': {'can_split': False, 'can_double': True} 
         }
         new_hand_state['hand'].add_card(self.deck.deal_card())
         
@@ -284,22 +280,6 @@ class BlackjackGame:
             self._check_available_actions() 
         
         return message
-
-    def surrender(self) -> str:
-        """Player forfeits the hand and loses half the bet."""
-        current_hand_state = self.player_hands[self.current_hand_index]
-        if not current_hand_state['actions'].get('can_surrender'):
-            return "Error: Cannot Surrender. Only allowed on the initial hand as the first action."
-
-        # Player gets half the bet back (payout is -0.5 * bet)
-        current_hand_state['payout'] = -current_hand_state['bet'] / 2
-        current_hand_state['status'] = 'Surrendered'
-        current_hand_state['actions'] = {} # Clear actions
-        
-        # All hands must resolve after a surrender, so we advance to dealer turn
-        self.current_hand_index = len(self.player_hands) - 1 
-        self._advance_hand()
-        return f"Surrendered. You lose half your bet: {current_hand_state['bet'] / 2}"
 
     def take_insurance(self) -> str:
         """Player places a side bet that the dealer has Blackjack."""
