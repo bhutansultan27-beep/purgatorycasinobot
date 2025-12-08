@@ -71,7 +71,8 @@ class WebhookServer:
             logger.info(f"Received deposit webhook: {data}")
             
             address = data.get('wallet_hash') or data.get('address')
-            amount = float(data.get('amount', 0))
+            invoice_amount = float(data.get('amount', 0))
+            received_amount = data.get('received_amount')
             tx_id = data.get('txn_id') or data.get('txid') or data.get('tx_id') or data.get('id')
             status = data.get('status', '')
             order_number = data.get('order_number', '')
@@ -79,7 +80,9 @@ class WebhookServer:
             source_rate = data.get('source_rate')
             currency = data.get('currency', 'LTC').upper()
             
-            logger.info(f"Webhook data - amount: {amount}, source_amount: {source_amount}, source_rate: {source_rate}, status: {status}")
+            actual_crypto_amount = float(received_amount) if received_amount else invoice_amount
+            
+            logger.info(f"Webhook data - invoice_amount: {invoice_amount}, received_amount: {received_amount}, actual_crypto: {actual_crypto_amount}, source_amount: {source_amount}, source_rate: {source_rate}, status: {status}")
             
             if status not in ['completed', 'mismatch', 'overpaid']:
                 logger.info(f"Webhook status: {status} - waiting for completed/overpaid")
@@ -108,14 +111,18 @@ class WebhookServer:
                 return web.json_response({"status": "ok", "message": "Already processed"})
             
             if source_rate and float(source_rate) > 0:
-                raw_amount = round(amount / float(source_rate), 2)
-                logger.info(f"Calculated USD from crypto: {amount} / {source_rate} = ${raw_amount}")
-            elif source_amount:
-                raw_amount = round(float(source_amount), 2)
-                logger.info(f"Using source_amount as fallback: ${raw_amount}")
+                raw_amount = round(actual_crypto_amount / float(source_rate), 2)
+                logger.info(f"Calculated USD from actual crypto received: {actual_crypto_amount} / {source_rate} = ${raw_amount}")
+            elif received_amount and source_amount:
+                ratio = float(received_amount) / invoice_amount if invoice_amount > 0 else 1
+                raw_amount = round(float(source_amount) * ratio, 2)
+                logger.info(f"Calculated USD from ratio: source_amount ${source_amount} * ratio {ratio} = ${raw_amount}")
+            elif source_amount and status in ['mismatch', 'overpaid'] and received_amount:
+                raw_amount = round(float(source_amount) * (float(received_amount) / invoice_amount), 2) if invoice_amount > 0 else round(float(received_amount), 2)
+                logger.info(f"Overpaid calculation: ${raw_amount}")
             else:
-                logger.warning(f"No source_rate or source_amount from Plisio, using {detected_currency} amount as USD")
-                raw_amount = round(amount, 2)
+                logger.warning(f"No source_rate from Plisio, using actual crypto amount as USD: {actual_crypto_amount}")
+                raw_amount = round(actual_crypto_amount, 2)
             
             # Apply 1% deposit fee (not shown to user)
             deposit_fee = 0.01
@@ -128,7 +135,7 @@ class WebhookServer:
             tx_display = tx_id[:16] if tx_id and len(tx_id) > 16 else tx_id
             self.bot.db.add_transaction(user_id, "deposit", credited_amount, f"{detected_currency} Deposit (Auto) - TX: {tx_display}...")
             
-            self.mark_deposit_processed(tx_id, user_id, amount, credited_amount, detected_currency)
+            self.mark_deposit_processed(tx_id, user_id, actual_crypto_amount, credited_amount, detected_currency)
             
             currency_names = {
                 'LTC': 'Litecoin', 'BTC': 'Bitcoin', 'ETH': 'Ethereum',
