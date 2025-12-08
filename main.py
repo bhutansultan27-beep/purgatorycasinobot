@@ -902,20 +902,25 @@ Good luck! 🍀"""
         """Show all player commands"""
         help_text = """🎰 **Gran Tesero - Commands**
 
+**General:**
+/start - Start the bot
+/menu - Open the main menu
+/help - Show this help message
+
 **Games:**
 /dice - Roll dice 🎲
 /darts - Play darts 🎯
-/basketball - Shoot hoops 🏀
-/soccer - Play soccer ⚽
+/basketball (/bball) - Shoot hoops 🏀
+/soccer (/football) - Play soccer ⚽
 /bowling - Go bowling 🎳
-/flip - Flip a coin 🪙
+/coinflip (/flip) - Flip a coin 🪙
 /predict - Dice prediction 🔮
 /roulette - Play roulette 🎡
 /slots - Play slots 🎰
-/blackjack - Play blackjack ♠️
+/blackjack (/bj) - Play blackjack ♠️
 
 **Account:**
-/bal - Check your balance
+/balance (/bal) - Check your balance
 /bonus - Get your bonuses
 /stats - View your stats
 /levels - View level rewards
@@ -939,20 +944,40 @@ Good luck! 🍀"""
         
         admin_help_text = """🔐 **Admin Commands**
 
+**General:**
+/admin - Open admin panel
+/adminhelp - Show this help message
+
 **User Management:**
 /userid @user - Get user's ID
+/userinfo @user - View user details
 /setbal <user_id> <amount> - Set user balance
+/givebal @user <amount> - Give balance to user
 /allusers - List all users
 /allbalances - Show all user balances
 
-**System:**
-/backup - Create database backup
+**Admin Management:**
+/addadmin <user_id> - Add a new admin
+/removeadmin <user_id> - Remove an admin
+/listadmins - List all admins
+/addapprover <user_id> - Add a withdrawal approver
+/removeapprover <user_id> - Remove an approver
+/listapprovers - List all approvers
+
+**Financial:**
 /housebal - View house balance
 /sethousebal <amount> - Set house balance
+/walletbal - View wallet balance
+/pendingdeposits - View pending deposits
+/pendingwithdraws - View pending withdrawals
+/biggestdeposits - View largest deposits
 
 **LTC Rate:**
 /ltcrate - View current LTC rate
 /setltcrate <price> - Set manual LTC/USD rate
+
+**System:**
+/backup - Create database backup
 
 **Stickers:**
 /savesticker - Save a sticker
