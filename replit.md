@@ -22,22 +22,15 @@ The Gran Tesero Casino Bot is built using Python and the `python-telegram-bot` l
 - **Streamlined Messaging**: Win/loss messages are in lowercase, and button labels are simplified.
 
 ### Technical Implementations
-- **Game Mechanics**: Includes eight casino games: Dice, Darts, Basketball, Soccer, Bowling, Slots, Predict, and Coinflip. Blackjack is also implemented with standard casino rules.
+- **Game Mechanics**: Includes ten casino games:
+  - Dice, Darts, Basketball, Soccer, Bowling, Slots, Predict, Coinflip, Roulette
+  - Blackjack with standard casino rules (hit, stand, double down, split, insurance)
+  - **Mines**: Interactive 5x5 grid minefield game using Telegram buttons. Players choose number of mines (3-24), reveal tiles to find gems, and cash out anytime. Higher mine counts give higher multipliers (up to 24,750x with 24 mines).
 - **Bonus System**: Features a $5 locked first-time bonus and a 1% daily bonus based on wagered amounts with a 24-hour cooldown and playthrough requirements.
 - **Referral Program**: Users get unique referral links, earning a 1% commission on their referrals' wagered volume.
 - **Leaderboard**: A paginated leaderboard displays top players based on total wagered amounts.
 - **User Wallet & Transaction Management**: Comprehensive system for managing user balances, deposits, withdrawals, and tips.
-- **Multi-Crypto Support**: Supports 9 cryptocurrencies for deposits and withdrawals via Plisio API:
-  - LTC (Litecoin): 2% fee, $2 min withdrawal
-  - BTC (Bitcoin): 5% fee, $10 min withdrawal (high network fees)
-  - ETH (Ethereum): 5% fee, $10 min withdrawal (high network fees)
-  - XMR (Monero): 2% fee, $3 min withdrawal
-  - SOL (Solana): 2% fee, $2 min withdrawal
-  - TON (Toncoin): 2% fee, $2 min withdrawal
-  - USDT (Tether ERC-20): 4% fee, $10 min withdrawal
-  - USDC (USD Coin ERC-20): 4% fee, $10 min withdrawal
-  - TRX (Tron): 1.5% fee, $1 min withdrawal (lowest fees)
-- **Per-Crypto Fees**: Each cryptocurrency has its own fee percentage to account for different network transaction costs. Higher fees for expensive networks (BTC, ETH), lower fees for cheap networks (TRX, SOL).
+- **Crypto Support**: Supports SOL (Solana) and LTC (Litecoin) for deposits and withdrawals via Plisio API with 1% fees on both.
 - **Admin Management**: Features a dynamic admin system with permanent admins (set via `ADMIN_IDS` environment variable) and dynamic admins (added/removed via commands).
 - **House Balance**: Tracks the bot's winnings and losses, influencing the displayed house balance.
 
