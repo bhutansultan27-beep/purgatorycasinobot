@@ -6824,23 +6824,26 @@ Total Won: ${total_won:,.2f}"""
                     await query.answer(f"❌ Insufficient balance! Need ${wager:.2f}", show_alert=True)
                     return
                 
-                # Show mines selection keyboard
-                mines_options = [1, 3, 5, 10, 15, 20, 24]
-                keyboard = []
-                row = []
-                for m in mines_options:
-                    row.append(InlineKeyboardButton(f"💣 {m}", callback_data=f"mines_start_{wager}_{m}"))
-                    if len(row) == 4:
-                        keyboard.append(row)
-                        row = []
-                if row:
-                    keyboard.append(row)
+                # Show mines selection keyboard (same format as /mines command)
+                keyboard = [
+                    [InlineKeyboardButton("3 Mines (Low Risk)", callback_data=f"mines_start_{wager:.2f}_3")],
+                    [InlineKeyboardButton("5 Mines (Medium)", callback_data=f"mines_start_{wager:.2f}_5")],
+                    [InlineKeyboardButton("10 Mines (High Risk)", callback_data=f"mines_start_{wager:.2f}_10")],
+                    [InlineKeyboardButton("15 Mines (Very High)", callback_data=f"mines_start_{wager:.2f}_15")],
+                    [InlineKeyboardButton("20 Mines (Extreme)", callback_data=f"mines_start_{wager:.2f}_20")],
+                    [InlineKeyboardButton("24 Mines (Max Risk)", callback_data=f"mines_start_{wager:.2f}_24")]
+                ]
                 
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
-                    f"💣 **Mines** - Select number of mines\n\n"
-                    f"**Bet:** ${wager:.2f}\n\n"
-                    f"More mines = higher risk = higher rewards!",
+                    f"💣 **Mines** - Wager: ${wager:.2f}\n\n"
+                    f"**Select difficulty (number of mines):**\n\n"
+                    f"More mines = Higher risk = Bigger multipliers!\n"
+                    f"• 3 mines: Up to 2.23x\n"
+                    f"• 5 mines: Up to 7.42x\n"
+                    f"• 10 mines: Up to 113.85x\n"
+                    f"• 15 mines: Up to 9,176x\n"
+                    f"• 24 mines: Up to 24,750x",
                     reply_markup=reply_markup,
                     parse_mode="Markdown"
                 )
