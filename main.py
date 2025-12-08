@@ -1136,9 +1136,11 @@ Total Won: ${total_won:,.2f}"""
                 leaderboard_text += f"{idx}) {level_emoji} {username} - ${total_wagered:,.2f}\n"
 
         keyboard = [
-            [InlineKeyboardButton("Biggest Dices this week", callback_data=f"lb_dices_week_{back_to}")],
-            [InlineKeyboardButton("Biggest Dices all time", callback_data=f"lb_dices_all_{back_to}")],
-            [InlineKeyboardButton("⬅️ Back", callback_data=back_to)]
+            [
+                InlineKeyboardButton("Wagered", callback_data=f"lb_wagered_{back_to}"),
+                InlineKeyboardButton("Dices Week", callback_data=f"lb_dices_week_{back_to}"),
+                InlineKeyboardButton("Dices All", callback_data=f"lb_dices_all_{back_to}")
+            ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -1191,15 +1193,12 @@ Total Won: ${total_won:,.2f}"""
                     leaderboard_text += f"{idx}) {winner_emoji} {winner_username} vs 🤖 Bot • ${wager:,.2f}\n"
 
         keyboard = [
-            [InlineKeyboardButton("Most Wagered all time", callback_data=f"lb_wagered_{back_to}")],
+            [
+                InlineKeyboardButton("Wagered", callback_data=f"lb_wagered_{back_to}"),
+                InlineKeyboardButton("Dices Week", callback_data=f"lb_dices_week_{back_to}"),
+                InlineKeyboardButton("Dices All", callback_data=f"lb_dices_all_{back_to}")
+            ]
         ]
-
-        if time_filter == "week":
-            keyboard.append([InlineKeyboardButton("Biggest Dices all time", callback_data=f"lb_dices_all_{back_to}")])
-        else:
-            keyboard.append([InlineKeyboardButton("Biggest Dices this week", callback_data=f"lb_dices_week_{back_to}")])
-
-        keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data=back_to)])
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         await update.callback_query.edit_message_text(
@@ -1209,39 +1208,6 @@ Total Won: ${total_won:,.2f}"""
         )
 
     
-    async def referral_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Show referral link and earnings"""
-        user_id = update.effective_user.id
-        user_data = self.db.get_user(user_id)
-        
-        if not user_data.get('referral_code'):
-            # Generate a simple, unique referral code
-            referral_code = hashlib.md5(str(user_id).encode()).hexdigest()[:8]
-            self.db.update_user(user_id, {'referral_code': referral_code})
-            user_data['referral_code'] = referral_code
-        
-        bot_username = (await context.bot.get_me()).username
-        referral_link = f"https://t.me/{bot_username}?start=ref_{user_data['referral_code']}"
-        
-        referral_text = f"""
-👥 **Referral**
-
-Link: `{referral_link}`
-
-Referrals: {user_data.get('referral_count', 0)}
-Earned: ${user_data.get('referral_earnings', 0):.2f}
-Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
-"""
-        
-        keyboard = []
-        if user_data.get('unclaimed_referral_earnings', 0) >= 0.01:
-            keyboard.append([InlineKeyboardButton("💰 Claim Earnings", callback_data="claim_referral")])
-        
-        reply_markup = InlineKeyboardMarkup(keyboard) if keyboard else None
-        
-        sent_msg = await update.message.reply_text(referral_text, reply_markup=reply_markup, parse_mode="Markdown")
-        if reply_markup:
-            self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
     
     async def get_plisio_wallet_balance(self, currency: str = 'LTC') -> Optional[dict]:
         """Fetch the wallet balance for a specific currency from Plisio API. Returns dict with 'balance' and 'usd_balance'."""
@@ -3754,10 +3720,6 @@ Total Wagered: ${target_user.get('total_wagered', 0):.2f}
 Total P&L: ${target_user.get('total_pnl', 0):.2f}
 Best Win Streak: {target_user.get('best_win_streak', 0)}
 
-**Referrals:**
-Referred By: {target_user.get('referred_by', 'None')}
-Referral Count: {target_user.get('referral_count', 0)}
-Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
 """
         
         await update.message.reply_text(info_text, parse_mode="Markdown")
@@ -4251,15 +4213,6 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
         
         self.db.update_user(user_id, user_data)
         
-        # Handle referral earnings (1% of wager)
-        referrer_code = user_data.get('referred_by')
-        if referrer_code:
-            referrer_data = next((u for u in self.db.data['users'].values() if u.get('referral_code') == referrer_code), None)
-            if referrer_data:
-                referral_commission = wager * 0.01
-                referrer_data['referral_earnings'] += referral_commission
-                referrer_data['unclaimed_referral_earnings'] += referral_commission
-                self.db.update_user(referrer_data['user_id'], referrer_data)
 
 
     async def dice_vs_bot(self, update: Update, context: ContextTypes.DEFAULT_TYPE, wager: float):
@@ -5294,7 +5247,7 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
             "dice_bot_", "darts_bot_", "basketball_bot_", "soccer_bot_", "bowling_bot_", "flip_bot_", "roulette_",
             "dice_player_open_", "darts_player_open_", "basketball_player_open_", "soccer_player_open_", "bowling_player_open_",
             "flip_player_open_", "accept_dice_", "accept_darts_", "accept_basketball_", "accept_soccer_", "accept_bowling_",
-            "accept_coinflip_", "claim_daily_bonus", "claim_referral", "claim_level_bonus_", "predict_select_", "predict_again_", "slots_"
+            "accept_coinflip_", "claim_daily_bonus", "claim_level_bonus_", "predict_select_", "predict_again_", "slots_"
         ]
         if any(data.startswith(prefix) for prefix in game_buttons):
             self.clicked_buttons.add(button_key)
@@ -5702,23 +5655,6 @@ Your balance will be credited automatically after confirmations.
                 
                 await query.edit_message_text(rakeback_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
-            elif data == "claim_referral":
-                user_data = self.db.get_user(user_id)
-                claim_amount = user_data.get('unclaimed_referral_earnings', 0)
-                
-                if claim_amount < 0.01:
-                    await query.edit_message_text("❌ Minimum unclaimed earnings to claim is $0.01.")
-                    return
-                
-                # Process claim
-                user_data['balance'] += claim_amount
-                user_data['unclaimed_referral_earnings'] = 0.0
-                self.db.update_user(user_id, user_data)
-                
-                self.db.add_transaction(user_id, "referral_claim", claim_amount, "Referral Earnings Claim")
-                
-                await query.edit_message_text(f"✅ **Referral Earnings Claimed!**\nYou received **${claim_amount:.2f}**.\n\nYour new balance is ${user_data['balance']:.2f}.", parse_mode="Markdown")
-
             elif data.startswith("claim_level_bonus_"):
                 level_id = data.replace("claim_level_bonus_", "")
                 user_data = self.db.get_user(user_id)
@@ -5972,7 +5908,6 @@ Your balance will be credited automatically after confirmations.
 
 **Info:**
 /leaderboard - View top players
-/referral - Get your referral link
 /housebal - View house balance
 """
                 keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")]]
