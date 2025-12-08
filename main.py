@@ -2285,15 +2285,22 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         )
 
     async def get_ltc_price_usd(self) -> Optional[float]:
-        """Get current LTC price in USD from Plisio API."""
+        """Get current LTC price in USD from Plisio API with CoinGecko fallback."""
         api_key = os.getenv('PLISIO_API_KEY')
         
+        # First check if manual rate is set
+        manual_rate = self.db.data.get('manual_ltc_rate')
+        if manual_rate:
+            logger.info(f"[LTC PRICE] Using manual rate: ${manual_rate}")
+            return float(manual_rate)
+        
+        # Try Plisio API first
         try:
             async with aiohttp.ClientSession() as session:
                 url = f"https://plisio.net/api/v1/currencies/USD"
                 params = {"api_key": api_key}
                 
-                async with session.get(url, params=params) as response:
+                async with session.get(url, params=params, timeout=10) as response:
                     result = await response.json()
                     logger.info(f"[PLISIO DEBUG] Currencies response: {result.get('status')}")
                     
@@ -2305,11 +2312,27 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                                 logger.info(f"[PLISIO DEBUG] LTC price: ${price}")
                                 return price
                     
-                    logger.error(f"[PLISIO DEBUG] Could not get LTC price: {result}")
-                    return None
+                    logger.warning(f"[PLISIO DEBUG] Could not get LTC price from Plisio: {result}")
         except Exception as e:
-            logger.error(f"[PLISIO DEBUG] Error fetching LTC price: {e}")
-            return None
+            logger.warning(f"[PLISIO DEBUG] Error fetching LTC price from Plisio: {e}")
+        
+        # Fallback to CoinGecko API (free, no API key needed)
+        try:
+            async with aiohttp.ClientSession() as session:
+                url = "https://api.coingecko.com/api/v3/simple/price"
+                params = {"ids": "litecoin", "vs_currencies": "usd"}
+                
+                async with session.get(url, params=params, timeout=10) as response:
+                    result = await response.json()
+                    price = result.get('litecoin', {}).get('usd')
+                    if price:
+                        logger.info(f"[COINGECKO] LTC price: ${price}")
+                        return float(price)
+        except Exception as e:
+            logger.error(f"[COINGECKO] Error fetching LTC price: {e}")
+        
+        logger.error("[LTC PRICE] All price sources failed")
+        return None
 
     async def generate_coinremitter_address(self, user_id: int, currency: str = 'LTC') -> Optional[Dict[str, Any]]:
         """Generate a unique deposit address via Plisio API for specified currency."""
@@ -2327,7 +2350,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         callback_url = f"{webhook_url}/webhook/deposit?json=true"
         
         logger.info(f"[PLISIO DEBUG] Generating {currency} deposit address for user {user_id}")
-        logger.info(f"[PLISIO DEBUG] API Key loaded: {bool(api_key)}")
+        logger.info(f"[PLISIO DEBUG] API Key (first 10 chars): {api_key[:10] if len(api_key) > 10 else 'SHORT'}...")
         logger.info(f"[PLISIO DEBUG] Callback URL: {callback_url}")
         
         url = "https://plisio.net/api/v1/invoices/new"
@@ -2344,9 +2367,9 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(url, params=params) as response:
+                async with session.get(url, params=params, timeout=15) as response:
                     result = await response.json()
-                    logger.info(f"[PLISIO DEBUG] Invoice response status: {result.get('status')}")
+                    logger.info(f"[PLISIO DEBUG] Invoice response: {result}")
                     if result.get('status') == 'success':
                         data = result.get('data', {})
                         address = data.get('wallet_hash')
@@ -2359,8 +2382,12 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                             'currency': currency
                         }
                     else:
-                        logger.error(f"[PLISIO DEBUG] API error: {result}")
+                        error_msg = result.get('data', {}).get('message', result.get('message', 'Unknown error'))
+                        logger.error(f"[PLISIO DEBUG] API error: {error_msg} - Full response: {result}")
                         return None
+        except asyncio.TimeoutError:
+            logger.error(f"[PLISIO DEBUG] Request timed out after 15 seconds")
+            return None
         except Exception as e:
             logger.error(f"[PLISIO DEBUG] Request failed: {e}")
             return None
