@@ -7,3 +7,7 @@ APScheduler
 python-dotenv
 python-telegram-bot[all]
 telegram
+aiohttp
+APScheduler
+python-dotenv
+python-telegram-bot[all]
