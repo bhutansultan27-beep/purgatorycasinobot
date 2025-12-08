@@ -5684,10 +5684,12 @@ Your balance will be credited automatically after confirmations.
 
 
 async def main():
+    print("DEBUG: main() function started")
     BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8575155625:AAFd40dO3bjJ6b6P74QcjH3mHUzuN7MilEA")
     USE_POLLING = os.getenv("USE_POLLING", "true").lower() == "true"
     WEBHOOK_URL = os.getenv("WEBHOOK_URL", "https://casino.vps.webdock.cloud")
     
+    print(f"DEBUG: BOT_TOKEN={'SET' if BOT_TOKEN else 'NOT SET'}, USE_POLLING={USE_POLLING}")
     logger.info("Starting Gran Tesero Casino Bot...")
     logger.info(f"USE_POLLING={USE_POLLING}, WEBHOOK_URL={WEBHOOK_URL}")
     
@@ -5734,4 +5736,10 @@ async def main():
             await bot.app.shutdown()
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    print("DEBUG: Script starting...")
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        print(f"DEBUG: Fatal error: {e}")
+        import traceback
+        traceback.print_exc()
