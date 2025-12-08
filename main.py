@@ -17,6 +17,9 @@ except ImportError:
 # Import Blackjack game logic
 from blackjack import BlackjackGame
 
+# Import Mines game logic
+from mines import MinesGame
+
 # External dependencies (assuming they are installed via pip install python-telegram-bot)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -483,11 +486,18 @@ class GranTeseroCasinoBot:
         
         # Dictionary to store active Blackjack games: user_id -> BlackjackGame instance
         self.blackjack_sessions: Dict[int, BlackjackGame] = {}
+        
+        # Dictionary to store active Mines games: user_id -> MinesGame instance
+        self.mines_sessions: Dict[int, MinesGame] = {}
 
     def user_has_active_game(self, user_id: int) -> bool:
-        """Check if a user already has an active game (PvP, blackjack, or pending opponent selection)"""
+        """Check if a user already has an active game (PvP, blackjack, mines, or pending opponent selection)"""
         if user_id in self.blackjack_sessions:
             logger.info(f"[ACTIVE_GAME] User {user_id} has active blackjack session")
+            return True
+        
+        if user_id in self.mines_sessions:
+            logger.info(f"[ACTIVE_GAME] User {user_id} has active mines session")
             return True
         
         if user_id in self.pending_opponent_selection:
@@ -530,6 +540,7 @@ class GranTeseroCasinoBot:
         self.app.add_handler(CommandHandler("roulette", self.roulette_command))
         self.app.add_handler(CommandHandler("blackjack", self.blackjack_command))
         self.app.add_handler(CommandHandler("bj", self.blackjack_command))
+        self.app.add_handler(CommandHandler("mines", self.mines_command))
         self.app.add_handler(CommandHandler("tip", self.tip_command))
         self.app.add_handler(CommandHandler("deposit", self.deposit_command))
         self.app.add_handler(CommandHandler("withdraw", self.withdraw_command))
@@ -2398,6 +2409,193 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         else:
             sent_msg = await update.effective_message.reply_text(message, reply_markup=reply_markup, parse_mode="Markdown")
             if reply_markup:
+                self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+    
+    async def mines_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Start a Mines game"""
+        user_data = self.ensure_user_registered(update)
+        user_id = update.effective_user.id
+        
+        if self.user_has_active_game(user_id):
+            await update.message.reply_text("❌ You can only be in 1 game at a time. Finish your current game first.")
+            return
+        
+        if not context.args:
+            await update.message.reply_text(
+                "**💣 Mines Game**\n\n"
+                "**Usage:** `/mines <amount>`\n\n"
+                "Find gems in the minefield! More mines = higher multipliers.\n"
+                "Cash out anytime or risk it all!",
+                parse_mode="Markdown"
+            )
+            return
+        
+        # Parse wager
+        wager = 0.0
+        if context.args[0].lower() == "all":
+            wager = user_data['balance']
+        else:
+            try:
+                wager = round(float(context.args[0]), 2)
+            except ValueError:
+                await update.message.reply_text("❌ Invalid amount")
+                return
+        
+        if wager <= 0.01:
+            await update.message.reply_text("❌ Min: $0.01")
+            return
+        
+        if wager > user_data['balance']:
+            await update.message.reply_text(f"❌ Balance: ${user_data['balance']:.2f}")
+            return
+        
+        # Show mine count selection
+        keyboard = [
+            [InlineKeyboardButton("3 Mines (Low Risk)", callback_data=f"mines_start_{wager:.2f}_3")],
+            [InlineKeyboardButton("5 Mines (Medium)", callback_data=f"mines_start_{wager:.2f}_5")],
+            [InlineKeyboardButton("10 Mines (High Risk)", callback_data=f"mines_start_{wager:.2f}_10")],
+            [InlineKeyboardButton("15 Mines (Very High)", callback_data=f"mines_start_{wager:.2f}_15")],
+            [InlineKeyboardButton("20 Mines (Extreme)", callback_data=f"mines_start_{wager:.2f}_20")],
+            [InlineKeyboardButton("24 Mines (Max Risk)", callback_data=f"mines_start_{wager:.2f}_24")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        self.pending_opponent_selection.add(user_id)
+        
+        sent_msg = await update.message.reply_text(
+            f"💣 **Mines** - Wager: ${wager:.2f}\n\n"
+            f"**Select difficulty (number of mines):**\n\n"
+            f"More mines = Higher risk = Bigger multipliers!\n"
+            f"• 3 mines: Up to 2.23x\n"
+            f"• 5 mines: Up to 7.42x\n"
+            f"• 10 mines: Up to 113.85x\n"
+            f"• 15 mines: Up to 9,176x\n"
+            f"• 24 mines: Up to 24,750x",
+            reply_markup=reply_markup,
+            parse_mode="Markdown"
+        )
+        self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+    
+    def _build_mines_grid_keyboard(self, game: MinesGame) -> InlineKeyboardMarkup:
+        """Build the 5x5 mines grid keyboard"""
+        user_id = game.user_id
+        grid = game.get_grid_display(reveal_all=game.game_over)
+        keyboard = []
+        
+        for row in range(5):
+            row_buttons = []
+            for col in range(5):
+                pos = row * 5 + col
+                tile = grid[row][col]
+                
+                if game.game_over or pos in game.revealed_tiles:
+                    row_buttons.append(InlineKeyboardButton(tile, callback_data=f"mines_noop"))
+                else:
+                    row_buttons.append(InlineKeyboardButton(tile, callback_data=f"mines_reveal_{user_id}_{pos}"))
+            keyboard.append(row_buttons)
+        
+        # Add cash out button if game is active and at least one tile revealed
+        if not game.game_over and len(game.revealed_tiles) > 0:
+            payout = game.get_potential_payout()
+            keyboard.append([InlineKeyboardButton(f"💰 Cash Out ${payout:.2f}", callback_data=f"mines_cashout_{user_id}")])
+        
+        return InlineKeyboardMarkup(keyboard)
+    
+    async def _display_mines_state(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, is_new: bool = False):
+        """Display the current Mines game state with grid buttons"""
+        if user_id not in self.mines_sessions:
+            return
+        
+        game = self.mines_sessions[user_id]
+        
+        # Build message
+        revealed = len(game.revealed_tiles)
+        safe_tiles = 25 - game.num_mines
+        
+        if game.game_over:
+            if game.hit_mine:
+                message = f"💣 **BOOM!** You hit a mine!\n\n"
+                message += f"**Mines:** {game.num_mines} | **Revealed:** {revealed}/{safe_tiles}\n"
+                message += f"**Bet:** ${game.wager:.2f}\n"
+                message += f"❌ **Lost ${game.wager:.2f}**"
+                
+                # Update stats
+                user_data = self.db.get_user(user_id)
+                user_data['total_wagered'] += game.wager
+                user_data['total_pnl'] -= game.wager
+                user_data['games_played'] += 1
+                self.db.update_user(user_id, user_data)
+                
+                # Record game
+                self.db.record_game({
+                    'type': 'mines',
+                    'player_id': user_id,
+                    'username': user_data.get('username', 'Unknown'),
+                    'wager': game.wager,
+                    'num_mines': game.num_mines,
+                    'tiles_revealed': revealed,
+                    'payout': 0,
+                    'result': 'loss',
+                    'balance_after': user_data['balance']
+                })
+                
+                # Update house balance
+                self.db.update_house_balance(game.wager)
+                
+            elif game.cashed_out:
+                payout = game.wager * game.current_multiplier
+                profit = payout - game.wager
+                message = f"💰 **Cashed Out!**\n\n"
+                message += f"**Mines:** {game.num_mines} | **Revealed:** {revealed}/{safe_tiles}\n"
+                message += f"**Multiplier:** {game.current_multiplier:.2f}x\n"
+                message += f"**Bet:** ${game.wager:.2f}\n"
+                message += f"✅ **Won ${profit:.2f}!** (Payout: ${payout:.2f})"
+                
+                # Update user balance
+                user_data = self.db.get_user(user_id)
+                user_data['balance'] += payout
+                user_data['total_wagered'] += game.wager
+                user_data['total_pnl'] += profit
+                user_data['games_played'] += 1
+                user_data['games_won'] += 1
+                self.db.update_user(user_id, user_data)
+                
+                # Record game
+                self.db.record_game({
+                    'type': 'mines',
+                    'player_id': user_id,
+                    'username': user_data.get('username', 'Unknown'),
+                    'wager': game.wager,
+                    'num_mines': game.num_mines,
+                    'tiles_revealed': revealed,
+                    'multiplier': game.current_multiplier,
+                    'payout': payout,
+                    'result': 'win',
+                    'balance_after': user_data['balance']
+                })
+                
+                # Update house balance
+                self.db.update_house_balance(-profit)
+            
+            # Remove session
+            del self.mines_sessions[user_id]
+        else:
+            payout = game.get_potential_payout()
+            message = f"💎 **Mines**\n\n"
+            message += f"**Mines:** {game.num_mines} | **Revealed:** {revealed}/{safe_tiles}\n"
+            message += f"**Multiplier:** {game.current_multiplier:.2f}x\n"
+            message += f"**Bet:** ${game.wager:.2f}\n"
+            message += f"**Current Value:** ${payout:.2f}\n\n"
+            message += f"Click tiles to reveal gems 💎 or hit a mine 💣"
+        
+        reply_markup = self._build_mines_grid_keyboard(game)
+        
+        # Edit or send message
+        if update.callback_query and not is_new:
+            await update.callback_query.edit_message_text(message, reply_markup=reply_markup, parse_mode="Markdown")
+        else:
+            sent_msg = await update.effective_message.reply_text(message, reply_markup=reply_markup, parse_mode="Markdown")
+            if not game.game_over:
                 self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
     
     async def tip_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
