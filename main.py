@@ -31,6 +31,7 @@ from limbo import LimboGame, get_preset_multipliers
 
 # Import Hi-Lo game logic
 from hilo import HiLoGame
+from connect4 import Connect4Game
 
 # External dependencies (assuming they are installed via pip install python-telegram-bot)
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -525,6 +526,9 @@ class GranTeseroCasinoBot:
         
         # Dictionary to store active Hi-Lo games: user_id -> HiLoGame instance
         self.hilo_sessions: Dict[int, HiLoGame] = {}
+        
+        # Dictionary to store active Connect 4 games: game_id -> Connect4Game instance
+        self.connect4_sessions: Dict[str, Connect4Game] = {}
 
     def user_has_active_game(self, user_id: int) -> bool:
         """Check if a user already has an active game (PvP, blackjack, mines, keno, or pending opponent selection)"""
@@ -547,6 +551,11 @@ class GranTeseroCasinoBot:
         if user_id in self.hilo_sessions:
             logger.info(f"[ACTIVE_GAME] User {user_id} has active hilo session")
             return True
+        
+        for game_id, game in self.connect4_sessions.items():
+            if user_id == game.player1_id or user_id == game.player2_id:
+                logger.info(f"[ACTIVE_GAME] User {user_id} has active connect4 session: {game_id}")
+                return True
         
         if user_id in self.pending_opponent_selection:
             logger.info(f"[ACTIVE_GAME] User {user_id} has pending opponent selection")
@@ -573,6 +582,9 @@ class GranTeseroCasinoBot:
             return "limbo"
         if user_id in self.hilo_sessions:
             return "hilo"
+        for game_id, game in self.connect4_sessions.items():
+            if user_id == game.player1_id or user_id == game.player2_id:
+                return "connect4"
         if user_id in self.pending_opponent_selection:
             return "pvp"
         for game_id, challenge in self.pending_pvp.items():
@@ -623,6 +635,7 @@ class GranTeseroCasinoBot:
         self.app.add_handler(CommandHandler("keno", self.keno_command))
         self.app.add_handler(CommandHandler("limbo", self.limbo_command))
         self.app.add_handler(CommandHandler("hilo", self.hilo_command))
+        self.app.add_handler(CommandHandler("connect", self.connect_command))
         self.app.add_handler(CommandHandler("tip", self.tip_command))
         self.app.add_handler(CommandHandler("deposit", self.deposit_command))
         self.app.add_handler(CommandHandler("withdraw", self.withdraw_command))
@@ -3357,6 +3370,235 @@ Total Won: ${total_won:,.2f}"""
             if result_message:
                 await context.bot.send_message(chat_id=update.callback_query.message.chat_id, text=result_message, parse_mode="Markdown")
     
+    # --- CONNECT 4 GAME ---
+    
+    async def connect_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Start a Connect 4 PvP game. Usage: /connect @user <amount>"""
+        user_data = self.ensure_user_registered(update)
+        user_id = update.effective_user.id
+        
+        if self.user_has_active_game(user_id):
+            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            return
+        
+        if len(context.args) < 2:
+            await update.message.reply_text("Usage: `/connect @user <amount>`", parse_mode="Markdown")
+            return
+        
+        opponent_username = context.args[0].lstrip('@')
+        
+        try:
+            wager = round(float(context.args[1]), 2)
+        except ValueError:
+            await update.message.reply_text("Invalid amount")
+            return
+        
+        if wager < 0.01:
+            await update.message.reply_text("Min: $0.01")
+            return
+        
+        if wager > user_data['balance']:
+            await update.message.reply_text(f"Balance: ${user_data['balance']:.2f}")
+            return
+        
+        opponent_data = next((u for u in self.db.data['users'].values() if u.get('username') == opponent_username), None)
+        
+        if not opponent_data:
+            await update.message.reply_text(f"Could not find user @{opponent_username}")
+            return
+        
+        opponent_id = opponent_data['user_id']
+        
+        if opponent_id == user_id:
+            await update.message.reply_text("You cannot challenge yourself")
+            return
+        
+        if self.user_has_active_game(opponent_id):
+            await update.message.reply_text(f"@{opponent_username} is already in a game")
+            return
+        
+        if opponent_data['balance'] < wager:
+            await update.message.reply_text(f"@{opponent_username} doesn't have enough balance")
+            return
+        
+        game_id = f"c4_{user_id}_{opponent_id}_{int(datetime.now().timestamp())}"
+        
+        keyboard = [
+            [InlineKeyboardButton("Accept Challenge", callback_data=f"connect4_accept_{game_id}")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        self.pending_pvp[game_id] = {
+            'type': 'connect4',
+            'challenger': user_id,
+            'challenger_username': user_data.get('username', 'Unknown'),
+            'opponent': opponent_id,
+            'opponent_username': opponent_username,
+            'wager': wager,
+            'timestamp': datetime.now().timestamp()
+        }
+        
+        await update.message.reply_text(
+            f"@{opponent_username}, @{user_data.get('username', 'Unknown')} challenges you to Connect 4 for ${wager:.2f}!\n\n"
+            f"Click Accept to play.",
+            reply_markup=reply_markup
+        )
+    
+    async def _accept_connect4_challenge(self, update: Update, context: ContextTypes.DEFAULT_TYPE, game_id: str):
+        """Accept a Connect 4 challenge and start the game."""
+        query = update.callback_query
+        user_id = query.from_user.id
+        
+        if game_id not in self.pending_pvp:
+            await query.edit_message_text("Challenge expired or already accepted")
+            return
+        
+        challenge = self.pending_pvp[game_id]
+        
+        if user_id != challenge['opponent']:
+            await query.answer("This challenge is not for you!", show_alert=True)
+            return
+        
+        challenger_id = challenge['challenger']
+        wager = challenge['wager']
+        
+        challenger_data = self.db.get_user(challenger_id)
+        opponent_data = self.db.get_user(user_id)
+        
+        if challenger_data['balance'] < wager:
+            await query.edit_message_text(f"@{challenge['challenger_username']} no longer has enough balance")
+            del self.pending_pvp[game_id]
+            return
+        
+        if opponent_data['balance'] < wager:
+            await query.edit_message_text("You don't have enough balance")
+            del self.pending_pvp[game_id]
+            return
+        
+        challenger_data['balance'] -= wager
+        opponent_data['balance'] -= wager
+        self.db.update_user(challenger_id, {'balance': challenger_data['balance']})
+        self.db.update_user(user_id, {'balance': opponent_data['balance']})
+        
+        del self.pending_pvp[game_id]
+        
+        game = Connect4Game(challenger_id, user_id, wager)
+        self.connect4_sessions[game_id] = game
+        
+        p1_roll = random.randint(1, 6)
+        p2_roll = random.randint(1, 6)
+        
+        while p1_roll == p2_roll:
+            p1_roll = random.randint(1, 6)
+            p2_roll = random.randint(1, 6)
+        
+        game.set_dice_rolls(p1_roll, p2_roll)
+        
+        first_player_id = game.get_current_player_id()
+        first_username = challenge['challenger_username'] if first_player_id == challenger_id else challenge['opponent_username']
+        
+        roll_message = f"**Connect 4** - ${wager:.2f}\n\n"
+        roll_message += f"🎲 @{challenge['challenger_username']} rolled: {p1_roll}\n"
+        roll_message += f"🎲 @{challenge['opponent_username']} rolled: {p2_roll}\n\n"
+        roll_message += f"@{first_username} goes first!"
+        
+        await query.edit_message_text(roll_message, parse_mode="Markdown")
+        
+        await self._display_connect4_state(update, context, game_id)
+    
+    def _build_connect4_keyboard(self, game: Connect4Game, game_id: str) -> InlineKeyboardMarkup:
+        """Build the column selection keyboard for Connect 4."""
+        valid_cols = game.get_valid_columns()
+        col_buttons = []
+        
+        for col in range(7):
+            if col in valid_cols:
+                col_buttons.append(InlineKeyboardButton(f"{col + 1}", callback_data=f"connect4_drop_{game_id}_{col}"))
+            else:
+                col_buttons.append(InlineKeyboardButton("X", callback_data="connect4_noop"))
+        
+        return InlineKeyboardMarkup([col_buttons])
+    
+    async def _display_connect4_state(self, update: Update, context: ContextTypes.DEFAULT_TYPE, game_id: str, is_new: bool = True):
+        """Display the current Connect 4 game state."""
+        if game_id not in self.connect4_sessions:
+            return
+        
+        game = self.connect4_sessions[game_id]
+        state = game.get_game_state()
+        
+        p1_data = self.db.get_user(game.player1_id)
+        p2_data = self.db.get_user(game.player2_id)
+        p1_username = p1_data.get('username', 'Player 1')
+        p2_username = p2_data.get('username', 'Player 2')
+        
+        current_username = p1_username if game.current_player == game.PLAYER1 else p2_username
+        
+        message = f"**Connect 4** - ${game.wager:.2f}\n\n"
+        message += f"🔴 @{p1_username}\n"
+        message += f"🟡 @{p2_username}\n\n"
+        message += f"{state['board']}\n\n"
+        
+        if game.game_over:
+            if game.is_draw:
+                message += "**Draw!** Wagers returned."
+                
+                p1_data['balance'] += game.wager
+                p2_data['balance'] += game.wager
+                self.db.update_user(game.player1_id, {'balance': p1_data['balance']})
+                self.db.update_user(game.player2_id, {'balance': p2_data['balance']})
+                
+                del self.connect4_sessions[game_id]
+                reply_markup = None
+            else:
+                winner_id = state['winner_id']
+                loser_id = game.player2_id if winner_id == game.player1_id else game.player1_id
+                winner_username = p1_username if winner_id == game.player1_id else p2_username
+                winner_emoji = "🔴" if winner_id == game.player1_id else "🟡"
+                
+                total_pot = game.wager * 2
+                winner_data = self.db.get_user(winner_id)
+                loser_data = self.db.get_user(loser_id)
+                
+                winner_data['balance'] += total_pot
+                winner_data['games_won'] = winner_data.get('games_won', 0) + 1
+                winner_data['games_played'] += 1
+                winner_data['total_wagered'] += game.wager
+                winner_data['total_pnl'] += game.wager
+                
+                loser_data['games_played'] += 1
+                loser_data['total_wagered'] += game.wager
+                loser_data['total_pnl'] -= game.wager
+                
+                self.db.update_user(winner_id, winner_data)
+                self.db.update_user(loser_id, loser_data)
+                
+                message += f"**{winner_emoji} @{winner_username} wins ${total_pot:.2f}!**"
+                
+                self.db.record_game({
+                    'type': 'connect4',
+                    'winner_id': winner_id,
+                    'loser_id': loser_id,
+                    'wager': game.wager,
+                    'total_pot': total_pot,
+                    'result': 'win',
+                    'winner_balance_after': winner_data['balance'],
+                    'loser_balance_after': loser_data['balance']
+                })
+                
+                del self.connect4_sessions[game_id]
+                reply_markup = None
+        else:
+            current_emoji = "🔴" if game.current_player == game.PLAYER1 else "🟡"
+            message += f"{current_emoji} @{current_username}'s turn"
+            reply_markup = self._build_connect4_keyboard(game, game_id)
+        
+        chat_id = update.effective_chat.id
+        sent_msg = await context.bot.send_message(chat_id=chat_id, text=message, reply_markup=reply_markup, parse_mode="Markdown")
+        
+        if reply_markup:
+            self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = game.get_current_player_id()
+    
     async def tip_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Send money to another player."""
         user_data = self.ensure_user_registered(update)
@@ -6000,6 +6242,8 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         limbo_buttons = ["limbo_play_", "limbo_again_"]
         # Hi-Lo buttons
         hilo_buttons = ["hilo_higher_", "hilo_lower_", "hilo_tie_", "hilo_skip_", "hilo_cashout_", "hilo_again_"]
+        # Connect 4 buttons
+        connect4_buttons = ["connect4_accept_", "connect4_drop_", "connect4_noop"]
         # Resume game buttons
         resume_buttons = ["resume_"]
         # Withdrawal approval buttons (only admins/approvers can use)
@@ -6012,11 +6256,12 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         is_blackjack_button = any(data.startswith(prefix) for prefix in blackjack_buttons)
         is_baccarat_button = any(data.startswith(prefix) for prefix in baccarat_buttons)
         is_keno_button = any(data.startswith(prefix) or data == prefix for prefix in keno_buttons)
+        is_connect4_button = any(data.startswith(prefix) or data == prefix for prefix in connect4_buttons)
         is_resume_button = any(data.startswith(prefix) for prefix in resume_buttons)
         
         ownership_key = (chat_id, message_id)
         # Block button if it's NOT public AND (not registered OR not owned by user)
-        if not is_pvp_accept and not is_global_public and not is_mines_button and not is_blackjack_button and not is_baccarat_button and not is_keno_button and not is_resume_button:
+        if not is_pvp_accept and not is_global_public and not is_mines_button and not is_blackjack_button and not is_baccarat_button and not is_keno_button and not is_connect4_button and not is_resume_button:
             # Withdrawal buttons bypass ownership but require approval permission
             if is_withdrawal_button:
                 if not self.can_approve_withdrawals(user_id):
@@ -6059,6 +6304,13 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
                     await self._display_keno_state(update, context, user_id)
                 elif game_type == "hilo" and user_id in self.hilo_sessions:
                     await self._display_hilo_state(update, context, user_id)
+                elif game_type == "connect4":
+                    for gid, game in self.connect4_sessions.items():
+                        if user_id == game.player1_id or user_id == game.player2_id:
+                            await self._display_connect4_state(update, context, gid)
+                            return
+                    await query.edit_message_text("no active game found")
+                    return
                 else:
                     await query.edit_message_text("no active game found")
                 return
@@ -7921,6 +8173,40 @@ Total Won: ${total_won:,.2f}"""
                 self.hilo_sessions[user_id] = game
                 await query.answer("🎮 New game started!")
                 await self._display_hilo_state(update, context, user_id)
+            
+            # Connect 4 callbacks
+            elif data.startswith("connect4_accept_"):
+                game_id = data.replace("connect4_accept_", "")
+                await self._accept_connect4_challenge(update, context, game_id)
+            
+            elif data.startswith("connect4_drop_"):
+                prefix_len = len("connect4_drop_")
+                rest = data[prefix_len:]
+                last_underscore = rest.rfind('_')
+                game_id = rest[:last_underscore]
+                col = int(rest[last_underscore + 1:])
+                
+                if game_id not in self.connect4_sessions:
+                    await query.answer("Game not found!", show_alert=True)
+                    return
+                
+                game = self.connect4_sessions[game_id]
+                
+                if user_id != game.get_current_player_id():
+                    await query.answer("Not your turn!", show_alert=True)
+                    return
+                
+                result = game.make_move(user_id, col)
+                
+                if 'error' in result:
+                    await query.answer(result['error'], show_alert=True)
+                    return
+                
+                await query.answer()
+                await self._display_connect4_state(update, context, game_id, is_new=False)
+            
+            elif data == "connect4_noop":
+                await query.answer("Column is full!", show_alert=True)
             
             else:
                 await query.edit_message_text("Something went wrong or this button is for a different command!")
