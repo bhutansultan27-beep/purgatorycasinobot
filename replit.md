@@ -25,7 +25,7 @@ The Gran Tesero Casino Bot is built using Python and the `python-telegram-bot` l
 ### UI/UX Decisions
 - **Emoji-based Games**: Utilizes Telegram's native animated dice emojis for visual appeal and engaging gameplay across all games (Dice, Darts, Basketball, Soccer, Bowling, Slots, Predict, Coinflip).
 - **Simplified Results**: Game results are displayed concisely (e.g., "@user won $10.00") rather than with detailed scores, providing a cleaner user experience.
-- **Button Interfaces**: Roulette betting uses easy-to-use button interfaces.
+- **Button Interfaces**: Roulette betting, Mines, Keno, and Connect 4 use easy-to-use button interfaces for interactive gameplay.
 - **Match History**: The `/history` command provides detailed results for the last 15 games, and transaction history uses green (🟢) and red (🔴) indicators for clarity.
 - **Streamlined Messaging**: Win/loss messages are in lowercase, and button labels are simplified.
 
@@ -38,7 +38,7 @@ The Gran Tesero Casino Bot is built using Python and the `python-telegram-bot` l
   - **Keno**: Interactive 40-number grid game using invisible Telegram buttons (similar to Mines). Players pick up to 10 numbers, then draw 10 numbers randomly. Payouts based on number of hits with multipliers up to 100,000x for hitting 10/10.
   - **Limbo**: Fast-paced crypto-style game where players bet on a target multiplier. The game generates a random multiplier - if it's >= the target, the player wins their bet x target multiplier. Supports target multipliers from 1.01x up to 1,000,000x. RTP ~97%.
   - **Hi-Lo**: Card-based prediction game using a 52-card deck. Players predict if the next card is higher or lower than the current card. Features: Ace is lowest (1), King is highest (13). Same value counts as win for Higher/Lower. Tie bet available for higher payouts. Cash out anytime to secure winnings. Win multiplier increases with each correct prediction. Cards are burned (3 discarded) after each round. RTP ~96-98%.
-  - **Connect 4**: PvP only game based on Connect 4. Two players take turns dropping checkers into a 7-column 6-row grid. Players roll dice to determine who goes first. First to get 4 in a row (horizontal, vertical, or diagonal) wins the pot. Usage: `/connect @user <amount>`.
+  - **Connect 4**: PvP only game based on Connect 4. Two players take turns dropping checkers into a 7-column 6-row grid. Players roll dice to determine who goes first. First to get 4 in a row (horizontal, vertical, or diagonal) wins the pot. Features a full 6x7 clickable button grid where clicking any cell drops the piece to the lowest available row in that column (proper gravity rules). Empty cells show ⚪, Player 1 shows 🔴, Player 2 shows 🟡. Final board state is displayed when game ends. Usage: `/connect @user <amount>`.
 - **Bonus System**: Features a $5 locked first-time bonus and a 1% daily bonus based on wagered amounts with a 24-hour cooldown and playthrough requirements.
 - **Referral Program**: Users get unique referral links, earning a 1% commission on their referrals' wagered volume.
 - **Leaderboard**: A paginated leaderboard displays top players based on total wagered amounts.
