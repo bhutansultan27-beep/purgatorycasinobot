@@ -2323,10 +2323,11 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             logger.error(f"[PLISIO DEBUG] Unsupported currency: {currency}")
             return None
         
-        webhook_url = os.getenv('WEBHOOK_URL', 'https://replit-casino-bot--stugbak2.replit.app')
+        webhook_url = os.getenv('WEBHOOK_URL', 'https://casino.vps.webdock.cloud')
         callback_url = f"{webhook_url}/webhook/deposit?json=true"
         
         logger.info(f"[PLISIO DEBUG] Generating {currency} deposit address for user {user_id}")
+        logger.info(f"[PLISIO DEBUG] API Key loaded: {bool(api_key)}")
         logger.info(f"[PLISIO DEBUG] Callback URL: {callback_url}")
         
         url = "https://plisio.net/api/v1/invoices/new"

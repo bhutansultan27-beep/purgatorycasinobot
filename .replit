@@ -6,6 +6,28 @@ expertMode = true
 channel = "stable-25_05"
 
 [workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "File Server"
+
+[[workflows.workflow]]
+name = "File Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python serve_file.py"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [userenv]
 
@@ -24,10 +46,6 @@ WEBHOOK_URL = "https://replit-casino-bot--stugbak2.replit.app"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 42493
-externalPort = 3001
 
 [[ports]]
 localPort = 45809
