@@ -2472,6 +2472,8 @@ Click the button below to open your payment page.
 
 You'll see your unique {currency} wallet address on the payment page.
 
+Note: The invoice shows $0.01 but you can deposit any amount you want.
+
 Your balance will be credited automatically after confirmations."""
         else:
             # Show direct wallet address
