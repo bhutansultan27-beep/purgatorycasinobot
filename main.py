@@ -4744,10 +4744,13 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
             "balance_after": user_data['balance']
         })
         
-        # Record for biggest dices leaderboard (dice games only, wins only)
-        if game_type == "dice_bot" and result == "win":
+        # Record for biggest dices leaderboard (dice games only - record all games)
+        if game_type == "dice_bot" and result != "draw":
             winnings = wager * 2
-            self.db.record_biggest_dice(user_id, username, 0, "Bot", winnings, "bot")
+            if result == "win":
+                self.db.record_biggest_dice(user_id, username, 0, "Bot", winnings, "bot")
+            else:
+                self.db.record_biggest_dice(0, "Bot", user_id, username, winnings, "bot")
         
         keyboard = [[InlineKeyboardButton("Play Again", callback_data=f"{game_type.replace('_bot', '_bot')}_{wager:.2f}")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
