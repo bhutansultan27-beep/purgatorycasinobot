@@ -15,15 +15,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "File Server"
+args = "Placeholder"
 
 [[workflows.workflow]]
-name = "File Server"
+name = "Placeholder"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python serve_file.py"
+args = "python placeholder.py"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -46,10 +46,6 @@ WEBHOOK_URL = "https://replit-casino-bot--stugbak2.replit.app"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 45809
-externalPort = 3003
 
 [deployment]
 deploymentTarget = "vm"
