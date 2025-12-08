@@ -681,8 +681,7 @@ class GranTeseroCasinoBot:
                 if bot:
                     await bot.send_message(
                         chat_id=chat_id,
-                        text=f"⏰ @{username} took too long! Game timed out.\n"
-                             f"💸 Forfeited **${total_bet:.2f}** to the house.",
+                        text=f"⏰ @{username} was inactive for 30 seconds and forfeited ${total_bet:.2f} to the house.",
                         parse_mode="Markdown"
                     )
         
@@ -711,8 +710,7 @@ class GranTeseroCasinoBot:
                 if bot:
                     await bot.send_message(
                         chat_id=chat_id,
-                        text=f"⏰ @{username} took too long! Game timed out.\n"
-                             f"💸 Forfeited **${forfeit_amount:.2f}** to the house.",
+                        text=f"⏰ @{username} was inactive for 30 seconds and forfeited ${forfeit_amount:.2f} to the house.",
                         parse_mode="Markdown"
                     )
         
@@ -785,8 +783,7 @@ class GranTeseroCasinoBot:
                     if bot:
                         await bot.send_message(
                             chat_id=chat_id,
-                            text=f"⏰ @{username} took too long! Game timed out.\n"
-                                 f"💸 Forfeited **${forfeit_amount:.2f}** to the house.",
+                            text=f"⏰ @{username} was inactive for 30 seconds and forfeited ${forfeit_amount:.2f} to the house.",
                             parse_mode="Markdown"
                         )
         
@@ -818,8 +815,7 @@ class GranTeseroCasinoBot:
                 if bot:
                     await bot.send_message(
                         chat_id=chat_id,
-                        text=f"⏰ @{username} took too long! Game timed out.\n"
-                             f"💸 Forfeited **${forfeit_amount:.2f}** to the house.",
+                        text=f"⏰ @{username} was inactive for 30 seconds and forfeited ${forfeit_amount:.2f} to the house.",
                         parse_mode="Markdown"
                     )
         
@@ -867,9 +863,7 @@ class GranTeseroCasinoBot:
                 if bot:
                     await bot.send_message(
                         chat_id=chat_id,
-                        text=f"⏰ @{inactive_username} took too long! Game timed out.\n\n"
-                             f"💸 @{inactive_username} forfeited **${game.wager:.2f}** to the house.\n"
-                             f"💰 @{active_username} was refunded **${game.wager:.2f}**.",
+                        text=f"⏰ @{inactive_username} was inactive for 30 seconds and forfeited ${game.wager:.2f} to the house. @{active_username} was refunded ${game.wager:.2f}.",
                         parse_mode="Markdown"
                     )
         
@@ -906,9 +900,7 @@ class GranTeseroCasinoBot:
                     if bot:
                         await bot.send_message(
                             chat_id=chat_id,
-                            text=f"⏰ @{inactive_username} took too long! Game timed out.\n\n"
-                                 f"💸 @{inactive_username} forfeited **${pvp_wager:.2f}** to the house.\n"
-                                 f"💰 @{active_username} was refunded **${pvp_wager:.2f}**.",
+                            text=f"⏰ @{inactive_username} was inactive for 30 seconds and forfeited ${pvp_wager:.2f} to the house. @{active_username} was refunded ${pvp_wager:.2f}.",
                             parse_mode="Markdown"
                         )
                 else:
@@ -929,8 +921,7 @@ class GranTeseroCasinoBot:
                         if bot:
                             await bot.send_message(
                                 chat_id=chat_id,
-                                text=f"⏰ @{player_username} took too long! Game timed out.\n"
-                                     f"💸 Forfeited **${pvp_wager:.2f}** to the house.",
+                                text=f"⏰ @{player_username} was inactive for 30 seconds and forfeited ${pvp_wager:.2f} to the house.",
                                 parse_mode="Markdown"
                             )
 
@@ -1133,7 +1124,7 @@ class GranTeseroCasinoBot:
                             try:
                                 await self.app.bot.send_message(
                                     chat_id=chat_id,
-                                    text=f"⏰ @{challenger_data['username']} didn't send their emoji within 30 seconds and forfeited ${wager:.2f} to the house. @{acceptor_data['username']} has been refunded ${wager:.2f}.",
+                                    text=f"⏰ @{challenger_data['username']} was inactive for 30 seconds and forfeited ${wager:.2f} to the house. @{acceptor_data['username']} was refunded ${wager:.2f}.",
                                     parse_mode="Markdown"
                                 )
                             except Exception as e:
@@ -1167,7 +1158,7 @@ class GranTeseroCasinoBot:
                                 try:
                                     await self.app.bot.send_message(
                                         chat_id=chat_id,
-                                        text=f"⏰ @{opponent_data['username']} didn't send their emoji within 30 seconds and forfeited ${wager:.2f} to the house. @{challenger_data['username']} has been refunded ${wager:.2f}.",
+                                        text=f"⏰ @{opponent_data['username']} was inactive for 30 seconds and forfeited ${wager:.2f} to the house. @{challenger_data['username']} was refunded ${wager:.2f}.",
                                         parse_mode="Markdown"
                                     )
                                 except Exception as e:
@@ -1185,7 +1176,7 @@ class GranTeseroCasinoBot:
                                 try:
                                     await self.app.bot.send_message(
                                         chat_id=chat_id,
-                                        text=f"⏰ @{player_data['username']} didn't send their emoji within 30 seconds and forfeited ${wager:.2f} to the house.",
+                                        text=f"⏰ @{player_data['username']} was inactive for 30 seconds and forfeited ${wager:.2f} to the house.",
                                         parse_mode="Markdown"
                                     )
                                 except Exception as e:
@@ -8186,6 +8177,11 @@ Total Won: ${total_won:,.2f}"""
                     self.db.update_user(user_id, user_data)
                     
                     game.split()
+                    # After split, cancel timeout if game ended (e.g., split aces both get 21)
+                    game_state_after_split = game.get_game_state()
+                    if game_state_after_split['game_over']:
+                        game_key = f"blackjack_{user_id}"
+                        self.cancel_game_timeout(game_key)
                 elif action == "insurance":
                     # Check if user has enough balance for insurance
                     user_data = self.db.get_user(user_id)
@@ -8201,15 +8197,19 @@ Total Won: ${total_won:,.2f}"""
                     
                     game.take_insurance()
                 
-                # Reset timeout after each action (if game is still active)
+                # Reset or cancel timeout after each action
                 if game_user_id in self.blackjack_sessions:
                     game_state = game.get_game_state()
+                    game_key = f"blackjack_{user_id}"
                     if not game_state['game_over']:
+                        # Game still active - reset the timeout
                         chat_id = query.message.chat_id
-                        game_key = f"blackjack_{user_id}"
                         wager = sum(h['bet'] for h in game.player_hands)
                         self.reset_game_timeout(game_key, "blackjack", user_id, chat_id, wager,
                                                 bot=context.bot)
+                    else:
+                        # Game ended - cancel the timeout immediately
+                        self.cancel_game_timeout(game_key)
                 
                 # Update the display with new game state
                 await self._display_blackjack_state(update, context, user_id)
