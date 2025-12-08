@@ -2588,8 +2588,10 @@ Total Won: ${total_won:,.2f}"""
         reply_markup = self._build_mines_grid_keyboard(game)
         
         # Edit or send message
-        if update.callback_query and not is_new:
+        if update.callback_query:
             await update.callback_query.edit_message_text(message, reply_markup=reply_markup, parse_mode="Markdown")
+            if not game.game_over:
+                self.button_ownership[(update.callback_query.message.chat_id, update.callback_query.message.message_id)] = user_id
         else:
             sent_msg = await update.effective_message.reply_text(message, reply_markup=reply_markup, parse_mode="Markdown")
             if not game.game_over:
