@@ -82,14 +82,8 @@ class Hand:
         return value, is_soft
 
     def is_blackjack(self) -> bool:
-        """Checks for blackjack (Ace + 10-value card with exactly 2 cards). Valid on regular and split hands."""
-        if len(self.cards) != 2 or self.value != 21:
-            return False
-        # Must have exactly one Ace and one 10-value card (T, J, Q, K)
-        ranks = [card.rank for card in self.cards]
-        has_ace = 'A' in ranks
-        has_ten_value = any(r in ['T', 'J', 'Q', 'K'] for r in ranks)
-        return has_ace and has_ten_value
+        """Checks for natural 21 (only possible with 2 cards, and not a split hand)."""
+        return len(self.cards) == 2 and self.value == 21 and not self.is_split
 
     def is_busted(self) -> bool:
         """Checks if the hand value exceeds 21."""
@@ -277,36 +271,21 @@ class BlackjackGame:
         
         # Special rule for splitting Aces: only one card is drawn per Ace, then the hand must stand.
         if card1.rank == 'A':
-            # Check for blackjack on each split hand (Ace + 10-value)
-            if current_hand_state['hand'].is_blackjack():
-                current_hand_state['status'] = 'Blackjack'
-            else:
-                current_hand_state['status'] = 'Stood'
-            
-            if new_hand_state['hand'].is_blackjack():
-                new_hand_state['status'] = 'Blackjack'
-            else:
-                new_hand_state['status'] = 'Stood'
-            
+            current_hand_state['status'] = 'Stood'
+            new_hand_state['status'] = 'Stood'
             self._advance_hand() # Move past both hands automatically
             message += " (Aces split, drawing one card each, then standing automatically.)"
         else:
-            # Check if Hand 1 got blackjack or 21 - auto-stand
-            if current_hand_state['hand'].is_blackjack():
-                current_hand_state['status'] = 'Blackjack'
-                self._advance_hand()
-            elif current_hand_state['hand'].value == 21:
+            # Check if Hand 1 reached 21 - auto-stand
+            if current_hand_state['hand'].value == 21:
                 current_hand_state['status'] = 'Stood'
                 self._advance_hand()
             else:
                 # Recalculate actions for the current hand (Hand 1)
                 self._check_available_actions()
             
-            # Check if Hand 2 got blackjack or 21 - auto-stand (will be handled when we get to it)
-            if new_hand_state['hand'].is_blackjack():
-                new_hand_state['status'] = 'Blackjack'
-                new_hand_state['actions'] = {}
-            elif new_hand_state['hand'].value == 21:
+            # Check if Hand 2 reached 21 - auto-stand (will be handled when we get to it)
+            if new_hand_state['hand'].value == 21:
                 new_hand_state['status'] = 'Stood'
                 new_hand_state['actions'] = {} 
         
