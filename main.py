@@ -3721,11 +3721,7 @@ Total Won: ${total_won:,.2f}"""
         else:
             odds = state['odds']
             message = f"🎴 **Hi-Lo**\n\n"
-            message += f"**Current Card:** {card_display}\n"
-            message += f"**Cards Left:** {state['cards_remaining']}\n"
-            message += f"**Round:** {state['round_number']}\n"
-            message += f"**Multiplier:** {state['current_multiplier']:.2f}x\n"
-            message += f"**Potential Payout:** ${state['potential_payout']:.2f}"
+            message += f"**Current Card:** {card_display}"
         
         reply_markup = self._build_hilo_keyboard(game) if user_id in self.hilo_sessions else self._build_hilo_keyboard(game)
         
