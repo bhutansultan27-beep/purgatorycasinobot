@@ -873,6 +873,10 @@ Good luck! 🍀
     
     async def menu_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show the main menu"""
+        if update.effective_chat.type != "private":
+            await update.message.reply_text("❌ Use /menu in DMs only.")
+            return
+        
         user = update.effective_user
         user_data = self.ensure_user_registered(update)
         
@@ -2565,6 +2569,10 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
 
     async def deposit_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show crypto currency selection menu for deposits."""
+        if update.effective_chat.type != "private":
+            await update.message.reply_text("❌ Use /deposit in DMs only.")
+            return
+        
         user_data = self.ensure_user_registered(update)
         user_id = update.effective_user.id
         
@@ -2667,6 +2675,10 @@ Your balance will be credited automatically after confirmations."""
 
     async def withdraw_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Start withdrawal flow with payment method selection."""
+        if update.effective_chat.type != "private":
+            await update.message.reply_text("❌ Use /withdraw in DMs only.")
+            return
+        
         user_data = self.ensure_user_registered(update)
         user_id = update.effective_user.id
         
@@ -6219,6 +6231,9 @@ Total Won: ${total_won:,.2f}"""
 
             # Deposit/Withdrawal buttons
             elif data == "deposit_mock":
+                if query.message.chat.type != "private":
+                    await query.answer("❌ Use deposit in DMs only.", show_alert=True)
+                    return
                 # Show currency selection menu
                 await query.answer()
                 user_data = self.db.get_user(user_id)
@@ -6244,6 +6259,9 @@ Total Won: ${total_won:,.2f}"""
                 )
             
             elif data == "withdraw_mock":
+                if query.message.chat.type != "private":
+                    await query.answer("❌ Use withdraw in DMs only.", show_alert=True)
+                    return
                 user_data = self.db.get_user(user_id)
                 if user_data['balance'] < 1.00:
                     await query.edit_message_text(f"Minimum withdrawal is $1.00\n\nYour balance: **${user_data['balance']:.2f}**", parse_mode="Markdown")
