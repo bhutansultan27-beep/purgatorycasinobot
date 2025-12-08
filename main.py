@@ -844,7 +844,8 @@ Welcome to the casino!
              InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")],
             [InlineKeyboardButton("🎁 Bonuses", callback_data="menu_bonuses"),
              InlineKeyboardButton("📚 More Content", callback_data="menu_more_content")],
-            [InlineKeyboardButton("📞 Contact Support", callback_data="menu_support")]
+            [InlineKeyboardButton("📜 Commands", callback_data="menu_commands"),
+             InlineKeyboardButton("📞 Support", callback_data="menu_support")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -5627,10 +5628,45 @@ Your balance will be credited automatically after confirmations.
                      InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")],
                     [InlineKeyboardButton("🎁 Bonuses", callback_data="menu_bonuses"),
                      InlineKeyboardButton("📚 More Content", callback_data="menu_more_content")],
-                    [InlineKeyboardButton("📞 Contact Support", callback_data="menu_support")]
+                    [InlineKeyboardButton("📜 Commands", callback_data="menu_commands"),
+                     InlineKeyboardButton("📞 Support", callback_data="menu_support")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(balance_text, reply_markup=reply_markup, parse_mode="Markdown")
+            
+            elif data == "menu_commands":
+                commands_text = """📜 **Commands**
+
+**Games:**
+/dice - Roll dice 🎲
+/darts - Play darts 🎯
+/basketball - Shoot hoops 🏀
+/soccer - Play soccer ⚽
+/bowling - Go bowling 🎳
+/flip - Flip a coin 🪙
+/predict - Predict the dice 🔮
+/roulette - Play roulette 🎡
+/slots - Play slots 🎰
+/blackjack - Play blackjack ♠️
+
+**Account:**
+/bal - Check your balance
+/bonus - Get your bonuses
+/stats - View your stats
+/levels - View level rewards
+/history - View game history
+/deposit - Deposit funds
+/withdraw - Withdraw funds
+/tip @user amount - Tip another player
+
+**Info:**
+/leaderboard - View top players
+/referral - Get your referral link
+/housebal - View house balance
+"""
+                keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                await query.edit_message_text(commands_text, reply_markup=reply_markup, parse_mode="Markdown")
             
             elif data == "menu_play":
                 game_menu_text = "🎮 **Game Menu**\n\nChoose the game you want to play:"
