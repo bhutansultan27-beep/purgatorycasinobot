@@ -5333,6 +5333,8 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         global_public_buttons = ["lb_page_", "lb_dices_week", "lb_dices_all", "lb_wagered"]
         # Mines buttons (they verify ownership internally via user_id in callback data)
         mines_buttons = ["mines_start_", "mines_reveal_", "mines_cashout_", "mines_again_", "mines_change_", "mines_noop"]
+        # Blackjack buttons (they verify ownership internally via user_id in callback data)
+        blackjack_buttons = ["bj_"]
         # Withdrawal approval buttons (only admins/approvers can use)
         withdrawal_buttons = ["withdraw_approve_", "withdraw_deny_"]
         
@@ -5340,10 +5342,11 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         is_global_public = any(data.startswith(prefix) or data == prefix for prefix in global_public_buttons)
         is_withdrawal_button = any(data.startswith(prefix) for prefix in withdrawal_buttons)
         is_mines_button = any(data.startswith(prefix) or data == prefix for prefix in mines_buttons)
+        is_blackjack_button = any(data.startswith(prefix) for prefix in blackjack_buttons)
         
         ownership_key = (chat_id, message_id)
         # Block button if it's NOT public AND (not registered OR not owned by user)
-        if not is_pvp_accept and not is_global_public and not is_mines_button:
+        if not is_pvp_accept and not is_global_public and not is_mines_button and not is_blackjack_button:
             # Withdrawal buttons bypass ownership but require approval permission
             if is_withdrawal_button:
                 if not self.can_approve_withdrawals(user_id):
