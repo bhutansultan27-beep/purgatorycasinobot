@@ -2553,11 +2553,12 @@ Total Won: ${total_won:,.2f}"""
                 message += f"**Multiplier:** {game.current_multiplier:.2f}x\n"
                 message += f"**Bet:** ${game.wager:.2f}"
                 
-                # Separate result message
-                result_message = f"💰 **Cashed Out!**\n✅ **Won ${profit:.2f}!** (Payout: ${payout:.2f})"
-                
                 # Update user balance
                 user_data = self.db.get_user(user_id)
+                
+                # Separate result message
+                username = user_data.get('username', 'Unknown')
+                result_message = f"@{username} won ${payout:.2f}"
                 user_data['balance'] += payout
                 user_data['total_wagered'] += game.wager
                 user_data['total_pnl'] += profit
