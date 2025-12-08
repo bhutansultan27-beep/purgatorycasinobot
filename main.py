@@ -3798,11 +3798,22 @@ Total Won: ${total_won:,.2f}"""
             'timestamp': datetime.now().timestamp()
         }
         
-        await update.message.reply_text(
+        sent_msg = await update.message.reply_text(
             f"@{opponent_username}, @{user_data.get('username', 'Unknown')} challenges you to Connect 4 for ${wager:.2f}!\n\n"
             f"Click Accept to play.",
             reply_markup=reply_markup
         )
+        
+        async def delete_challenge_after_timeout():
+            await asyncio.sleep(30)
+            if game_id in self.pending_pvp:
+                del self.pending_pvp[game_id]
+                try:
+                    await sent_msg.delete()
+                except Exception:
+                    pass
+        
+        asyncio.create_task(delete_challenge_after_timeout())
     
     async def _accept_connect4_challenge(self, update: Update, context: ContextTypes.DEFAULT_TYPE, game_id: str):
         """Accept a Connect 4 challenge and start the game."""
