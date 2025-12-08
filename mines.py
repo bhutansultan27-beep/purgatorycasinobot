@@ -107,17 +107,14 @@ class MinesGame:
             for col in range(self.GRID_SIZE):
                 pos = row * self.GRID_SIZE + col
                 
-                if reveal_all and self.game_over:
+                # When game is over (win, loss, or cash out), reveal entire board
+                if self.game_over:
                     if pos in self.mine_positions:
                         row_tiles.append("💣")
-                    elif pos in self.revealed_tiles:
-                        row_tiles.append("💎")
                     else:
-                        row_tiles.append("\u3164")
+                        row_tiles.append("💎")
                 elif pos in self.revealed_tiles:
                     row_tiles.append("💎")
-                elif self.hit_mine and pos in self.mine_positions:
-                    row_tiles.append("💣")
                 else:
                     row_tiles.append("\u3164")
             grid.append(row_tiles)
