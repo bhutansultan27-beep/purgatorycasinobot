@@ -493,6 +493,7 @@ class GranTeseroCasinoBot:
     def setup_handlers(self):
         """Setup all command and callback handlers"""
         self.app.add_handler(CommandHandler("start", self.start_command))
+        self.app.add_handler(CommandHandler("menu", self.menu_command))
         self.app.add_handler(CommandHandler("help", self.help_command))
         self.app.add_handler(CommandHandler("adminhelp", self.adminhelp_command))
         self.app.add_handler(CommandHandler("balance", self.balance_command))
@@ -868,6 +869,27 @@ Good luck! 🍀
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
+        self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user.id
+    
+    async def menu_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Show the main menu"""
+        user = update.effective_user
+        user_data = self.ensure_user_registered(update)
+        
+        menu_text = f"🏦 **Menu**\n\n💰 Balance: **${user_data['balance']:.2f}**"
+        
+        keyboard = [
+            [InlineKeyboardButton("🎮 Play", callback_data="menu_play")],
+            [InlineKeyboardButton("💳 Deposit", callback_data="deposit_mock"),
+             InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")],
+            [InlineKeyboardButton("🎁 Bonuses", callback_data="menu_bonuses"),
+             InlineKeyboardButton("📚 More Content", callback_data="menu_more_content")],
+            [InlineKeyboardButton("⚙️ Commands", callback_data="menu_commands"),
+             InlineKeyboardButton("📞 Support", callback_data="menu_support")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        sent_msg = await update.message.reply_text(menu_text, reply_markup=reply_markup, parse_mode="Markdown")
         self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user.id
     
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
