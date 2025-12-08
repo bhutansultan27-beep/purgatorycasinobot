@@ -900,11 +900,10 @@ Good luck! 🍀"""
     
     async def menu_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show the main menu"""
-        if update.effective_chat.type != "private":
+        user = update.effective_user
+        if update.effective_chat.type != "private" and not self.is_admin(user.id):
             await update.message.reply_text("❌ Use /menu in DMs only.")
             return
-        
-        user = update.effective_user
         user_data = self.ensure_user_registered(update)
         
         menu_text = f"🏦 **Menu**\n\n💰 Balance: **${user_data['balance']:.2f}**"
@@ -2858,7 +2857,8 @@ Total Won: ${total_won:,.2f}"""
 
     async def deposit_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show crypto currency selection menu for deposits."""
-        if update.effective_chat.type != "private":
+        user_id = update.effective_user.id
+        if update.effective_chat.type != "private" and not self.is_admin(user_id):
             await update.message.reply_text("❌ Use /deposit in DMs only.")
             return
         
@@ -2957,12 +2957,12 @@ Your balance will be credited automatically after confirmations."""
 
     async def withdraw_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Start withdrawal flow with payment method selection."""
-        if update.effective_chat.type != "private":
+        user_id = update.effective_user.id
+        if update.effective_chat.type != "private" and not self.is_admin(user_id):
             await update.message.reply_text("❌ Use /withdraw in DMs only.")
             return
         
         user_data = self.ensure_user_registered(update)
-        user_id = update.effective_user.id
         
         min_possible = min(info.get('min_withdraw', 1.00) for info in SUPPORTED_WITHDRAWAL_CRYPTOS.values())
         if user_data['balance'] < min_possible:
@@ -6498,7 +6498,7 @@ Total Won: ${total_won:,.2f}"""
 
             # Deposit/Withdrawal buttons
             elif data == "deposit_mock":
-                if query.message.chat.type != "private":
+                if query.message.chat.type != "private" and not self.is_admin(user_id):
                     await query.answer("❌ Use deposit in DMs only.", show_alert=True)
                     return
                 # Show currency selection menu
@@ -6520,7 +6520,7 @@ Total Won: ${total_won:,.2f}"""
                 )
             
             elif data == "withdraw_mock":
-                if query.message.chat.type != "private":
+                if query.message.chat.type != "private" and not self.is_admin(user_id):
                     await query.answer("❌ Use withdraw in DMs only.", show_alert=True)
                     return
                 user_data = self.db.get_user(user_id)
