@@ -147,13 +147,6 @@ LEVELS.insert(0, {"id": "unranked", "name": "Unranked", "emoji": "⚪", "thresho
 # --- Supported Crypto Currencies for Deposits & Withdrawals (Plisio) ---
 SUPPORTED_CRYPTOS = {
     'LTC': {'name': 'Litecoin', 'emoji': '💎', 'plisio_code': 'LTC'},
-    'ETH': {'name': 'Ethereum', 'emoji': '⟠', 'plisio_code': 'ETH'},
-    'TRX': {'name': 'Tron', 'emoji': '🔴', 'plisio_code': 'TRX'},
-    'BTC': {'name': 'Bitcoin', 'emoji': '🟠', 'plisio_code': 'BTC'},
-    'SOL': {'name': 'Solana', 'emoji': '🟣', 'plisio_code': 'SOL'},
-    'TON': {'name': 'Toncoin', 'emoji': '💠', 'plisio_code': 'TON'},
-    'DOGE': {'name': 'Dogecoin', 'emoji': '🐕', 'plisio_code': 'DOGE'},
-    'USDT_TRX': {'name': 'USDT (TRC20)', 'emoji': '💵', 'plisio_code': 'USDT_TRX'},
 }
 
 SUPPORTED_DEPOSIT_CRYPTOS = SUPPORTED_CRYPTOS
