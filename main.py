@@ -914,19 +914,15 @@ Welcome to the casino!
         await update.message.reply_text(admin_help_text, parse_mode="Markdown")
     
     async def balance_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Show balance with full menu buttons"""
+        """Show balance with deposit/withdraw buttons only"""
         user_data = self.ensure_user_registered(update)
         user_id = update.effective_user.id
         
-        balance_text = f"🏦 **Menu**\n\nYour balance: **${user_data['balance']:.2f}**\n\nChoose the action:"
+        balance_text = f"💰 Balance: **${user_data['balance']:.2f}**"
         
         keyboard = [
-            [InlineKeyboardButton("🎮 Play", callback_data="menu_play")],
             [InlineKeyboardButton("💳 Deposit", callback_data="deposit_mock"),
-             InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")],
-            [InlineKeyboardButton("🎁 Bonuses", callback_data="menu_bonuses"),
-             InlineKeyboardButton("📚 More Content", callback_data="menu_more_content")],
-            [InlineKeyboardButton("📞 Contact Support", callback_data="menu_support")]
+             InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
