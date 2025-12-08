@@ -1825,7 +1825,7 @@ Total Won: ${total_won:,.2f}"""
                     history_text += f"   {num_mines} mines | {tiles_revealed} revealed | {multiplier:.2f}x | Won ${payout:.2f} | {time_str}{balance_str}\n\n"
                 else:
                     history_text += f"   {num_mines} mines | {tiles_revealed} revealed | {time_str}{balance_str}\n\n"
-            elif 'bot' in game_type or game_type in ['roulette', 'blackjack', 'dice_predict', 'slots', 'slots_bot']:
+            elif 'bot' in game_type or game_type in ['roulette', 'blackjack', 'baccarat', 'dice_predict', 'slots', 'slots_bot']:
                 result_emoji = "✅" if result == "win" else "❌" if result == "loss" else "🤝"
                 
                 if game_type == 'dice_bot':
@@ -1848,6 +1848,12 @@ Total Won: ${total_won:,.2f}"""
                     dealer_hand = game.get('dealer_hand', '?')
                     history_text += f"{result_emoji} **Blackjack** - ${wager:.2f}\n"
                     history_text += f"   Player: {player_hand} | Dealer: {dealer_hand} | {time_str}{balance_str}\n\n"
+                elif game_type == 'baccarat':
+                    player_hand = game.get('player_hand', '?')
+                    banker_hand = game.get('banker_hand', '?')
+                    bet_type = game.get('bet_type', '?')
+                    history_text += f"{result_emoji} **Baccarat** - ${wager:.2f}\n"
+                    history_text += f"   Bet: {bet_type.capitalize()} | Player: {player_hand} | Banker: {banker_hand} | {time_str}{balance_str}\n\n"
                 elif game_type == 'dice_predict':
                     predicted = game.get('predicted', '?')
                     actual = game.get('actual_roll', '?')
@@ -2780,7 +2786,9 @@ Total Won: ${total_won:,.2f}"""
                 'wager': sum(h['bet'] for h in state['player_hands']),
                 'payout': total_payout,
                 'result': 'win' if total_payout > 0 else ('loss' if total_payout < 0 else 'push'),
-                'balance_after': user_data['balance']
+                'balance_after': user_data['balance'],
+                'player_hand': ' | '.join([f"{h['cards']} ({h['value']})" for h in state['player_hands']]),
+                'dealer_hand': f"{state['dealer']['cards']} ({state['dealer']['value']})"
             })
             
             # Store original bet before removing session
@@ -3262,7 +3270,9 @@ Total Won: ${total_won:,.2f}"""
             'result': state['result'],
             'outcome': outcome,
             'payout': payout,
-            'balance_after': user_data['balance']
+            'balance_after': user_data['balance'],
+            'player_hand': f"{player_cards} ({player_value})",
+            'banker_hand': f"{banker_cards} ({banker_value})"
         })
         
         keyboard = [
