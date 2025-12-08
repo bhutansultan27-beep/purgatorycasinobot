@@ -1157,7 +1157,7 @@ Welcome to the casino!
         else:
             keyboard.append([InlineKeyboardButton("Biggest Dices this week", callback_data="lb_dices_week")])
 
-        keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
+        keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="lb_wagered")])
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         await update.callback_query.edit_message_text(
