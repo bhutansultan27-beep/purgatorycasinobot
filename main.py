@@ -5817,25 +5817,24 @@ Total Won: ${total_won:,.2f}"""
             
             elif data.startswith("game_info_"):
                 game_name = data.replace("game_info_", "")
-                game_info = {
-                    "dice": ("🎲 **Dice**", "Roll the dice against the bot!\n\nUsage: `/dice <amount>`\nExample: `/dice 10`"),
-                    "slots": ("🎰 **Slots**", "Spin the slot machine!\n\n• 777 Jackpot: 22x\n• Three of a kind: 8x\n• Two 7s: 2x\n\nUsage: `/slots <amount>`\nExample: `/slots 10`"),
-                    "predict": ("🔮 **Dice Prediction**", "Predict the dice roll (1-6) for 6x payout!\n\nUsage: `/predict <amount> #<number>`\nExample: `/predict 10 #6`"),
-                    "roulette": ("🎡 **Roulette**", "Bet on red, black, green, odd, even, or specific numbers!\n\nUsage: `/roulette <amount>`\nExample: `/roulette 10`"),
-                    "coinflip": ("🪙 **Coinflip**", "Flip a coin - heads or tails!\n\nUsage: `/flip <amount>`\nExample: `/flip 10`"),
-                    "darts": ("🎯 **Darts**", "Throw darts against the bot!\n\nUsage: `/darts <amount>`\nExample: `/darts 10`"),
-                    "basketball": ("🏀 **Basketball**", "Shoot hoops against the bot!\n\nUsage: `/basketball <amount>`\nExample: `/basketball 10`"),
-                    "soccer": ("⚽ **Soccer**", "Play soccer against the bot!\n\nUsage: `/soccer <amount>`\nExample: `/soccer 10`"),
-                    "bowling": ("🎳 **Bowling**", "Go bowling against the bot!\n\nUsage: `/bowling <amount>`\nExample: `/bowling 10`"),
-                    "blackjack": ("♠️ **Blackjack**", "Play blackjack with standard casino rules!\n\nUsage: `/blackjack <amount>`\nExample: `/blackjack 10`")
+                game_usage = {
+                    "dice": "Usage: `/dice <amount|all>`",
+                    "slots": "Usage: `/slots <amount|all>`",
+                    "predict": "Usage: `/predict <amount> #<number>`",
+                    "roulette": "Usage: `/roulette <amount|all>`",
+                    "coinflip": "Usage: `/flip <amount|all>`",
+                    "darts": "Usage: `/darts <amount|all>`",
+                    "basketball": "Usage: `/basketball <amount|all>`",
+                    "soccer": "Usage: `/soccer <amount|all>`",
+                    "bowling": "Usage: `/bowling <amount|all>`",
+                    "blackjack": "Usage: `/blackjack <amount|all>`"
                 }
                 
-                title, description = game_info.get(game_name, ("Unknown Game", "Game not found."))
-                game_text = f"{title}\n\n{description}"
+                usage_text = game_usage.get(game_name, "Game not found.")
                 
                 keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="menu_play")]]
                 reply_markup = InlineKeyboardMarkup(keyboard)
-                await query.edit_message_text(game_text, reply_markup=reply_markup, parse_mode="Markdown")
+                await query.edit_message_text(usage_text, reply_markup=reply_markup, parse_mode="Markdown")
 
             # Deposit/Withdrawal buttons
             elif data == "deposit_mock":
