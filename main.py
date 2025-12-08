@@ -6698,6 +6698,83 @@ Total Won: ${total_won:,.2f}"""
                 # Update the display with new game state
                 await self._display_blackjack_state(update, context, user_id)
             
+            # Mines Game Callbacks
+            elif data.startswith("mines_start_"):
+                # mines_start_<wager>_<num_mines>
+                parts = data.split('_')
+                wager = float(parts[2])
+                num_mines = int(parts[3])
+                
+                # Remove from pending selection
+                if user_id in self.pending_opponent_selection:
+                    self.pending_opponent_selection.discard(user_id)
+                
+                # Check balance again
+                user_data = self.db.get_user(user_id)
+                if wager > user_data['balance']:
+                    await query.edit_message_text(f"❌ Insufficient balance. You have ${user_data['balance']:.2f}")
+                    return
+                
+                # Deduct wager
+                user_data['balance'] -= wager
+                self.db.update_user(user_id, user_data)
+                
+                # Create new game
+                game = MinesGame(user_id=user_id, wager=wager, num_mines=num_mines)
+                self.mines_sessions[user_id] = game
+                
+                # Display game grid
+                await self._display_mines_state(update, context, user_id, is_new=True)
+            
+            elif data.startswith("mines_reveal_"):
+                # mines_reveal_<user_id>_<position>
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                position = int(parts[3])
+                
+                # Verify this is the correct user
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if game_user_id not in self.mines_sessions:
+                    await query.edit_message_text("❌ Game session expired. Start a new game with /mines")
+                    return
+                
+                game = self.mines_sessions[game_user_id]
+                
+                # Reveal the tile
+                is_safe, game_over, multiplier = game.reveal_tile(position)
+                
+                # Update display
+                await self._display_mines_state(update, context, user_id)
+            
+            elif data.startswith("mines_cashout_"):
+                # mines_cashout_<user_id>
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                
+                # Verify this is the correct user
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if game_user_id not in self.mines_sessions:
+                    await query.edit_message_text("❌ Game session expired. Start a new game with /mines")
+                    return
+                
+                game = self.mines_sessions[game_user_id]
+                
+                # Cash out
+                game.cash_out()
+                
+                # Update display
+                await self._display_mines_state(update, context, user_id)
+            
+            elif data == "mines_noop":
+                # Just acknowledge the click but do nothing (for revealed/disabled tiles)
+                await query.answer()
+            
             else:
                 await query.edit_message_text("Something went wrong or this button is for a different command!")
             
