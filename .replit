@@ -15,18 +15,19 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Syntax Validator"
+args = "Casino Bot"
 
 [[workflows.workflow]]
-name = "Syntax Validator"
+name = "Casino Bot"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python -c \"from main import GranTeseroCasinoBot; from blackjack import BlackjackGame; print('✓ All modules load successfully - Code is ready for deployment')\""
+args = "python main.py"
+waitForPort = 5000
 
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
 
 [userenv]
 
@@ -45,6 +46,10 @@ WEBHOOK_URL = "https://replit-casino-bot--stugbak2.replit.app"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 34721
+externalPort = 3000
 
 [deployment]
 deploymentTarget = "vm"
