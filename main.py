@@ -844,7 +844,7 @@ Welcome to the casino!
              InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")],
             [InlineKeyboardButton("🎁 Bonuses", callback_data="menu_bonuses"),
              InlineKeyboardButton("📚 More Content", callback_data="menu_more_content")],
-            [InlineKeyboardButton("📜 Commands", callback_data="menu_commands"),
+            [InlineKeyboardButton("⚙️ Commands", callback_data="menu_commands"),
              InlineKeyboardButton("📞 Support", callback_data="menu_support")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -984,11 +984,7 @@ Wins: {games_won} ({win_rate:.2f}%)
 Total Wagered: ${total_wagered:,.2f}
 Total Won: ${total_won:,.2f}"""
         
-        keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        
-        sent_msg = await update.message.reply_text(stats_text, reply_markup=reply_markup, parse_mode="Markdown")
-        self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+        await update.message.reply_text(stats_text, parse_mode="Markdown")
     
     async def levels_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show levels with tier navigation"""
@@ -1406,9 +1402,17 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                     history_text += f"{result_emoji} **Predict** - ${wager:.2f}\n"
                     history_text += f"   Predicted: {predicted} | Rolled: {actual} | {time_str}{balance_str}\n\n"
                 elif game_type in ['slots', 'slots_bot']:
-                    slot_value = game.get('slot_value', '?')
+                    multiplier = game.get('multiplier', 0)
+                    if multiplier == 22:
+                        outcome_text = "777 JACKPOT! (22x)"
+                    elif multiplier == 8:
+                        outcome_text = "Three of a Kind (8x)"
+                    elif multiplier == 2:
+                        outcome_text = "Two 7s (2x)"
+                    else:
+                        outcome_text = "No match"
                     history_text += f"{result_emoji} **Slots** - ${wager:.2f}\n"
-                    history_text += f"   Result: {slot_value} | {time_str}{balance_str}\n\n"
+                    history_text += f"   {outcome_text} | {time_str}{balance_str}\n\n"
                 else:
                     history_text += f"{result_emoji} **{game_type.replace('_', ' ').title()}** - ${wager:.2f}\n"
                     history_text += f"   {time_str}{balance_str}\n\n"
@@ -1999,6 +2003,8 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             )
             self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
         
+        # Calculate final balance for history
+        final_user_data = self.db.get_user(user_id)
         self.db.record_game({
             'type': 'slots',
             'player_id': user_id,
@@ -2006,7 +2012,8 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             'dice_value': dice_value,
             'result': 'win' if payout_multiplier > 0 else 'loss',
             'payout': wager * payout_multiplier if payout_multiplier > 0 else 0,
-            'multiplier': payout_multiplier
+            'multiplier': payout_multiplier,
+            'balance_after': final_user_data['balance']
         })
     
     async def slots_play(self, update: Update, context: ContextTypes.DEFAULT_TYPE, wager: float):
@@ -2089,6 +2096,8 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             )
             self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
         
+        # Calculate final balance for history
+        final_user_data = self.db.get_user(user_id)
         self.db.record_game({
             'type': 'slots',
             'player_id': user_id,
@@ -2096,7 +2105,8 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             'dice_value': dice_value,
             'result': 'win' if payout_multiplier > 0 else 'loss',
             'payout': wager * payout_multiplier if payout_multiplier > 0 else 0,
-            'multiplier': payout_multiplier
+            'multiplier': payout_multiplier,
+            'balance_after': final_user_data['balance']
         })
 
     async def coinflip_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -5628,14 +5638,14 @@ Your balance will be credited automatically after confirmations.
                      InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")],
                     [InlineKeyboardButton("🎁 Bonuses", callback_data="menu_bonuses"),
                      InlineKeyboardButton("📚 More Content", callback_data="menu_more_content")],
-                    [InlineKeyboardButton("📜 Commands", callback_data="menu_commands"),
+                    [InlineKeyboardButton("⚙️ Commands", callback_data="menu_commands"),
                      InlineKeyboardButton("📞 Support", callback_data="menu_support")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(balance_text, reply_markup=reply_markup, parse_mode="Markdown")
             
             elif data == "menu_commands":
-                commands_text = """📜 **Commands**
+                commands_text = """⚙️ **Commands**
 
 **Games:**
 /dice - Roll dice 🎲
