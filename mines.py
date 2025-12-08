@@ -109,17 +109,17 @@ class MinesGame:
                 
                 if reveal_all and self.game_over:
                     if pos in self.mine_positions:
-                        row_tiles.append("💣")
+                        row_tiles.append("X")
                     elif pos in self.revealed_tiles:
                         row_tiles.append("💎")
                     else:
-                        row_tiles.append("⬜")
+                        row_tiles.append(" ")
                 elif pos in self.revealed_tiles:
                     row_tiles.append("💎")
                 elif self.hit_mine and pos in self.mine_positions:
-                    row_tiles.append("💣")
+                    row_tiles.append("X")
                 else:
-                    row_tiles.append("❓")
+                    row_tiles.append(" ")
             grid.append(row_tiles)
         return grid
     
