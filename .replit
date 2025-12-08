@@ -6,28 +6,6 @@ expertMode = true
 channel = "stable-25_05"
 
 [workflows]
-runButton = "Project"
-
-[[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "File Server"
-
-[[workflows.workflow]]
-name = "File Server"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python serve_file.py"
-waitForPort = 5000
 
 [userenv]
 
