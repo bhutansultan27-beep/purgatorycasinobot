@@ -602,13 +602,6 @@ class GranTeseroCasinoBot:
                 return "pvp"
         return ""
 
-    def get_resume_game_keyboard(self, user_id: int) -> InlineKeyboardMarkup:
-        """Get keyboard with button to resume current game"""
-        game_type = self.get_active_game_type(user_id)
-        callback_data = f"resume_{game_type}_{user_id}"
-        keyboard = [[InlineKeyboardButton("resume game", callback_data=callback_data)]]
-        return InlineKeyboardMarkup(keyboard)
-
     def start_game_timeout(self, game_key: str, game_type: str, user_id: int, chat_id: int, 
                            wager: float, is_pvp: bool = False, opponent_id: int = None,
                            game_id: str = None, bot = None):
@@ -1895,7 +1888,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -1942,7 +1935,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -1989,7 +1982,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -2036,7 +2029,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -2083,7 +2076,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -2130,7 +2123,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -2229,7 +2222,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -2426,7 +2419,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -2482,7 +2475,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -2560,7 +2553,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -2822,7 +2815,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -3176,7 +3169,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -3349,7 +3342,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if len(context.args) < 2:
@@ -3466,7 +3459,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if not context.args:
@@ -3645,7 +3638,7 @@ Total Won: ${total_won:,.2f}"""
         user_id = update.effective_user.id
         
         if self.user_has_active_game(user_id):
-            await update.message.reply_text("only one game at a time", reply_markup=self.get_resume_game_keyboard(user_id))
+            await update.message.reply_text("only one game at a time")
             return
         
         if len(context.args) < 2:
@@ -6559,8 +6552,6 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         hilo_buttons = ["hilo_higher_", "hilo_lower_", "hilo_tie_", "hilo_skip_", "hilo_cashout_", "hilo_again_"]
         # Connect 4 buttons
         connect4_buttons = ["connect4_accept_", "connect4_drop_", "connect4_noop"]
-        # Resume game buttons
-        resume_buttons = ["resume_"]
         # Withdrawal approval buttons (only admins/approvers can use)
         withdrawal_buttons = ["withdraw_approve_", "withdraw_deny_"]
         
@@ -6572,11 +6563,10 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         is_baccarat_button = any(data.startswith(prefix) for prefix in baccarat_buttons)
         is_keno_button = any(data.startswith(prefix) or data == prefix for prefix in keno_buttons)
         is_connect4_button = any(data.startswith(prefix) or data == prefix for prefix in connect4_buttons)
-        is_resume_button = any(data.startswith(prefix) for prefix in resume_buttons)
         
         ownership_key = (chat_id, message_id)
         # Block button if it's NOT public AND (not registered OR not owned by user)
-        if not is_pvp_accept and not is_global_public and not is_mines_button and not is_blackjack_button and not is_baccarat_button and not is_keno_button and not is_connect4_button and not is_resume_button:
+        if not is_pvp_accept and not is_global_public and not is_mines_button and not is_blackjack_button and not is_baccarat_button and not is_keno_button and not is_connect4_button:
             # Withdrawal buttons bypass ownership but require approval permission
             if is_withdrawal_button:
                 if not self.can_approve_withdrawals(user_id):
@@ -6601,84 +6591,6 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
             self.pending_opponent_selection.discard(user_id)
         
         try:
-            # Resume game callbacks
-            if data.startswith("resume_"):
-                parts = data.split('_')
-                game_type = parts[1]
-                target_user_id = int(parts[2])
-                
-                if target_user_id != user_id:
-                    await query.answer("This button is not for you!", show_alert=True)
-                    return
-                
-                if game_type == "blackjack" and user_id in self.blackjack_sessions:
-                    await self._display_blackjack_state(update, context, user_id)
-                elif game_type == "mines" and user_id in self.mines_sessions:
-                    await self._display_mines_state(update, context, user_id)
-                elif game_type == "keno" and user_id in self.keno_sessions:
-                    await self._display_keno_state(update, context, user_id)
-                elif game_type == "hilo" and user_id in self.hilo_sessions:
-                    await self._display_hilo_state(update, context, user_id)
-                elif game_type == "connect4":
-                    for gid, game in self.connect4_sessions.items():
-                        if user_id == game.player1_id or user_id == game.player2_id:
-                            await self._display_connect4_state(update, context, gid)
-                            return
-                    await query.edit_message_text("no active game found")
-                    return
-                elif game_type == "limbo":
-                    if user_id in self.limbo_sessions:
-                        del self.limbo_sessions[user_id]
-                    await query.edit_message_text("game session cleared - you can start a new game now")
-                    return
-                elif game_type == "pvp":
-                    self.pending_opponent_selection.discard(user_id)
-                    challenges_to_remove = []
-                    for game_id, challenge in self.pending_pvp.items():
-                        challenger = challenge.get('challenger')
-                        opponent = challenge.get('opponent')
-                        player = challenge.get('player')
-                        if challenger == user_id or opponent == user_id or player == user_id:
-                            challenges_to_remove.append(game_id)
-                    for game_id in challenges_to_remove:
-                        challenge = self.pending_pvp[game_id]
-                        challenger_id = challenge.get('challenger') or challenge.get('player')
-                        wager = challenge.get('wager', 0)
-                        if challenger_id and wager > 0:
-                            challenger_data = self.db.get_user(challenger_id)
-                            if challenger_data:
-                                challenger_data['balance'] += wager
-                                self.db.update_user(challenger_id, {'balance': challenger_data['balance']})
-                        del self.pending_pvp[game_id]
-                    await query.edit_message_text("pending challenge cancelled - you can start a new game now")
-                    return
-                else:
-                    self.pending_opponent_selection.discard(user_id)
-                    if user_id in self.limbo_sessions:
-                        del self.limbo_sessions[user_id]
-                    challenges_to_remove = []
-                    for game_id, challenge in self.pending_pvp.items():
-                        challenger = challenge.get('challenger')
-                        opponent = challenge.get('opponent')
-                        player = challenge.get('player')
-                        if challenger == user_id or opponent == user_id or player == user_id:
-                            challenges_to_remove.append(game_id)
-                    for game_id in challenges_to_remove:
-                        challenge = self.pending_pvp[game_id]
-                        challenger_id = challenge.get('challenger') or challenge.get('player')
-                        wager = challenge.get('wager', 0)
-                        if challenger_id and wager > 0:
-                            challenger_data = self.db.get_user(challenger_id)
-                            if challenger_data:
-                                challenger_data['balance'] += wager
-                                self.db.update_user(challenger_id, {'balance': challenger_data['balance']})
-                        del self.pending_pvp[game_id]
-                    if self.user_has_active_game(user_id):
-                        await query.edit_message_text("no active game found")
-                    else:
-                        await query.edit_message_text("game session cleared - you can start a new game now")
-                return
-            
             # Game Callbacks (Dice vs Bot)
             if data.startswith("dice_bot_"):
                 wager = float(data.split('_')[2])
