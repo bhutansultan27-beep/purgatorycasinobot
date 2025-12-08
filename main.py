@@ -6112,9 +6112,13 @@ Total Won: ${total_won:,.2f}"""
 
 async def main():
     print("DEBUG: main() function started")
-    BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8575155625:AAFd40dO3bjJ6b6P74QcjH3mHUzuN7MilEA")
+    BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
     USE_POLLING = os.getenv("USE_POLLING", "true").lower() == "true"
     WEBHOOK_URL = os.getenv("WEBHOOK_URL", "https://casino.vps.webdock.cloud")
+    
+    if not BOT_TOKEN:
+        logger.error("TELEGRAM_BOT_TOKEN environment variable is not set!")
+        raise ValueError("TELEGRAM_BOT_TOKEN is required to run the bot")
     
     print(f"DEBUG: BOT_TOKEN={'SET' if BOT_TOKEN else 'NOT SET'}, USE_POLLING={USE_POLLING}")
     logger.info("Starting Gran Tesero Casino Bot...")
