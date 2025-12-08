@@ -1,6 +1,6 @@
 import random
 import hashlib
-from typing import List, Dict, Set, Tuple
+from typing import List, Dict, Set, Tuple, Optional
 from datetime import datetime
 
 class KenoGame:
@@ -22,7 +22,7 @@ class KenoGame:
         10: {5: 3.0, 6: 15.0, 7: 75.0, 8: 500.0, 9: 5000.0, 10: 100000.0}
     }
     
-    def __init__(self, user_id: int, wager: float, seed: str = None):
+    def __init__(self, user_id: int, wager: float, seed: Optional[str] = None):
         self.user_id = user_id
         self.wager = wager
         self.picked_numbers: Set[int] = set()

@@ -2799,13 +2799,25 @@ Total Won: ${total_won:,.2f}"""
         payout = state['payout']
         profit = state['profit']
         
-        if payout > 0:
+        is_push = (payout == wager and profit == 0)
+        
+        if is_push:
+            user_data = self.db.get_user(user_id)
+            user_data['balance'] += payout
+            user_data['total_wagered'] += wager
+            user_data['games_played'] += 1
+            user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + wager
+            self.db.update_user(user_id, user_data)
+            
+            result_text = f"Push - ${wager:.2f} returned"
+        elif payout > 0:
             user_data = self.db.get_user(user_id)
             user_data['balance'] += payout
             user_data['total_wagered'] += wager
             user_data['games_played'] += 1
             user_data['games_won'] += 1
             user_data['total_pnl'] += profit
+            user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + wager
             self.db.update_user(user_id, user_data)
             self.db.update_house_balance(-profit)
             
@@ -2815,11 +2827,13 @@ Total Won: ${total_won:,.2f}"""
             user_data['total_wagered'] += wager
             user_data['games_played'] += 1
             user_data['total_pnl'] -= wager
+            user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + wager
             self.db.update_user(user_id, user_data)
             self.db.update_house_balance(wager)
             
             result_text = f"Lost ${wager:.2f}"
         
+        outcome = 'push' if is_push else ('win' if payout > 0 else 'loss')
         self.db.record_game({
             'type': 'baccarat',
             'player_id': user_id,
@@ -2829,6 +2843,7 @@ Total Won: ${total_won:,.2f}"""
             'player_value': player_value,
             'banker_value': banker_value,
             'result': state['result'],
+            'outcome': outcome,
             'payout': payout,
             'balance_after': user_data['balance']
         })
@@ -2957,6 +2972,7 @@ Total Won: ${total_won:,.2f}"""
                 user_data['games_played'] += 1
                 user_data['games_won'] += 1
                 user_data['total_pnl'] += game.get_profit()
+                user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + game.wager
                 self.db.update_user(user_id, user_data)
                 self.db.update_house_balance(-game.get_profit())
                 
@@ -2966,6 +2982,7 @@ Total Won: ${total_won:,.2f}"""
                 user_data['total_wagered'] += game.wager
                 user_data['games_played'] += 1
                 user_data['total_pnl'] -= game.wager
+                user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + game.wager
                 self.db.update_user(user_id, user_data)
                 self.db.update_house_balance(game.wager)
                 
