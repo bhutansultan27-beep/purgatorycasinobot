@@ -2414,10 +2414,7 @@ Total Won: ${total_won:,.2f}"""
         
         if not context.args:
             await update.message.reply_text(
-                "**💣 Mines Game**\n\n"
-                "**Usage:** `/mines <amount>`\n\n"
-                "Find gems in the minefield! More mines = higher multipliers.\n"
-                "Cash out anytime or risk it all!",
+                "**Usage:** `/mines <amount>`",
                 parse_mode="Markdown"
             )
             return
