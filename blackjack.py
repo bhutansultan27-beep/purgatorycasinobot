@@ -276,8 +276,18 @@ class BlackjackGame:
             self._advance_hand() # Move past both hands automatically
             message += " (Aces split, drawing one card each, then standing automatically.)"
         else:
-            # Recalculate actions for the current hand (Hand 1)
-            self._check_available_actions() 
+            # Check if Hand 1 reached 21 - auto-stand
+            if current_hand_state['hand'].value == 21:
+                current_hand_state['status'] = 'Stood'
+                self._advance_hand()
+            else:
+                # Recalculate actions for the current hand (Hand 1)
+                self._check_available_actions()
+            
+            # Check if Hand 2 reached 21 - auto-stand (will be handled when we get to it)
+            if new_hand_state['hand'].value == 21:
+                new_hand_state['status'] = 'Stood'
+                new_hand_state['actions'] = {} 
         
         return message
 
@@ -364,12 +374,20 @@ class BlackjackGame:
                 payout = -bet # Player loses bet
             
             elif dealer_busted:
-                payout = bet # Dealer bust, player wins 1:1
+                # 21 on split hand pays 1.5x, otherwise 1:1
+                if hand.value == 21 and hand.is_split:
+                    payout = bet * 1.5
+                else:
+                    payout = bet # Dealer bust, player wins 1:1
                 
             else:
                 player_value = hand.value
                 if player_value > dealer_value:
-                    payout = bet # Win 1:1
+                    # 21 on split hand pays 1.5x, otherwise 1:1
+                    if player_value == 21 and hand.is_split:
+                        payout = bet * 1.5
+                    else:
+                        payout = bet # Win 1:1
                 elif player_value < dealer_value:
                     payout = -bet # Loss
                 else:
