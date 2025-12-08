@@ -105,7 +105,7 @@ class BlackjackGame:
     # Standard Casino Rule: Dealer hits on soft 17 (H17)
     DEALER_STANDS_ON_SOFT_17 = False
 
-    def __init__(self, bet_amount: int, deck: Optional[Deck] = None):
+    def __init__(self, bet_amount: float, deck: Optional[Deck] = None):
         self.deck = deck if deck else Deck()
         # Player Hands: List of dictionaries to support splitting
         self.player_hands: List[Dict[str, Any]] = [

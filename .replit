@@ -6,6 +6,28 @@ expertMode = true
 channel = "stable-25_05"
 
 [workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Placeholder Server"
+
+[[workflows.workflow]]
+name = "Placeholder Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python placeholder.py"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [userenv]
 
@@ -24,6 +46,10 @@ WEBHOOK_URL = "https://replit-casino-bot--stugbak2.replit.app"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 33139
+externalPort = 3000
 
 [deployment]
 deploymentTarget = "vm"

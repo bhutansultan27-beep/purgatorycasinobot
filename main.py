@@ -155,7 +155,7 @@ SUPPORTED_WITHDRAWAL_CRYPTOS = SUPPORTED_CRYPTOS
 # House fee percentage on deposits and withdrawals (0.5%)
 HOUSE_FEE_PERCENT = 0.005
 
-def get_user_level(total_wagered: float, user_id: int = None, db = None) -> dict:
+def get_user_level(total_wagered: float, user_id: Optional[int] = None, db = None) -> dict:
     """Returns the current level data based on total wagered amount."""
     current_level = LEVELS[0]
     for level in LEVELS:
@@ -166,7 +166,7 @@ def get_user_level(total_wagered: float, user_id: int = None, db = None) -> dict
     
     return current_level
 
-def get_next_level(total_wagered: float) -> dict:
+def get_next_level(total_wagered: float) -> Optional[dict]:
     """Returns the next level data or None if at max level."""
     for i, level in enumerate(LEVELS):
         if total_wagered < level["threshold"]:
@@ -1006,7 +1006,7 @@ Total Won: ${total_won:,.2f}"""
         sent_msg = await update.message.reply_text(levels_text, reply_markup=keyboard, parse_mode="Markdown")
         self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
     
-    def build_tier_display(self, tier_index: int, total_wagered: float, user_id: int = None):
+    def build_tier_display(self, tier_index: int, total_wagered: float, user_id: Optional[int] = None):
         """Build the display for a specific tier with navigation buttons."""
         tier_index = max(0, min(tier_index, len(LEVEL_TIERS) - 1))
         tier = LEVEL_TIERS[tier_index]
