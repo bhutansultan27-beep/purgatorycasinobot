@@ -6795,7 +6795,7 @@ Total Won: ${total_won:,.2f}"""
                 
                 # Start new game with same settings
                 from mines import MinesGame
-                self.mines_sessions[user_id] = MinesGame(wager, num_mines)
+                self.mines_sessions[user_id] = MinesGame(user_id=user_id, wager=wager, num_mines=num_mines)
                 
                 await query.answer("🎮 New game started!")
                 await self._display_mines_state(update, context, user_id, is_new=True)
