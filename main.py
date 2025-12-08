@@ -5264,7 +5264,7 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         self.db.data['pending_pvp'] = self.pending_pvp
         self.db.save_data()
         
-        await context.bot.send_message(chat_id=chat_id, text=f"@{username} your turn - send 🎲", parse_mode="Markdown")
+        await context.bot.send_message(chat_id=chat_id, text=f"@{username} your turn", parse_mode="Markdown")
 
     async def darts_vs_bot(self, update: Update, context: ContextTypes.DEFAULT_TYPE, wager: float):
         """Play darts against the bot (called from button)"""
@@ -5305,7 +5305,7 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         self.db.data['pending_pvp'] = self.pending_pvp
         self.db.save_data()
         
-        await context.bot.send_message(chat_id=chat_id, text=f"@{username} your turn - send 🎯", parse_mode="Markdown")
+        await context.bot.send_message(chat_id=chat_id, text=f"@{username} your turn", parse_mode="Markdown")
 
     async def basketball_vs_bot(self, update: Update, context: ContextTypes.DEFAULT_TYPE, wager: float):
         """Play basketball against the bot (called from button)"""
@@ -5346,7 +5346,7 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         self.db.data['pending_pvp'] = self.pending_pvp
         self.db.save_data()
         
-        await context.bot.send_message(chat_id=chat_id, text=f"@{username} your turn - send 🏀", parse_mode="Markdown")
+        await context.bot.send_message(chat_id=chat_id, text=f"@{username} your turn", parse_mode="Markdown")
 
     async def soccer_vs_bot(self, update: Update, context: ContextTypes.DEFAULT_TYPE, wager: float):
         """Play soccer against the bot (called from button)"""
@@ -5387,7 +5387,7 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         self.db.data['pending_pvp'] = self.pending_pvp
         self.db.save_data()
         
-        await context.bot.send_message(chat_id=chat_id, text=f"@{username} your turn - send ⚽", parse_mode="Markdown")
+        await context.bot.send_message(chat_id=chat_id, text=f"@{username} your turn", parse_mode="Markdown")
 
     async def bowling_vs_bot(self, update: Update, context: ContextTypes.DEFAULT_TYPE, wager: float):
         """Play bowling against the bot (called from button)"""
@@ -5428,7 +5428,7 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         self.db.data['pending_pvp'] = self.pending_pvp
         self.db.save_data()
         
-        await context.bot.send_message(chat_id=chat_id, text=f"@{username} your turn - send 🎳", parse_mode="Markdown")
+        await context.bot.send_message(chat_id=chat_id, text=f"@{username} your turn", parse_mode="Markdown")
 
     async def create_open_dice_challenge(self, update: Update, context: ContextTypes.DEFAULT_TYPE, wager: float):
         """Create an open dice challenge for anyone to accept"""
@@ -5631,7 +5631,7 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         
         # Tell challenger to send their emoji first
         await query.edit_message_text(
-            f"@{challenger_user['username']} your turn - send {emoji}",
+            f"@{challenger_user['username']} your turn",
             parse_mode="Markdown"
         )
         
@@ -5692,11 +5692,10 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
                 acceptor_user = self.db.get_user(challenge['opponent'])
                 wager = challenge['wager']
                 
-                emoji_for_game = challenge.get('emoji', '🎲')
                 await context.bot.send_message(
                     chat_id=chat_id, 
-                    text=f"{emoji_for_game} @{challenger_user['username']} rolled a **{roll_value}**!\n\n"
-                         f"@{acceptor_user['username']} your turn - send {emoji_for_game}",
+                    text=f"🎲 @{challenger_user['username']} rolled a **{roll_value}**!\n\n"
+                         f"🎲 @{acceptor_user['username']}, send your dice!",
                     parse_mode="Markdown"
                 )
                 return
