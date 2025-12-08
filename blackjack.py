@@ -102,8 +102,8 @@ class Hand:
 class BlackjackGame:
     """Manages the state and rules for a single game of Blackjack."""
     
-    # Standard Casino Rule: Dealer hits on soft 17 (H17)
-    DEALER_STANDS_ON_SOFT_17 = False
+    # House Rule: Dealer stands on soft 17 (S17)
+    DEALER_STANDS_ON_SOFT_17 = True
 
     def __init__(self, bet_amount: float, deck: Optional[Deck] = None):
         self.deck = deck if deck else Deck()
@@ -374,11 +374,11 @@ class BlackjackGame:
             payout = 0
             
             if status == 'Blackjack':
-                # Player Blackjack always pays 3:2 unless dealer also has Blackjack (Push)
+                # Player Blackjack pays 6:5 unless dealer also has Blackjack (Push)
                 if self.dealer_hand.is_blackjack():
                     payout = 0 
                 else:
-                    payout = bet * 1.5 
+                    payout = bet * 1.2 
             
             elif status == 'Bust':
                 payout = -bet # Player loses bet
