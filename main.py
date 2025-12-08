@@ -2340,8 +2340,6 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         
         url = "https://api.plisio.net/api/v1/invoices/new"
         params = {
-            'source_currency': 'USD',
-            'source_amount': '1',
             'currency': currency,
             'order_number': f'user_{user_id}_{currency}_{int(datetime.now().timestamp())}',
             'order_name': f'Deposit_User_{user_id}_{currency}',
