@@ -5,3 +5,5 @@ python-dotenv>=1.0.0
 APScheduler
 python-dotenv
 telegram
+APScheduler
+python-dotenv
