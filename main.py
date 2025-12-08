@@ -2357,7 +2357,9 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                     logger.info(f"[PLISIO DEBUG] Invoice response: {result}")
                     if result.get('status') == 'success':
                         data = result.get('data', {})
-                        address = data.get('wallet_hash')
+                        logger.info(f"[PLISIO DEBUG] Full data response: {data}")
+                        # Try multiple possible field names for the address
+                        address = data.get('wallet_hash') or data.get('wallet') or data.get('address') or data.get('invoice_url')
                         logger.info(f"[PLISIO DEBUG] Generated {currency} address: {address}")
                         return {
                             'address': address,
