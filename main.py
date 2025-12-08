@@ -2593,26 +2593,23 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         address_key = f'{currency.lower()}_deposit_address'
         qr_key = f'{currency.lower()}_qr_code'
         
-        user_deposit_address = user_data.get(address_key)
-        qr_code_url = user_data.get(qr_key)
+        # Always generate a fresh invoice for each deposit request
+        await query.edit_message_text(f"⏳ Generating your {currency} deposit address...")
         
-        if not user_deposit_address:
-            await query.edit_message_text(f"⏳ Generating your unique {currency} deposit address...")
+        address_data = await self.generate_coinremitter_address(user_id, currency)
+        
+        if address_data:
+            user_deposit_address = address_data.get('address')
+            qr_code_url = address_data.get('qr_code')
             
-            address_data = await self.generate_coinremitter_address(user_id, currency)
-            
-            if address_data:
-                user_deposit_address = address_data.get('address')
-                qr_code_url = address_data.get('qr_code')
-                
-                user_data[address_key] = user_deposit_address
-                user_data[qr_key] = qr_code_url
-                user_data[f'{currency.lower()}_address_expires'] = address_data.get('expire_on')
-                self.db.update_user(user_id, user_data)
-                self.db.save_data()
-            else:
-                await query.edit_message_text(f"❌ Could not generate {currency} deposit address. Contact admin.")
-                return
+            user_data[address_key] = user_deposit_address
+            user_data[qr_key] = qr_code_url
+            user_data[f'{currency.lower()}_address_expires'] = address_data.get('expire_on')
+            self.db.update_user(user_id, user_data)
+            self.db.save_data()
+        else:
+            await query.edit_message_text(f"❌ Could not generate {currency} deposit address. Contact admin.")
+            return
         
         if not user_deposit_address:
             await query.edit_message_text(f"❌ {currency} deposits temporarily unavailable. Contact admin.")
