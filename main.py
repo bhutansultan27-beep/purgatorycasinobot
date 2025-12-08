@@ -2358,14 +2358,32 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                     if result.get('status') == 'success':
                         data = result.get('data', {})
                         logger.info(f"[PLISIO DEBUG] Full data response: {data}")
-                        # Get the actual wallet address (not the invoice URL)
+                        
+                        txn_id = data.get('txn_id')
                         address = data.get('wallet_hash') or data.get('wallet') or data.get('address')
+                        qr_code = data.get('qr_code')
+                        
+                        # If wallet_hash not in invoice response, fetch from operation details
+                        if not address and txn_id:
+                            logger.info(f"[PLISIO DEBUG] wallet_hash not in invoice response, fetching from operation details...")
+                            op_url = f"https://api.plisio.net/api/v1/operations/{txn_id}"
+                            op_params = {'api_key': api_key}
+                            async with session.get(op_url, params=op_params, timeout=15) as op_response:
+                                op_result = await op_response.json()
+                                logger.info(f"[PLISIO DEBUG] Operation response: {op_result}")
+                                if op_result.get('status') == 'success':
+                                    op_data = op_result.get('data', {})
+                                    address = op_data.get('wallet_hash') or op_data.get('wallet') or op_data.get('address')
+                                    if not qr_code:
+                                        qr_code = op_data.get('qr_code')
+                                    logger.info(f"[PLISIO DEBUG] Got address from operation: {address}")
+                        
                         logger.info(f"[PLISIO DEBUG] Generated {currency} address: {address}")
                         return {
                             'address': address,
-                            'qr_code': data.get('qr_code'),
+                            'qr_code': qr_code,
                             'expire_on': data.get('expire_utc'),
-                            'txn_id': data.get('txn_id'),
+                            'txn_id': txn_id,
                             'currency': currency
                         }
                     else:
