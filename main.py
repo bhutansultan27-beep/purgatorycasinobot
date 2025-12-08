@@ -145,16 +145,35 @@ for tier in LEVEL_TIERS:
 LEVELS.insert(0, {"id": "unranked", "name": "Unranked", "emoji": "⚪", "threshold": 0, "bonus": 0, "tier_name": "Unranked"})
 
 # --- Supported Crypto Currencies for Deposits & Withdrawals (Plisio) ---
+# Each crypto has its own fee percentage to account for different network fees
+# Higher fees for expensive networks (BTC, ETH), lower fees for cheap networks (TRX, SOL)
 SUPPORTED_CRYPTOS = {
-    'LTC': {'name': 'Litecoin', 'emoji': '💎', 'plisio_code': 'LTC'},
-    'SOL': {'name': 'Solana', 'emoji': '💜', 'plisio_code': 'SOL'},
+    'LTC': {'name': 'Litecoin', 'emoji': '💎', 'plisio_code': 'LTC', 'fee_percent': 0.02, 'min_withdraw': 2.00},
+    'BTC': {'name': 'Bitcoin', 'emoji': '🟠', 'plisio_code': 'BTC', 'fee_percent': 0.05, 'min_withdraw': 10.00},
+    'ETH': {'name': 'Ethereum', 'emoji': '💠', 'plisio_code': 'ETH', 'fee_percent': 0.05, 'min_withdraw': 10.00},
+    'XMR': {'name': 'Monero', 'emoji': '🔘', 'plisio_code': 'XMR', 'fee_percent': 0.02, 'min_withdraw': 3.00},
+    'SOL': {'name': 'Solana', 'emoji': '💜', 'plisio_code': 'SOL', 'fee_percent': 0.02, 'min_withdraw': 2.00},
+    'TON': {'name': 'Toncoin', 'emoji': '💎', 'plisio_code': 'TON', 'fee_percent': 0.02, 'min_withdraw': 2.00},
+    'USDT': {'name': 'Tether (ERC-20)', 'emoji': '💵', 'plisio_code': 'USDT', 'fee_percent': 0.04, 'min_withdraw': 10.00},
+    'USDC': {'name': 'USD Coin (ERC-20)', 'emoji': '💲', 'plisio_code': 'USDC', 'fee_percent': 0.04, 'min_withdraw': 10.00},
+    'TRX': {'name': 'Tron', 'emoji': '🔴', 'plisio_code': 'TRX', 'fee_percent': 0.015, 'min_withdraw': 1.00},
 }
 
 SUPPORTED_DEPOSIT_CRYPTOS = SUPPORTED_CRYPTOS
 SUPPORTED_WITHDRAWAL_CRYPTOS = SUPPORTED_CRYPTOS
 
-# House fee percentage on deposits and withdrawals (2% to cover network fees and price volatility)
+# Default house fee percentage (used as fallback)
 HOUSE_FEE_PERCENT = 0.02
+
+def get_crypto_fee(currency: str) -> float:
+    """Get the fee percentage for a specific cryptocurrency."""
+    crypto_info = SUPPORTED_CRYPTOS.get(currency, {})
+    return crypto_info.get('fee_percent', HOUSE_FEE_PERCENT)
+
+def get_crypto_min_withdraw(currency: str) -> float:
+    """Get the minimum withdrawal amount for a specific cryptocurrency."""
+    crypto_info = SUPPORTED_CRYPTOS.get(currency, {})
+    return crypto_info.get('min_withdraw', 1.00)
 
 def get_user_level(total_wagered: float, user_id: Optional[int] = None, db = None) -> dict:
     """Returns the current level data based on total wagered amount."""
@@ -2552,6 +2571,9 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         user_data = self.ensure_user_registered(update)
         user_id = update.effective_user.id
         
+        deposit_info = "\n".join([f"{info.get('emoji', '💰')} {code}: {info['name']}" 
+                                  for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items()])
+        
         keyboard = []
         row = []
         for code in SUPPORTED_DEPOSIT_CRYPTOS.keys():
@@ -2567,7 +2589,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(
-            f"Your balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
+            f"💰 **Deposit**\n\nYour balance: **${user_data['balance']:.2f}**\n\n**Available currencies:**\n{deposit_info}\n\nChoose a cryptocurrency:",
             parse_mode="Markdown",
             reply_markup=reply_markup
         )
@@ -2615,6 +2637,8 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         # Check if it's an invoice URL (Plisio payment page) or direct wallet address
         is_invoice_url = user_deposit_address.startswith('http')
         
+        fee_percent = crypto_info.get('fee_percent', 0.02) * 100
+        
         if is_invoice_url:
             # Show button to open Plisio payment page
             keyboard = [
@@ -2623,7 +2647,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
-            deposit_text = f"""{crypto_info['name']} Deposit
+            deposit_text = f"""{crypto_info['emoji']} **{crypto_info['name']} Deposit**
 
 Click the button below to open your payment page.
 
@@ -2637,7 +2661,7 @@ Your balance will be credited automatically after confirmations."""
             keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="deposit_back")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
-            deposit_text = f"""{crypto_info['name']} Deposit
+            deposit_text = f"""{crypto_info['emoji']} **{crypto_info['name']} Deposit**
 
 Your unique {currency} deposit address:
 
@@ -2658,12 +2682,16 @@ Your balance will be credited automatically after confirmations."""
         user_data = self.ensure_user_registered(update)
         user_id = update.effective_user.id
         
-        if user_data['balance'] < 1.00:
+        min_possible = min(info.get('min_withdraw', 1.00) for info in SUPPORTED_WITHDRAWAL_CRYPTOS.values())
+        if user_data['balance'] < min_possible:
             await update.message.reply_text(
-                f"❌ Minimum withdrawal is $1.00\n\nYour balance: **${user_data['balance']:.2f}**",
+                f"❌ Minimum withdrawal is ${min_possible:.2f}\n\nYour balance: **${user_data['balance']:.2f}**",
                 parse_mode="Markdown"
             )
             return
+        
+        fee_info = "\n".join([f"{code}: {info.get('fee_percent', 0.02)*100:.1f}% fee, min ${info.get('min_withdraw', 1.00):.2f}" 
+                              for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items()])
         
         keyboard = []
         row = []
@@ -2679,7 +2707,7 @@ Your balance will be credited automatically after confirmations."""
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(
-            f"Your balance: **${user_data['balance']:.2f}**\n\nSelect withdrawal currency:",
+            f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\n**Fees & Minimums:**\n{fee_info}\n\nSelect withdrawal currency:",
             parse_mode="Markdown",
             reply_markup=reply_markup
         )
@@ -2752,8 +2780,10 @@ Your balance will be credited automatically after confirmations."""
                 await send_error_with_ownership("Amount must be positive. Please enter a valid amount:")
                 return
             
-            if amount < 1.00:
-                await send_error_with_ownership("Minimum withdrawal is $1.00. Please enter a valid amount:")
+            currency = context.user_data.get('pending_withdraw_method', 'ltc').upper()
+            min_withdraw = get_crypto_min_withdraw(currency)
+            if amount < min_withdraw:
+                await send_error_with_ownership(f"Minimum {currency} withdrawal is ${min_withdraw:.2f}. Please enter a valid amount:")
                 return
             
             if amount > user_data['balance']:
@@ -2764,6 +2794,7 @@ Your balance will be credited automatically after confirmations."""
             
             currency = context.user_data.get('pending_withdraw_method', 'ltc').upper()
             crypto_info = SUPPORTED_WITHDRAWAL_CRYPTOS.get(currency, {'name': currency})
+            fee_percent = crypto_info.get('fee_percent', 0.02) * 100
             
             keyboard = [
                 [InlineKeyboardButton("⬅️ Back", callback_data="withdraw_back_to_amount")]
@@ -2771,7 +2802,7 @@ Your balance will be credited automatically after confirmations."""
             reply_markup = InlineKeyboardMarkup(keyboard)
             
             sent_msg = await update.message.reply_text(
-                f"**Withdraw ${amount:.2f} {crypto_info['name']}**\n\nEnter your {currency} wallet address:",
+                f"💸 **Withdraw ${amount:.2f} {crypto_info['name']}**\n\nFee: {fee_percent:.1f}%\n\nEnter your {currency} wallet address:",
                 parse_mode="Markdown",
                 reply_markup=reply_markup
             )
@@ -6214,6 +6245,9 @@ Total Won: ${total_won:,.2f}"""
                 await query.answer()
                 user_data = self.db.get_user(user_id)
                 
+                deposit_info = "\n".join([f"{info.get('emoji', '💰')} {code}: {info['name']}" 
+                                          for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items()])
+                
                 keyboard = []
                 row = []
                 for code in SUPPORTED_DEPOSIT_CRYPTOS.keys():
@@ -6229,7 +6263,7 @@ Total Won: ${total_won:,.2f}"""
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
                 await query.edit_message_text(
-                    f"Your balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
+                    f"💰 **Deposit**\n\nYour balance: **${user_data['balance']:.2f}**\n\n**Available currencies:**\n{deposit_info}\n\nChoose a cryptocurrency:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
@@ -6239,9 +6273,12 @@ Total Won: ${total_won:,.2f}"""
                     await query.answer("❌ Use withdraw in DMs only.", show_alert=True)
                     return
                 user_data = self.db.get_user(user_id)
-                if user_data['balance'] < 1.00:
-                    await query.edit_message_text(f"Minimum withdrawal is $1.00\n\nYour balance: **${user_data['balance']:.2f}**", parse_mode="Markdown")
+                min_possible = min(info.get('min_withdraw', 1.00) for info in SUPPORTED_WITHDRAWAL_CRYPTOS.values())
+                if user_data['balance'] < min_possible:
+                    await query.edit_message_text(f"❌ Minimum withdrawal is ${min_possible:.2f}\n\nYour balance: **${user_data['balance']:.2f}**", parse_mode="Markdown")
                 else:
+                    fee_info = "\n".join([f"{code}: {info.get('fee_percent', 0.02)*100:.1f}% fee, min ${info.get('min_withdraw', 1.00):.2f}" 
+                                          for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items()])
                     keyboard = []
                     row = []
                     for code in SUPPORTED_WITHDRAWAL_CRYPTOS.keys():
@@ -6255,7 +6292,7 @@ Total Won: ${total_won:,.2f}"""
                     keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
                     reply_markup = InlineKeyboardMarkup(keyboard)
                     await query.edit_message_text(
-                        f"Your balance: **${user_data['balance']:.2f}**\n\nSelect withdrawal currency:",
+                        f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\n**Fees & Minimums:**\n{fee_info}\n\nSelect withdrawal currency:",
                         parse_mode="Markdown",
                         reply_markup=reply_markup
                     )
@@ -6269,6 +6306,8 @@ Total Won: ${total_won:,.2f}"""
                 
                 user_data = self.db.get_user(user_id)
                 balance = user_data['balance']
+                fee_percent = crypto_info.get('fee_percent', 0.02) * 100
+                min_withdraw = crypto_info.get('min_withdraw', 1.00)
                 
                 context.user_data['pending_withdraw_method'] = currency.lower()
                 
@@ -6278,7 +6317,7 @@ Total Won: ${total_won:,.2f}"""
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
                 await query.edit_message_text(
-                    f"💸 **Withdraw {crypto_info['name']}**\n\nYour balance: **${balance:.2f}**\n\nEnter the amount you want to withdraw:",
+                    f"💸 **Withdraw {crypto_info['name']}**\n\nYour balance: **${balance:.2f}**\nFee: **{fee_percent:.1f}%**\nMinimum: **${min_withdraw:.2f}**\n\nEnter the amount you want to withdraw:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
@@ -6298,6 +6337,8 @@ Total Won: ${total_won:,.2f}"""
                 context.user_data.pop('pending_withdraw_amount', None)
                 
                 user_data = self.db.get_user(user_id)
+                fee_info = "\n".join([f"{code}: {info.get('fee_percent', 0.02)*100:.1f}% fee, min ${info.get('min_withdraw', 1.00):.2f}" 
+                                      for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items()])
                 keyboard = []
                 row = []
                 for code in SUPPORTED_WITHDRAWAL_CRYPTOS.keys():
@@ -6311,7 +6352,7 @@ Total Won: ${total_won:,.2f}"""
                 keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
-                    f"Your balance: **${user_data['balance']:.2f}**\n\nSelect withdrawal currency:",
+                    f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\n**Fees & Minimums:**\n{fee_info}\n\nSelect withdrawal currency:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
@@ -6321,6 +6362,8 @@ Total Won: ${total_won:,.2f}"""
                 context.user_data.pop('pending_withdraw_amount', None)
                 currency = context.user_data.get('pending_withdraw_method', 'ltc').upper()
                 crypto_info = SUPPORTED_WITHDRAWAL_CRYPTOS.get(currency, {'name': currency})
+                fee_percent = crypto_info.get('fee_percent', 0.02) * 100
+                min_withdraw = crypto_info.get('min_withdraw', 1.00)
                 
                 user_data = self.db.get_user(user_id)
                 balance = user_data['balance']
@@ -6331,7 +6374,7 @@ Total Won: ${total_won:,.2f}"""
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
                 await query.edit_message_text(
-                    f"💸 **Withdraw {crypto_info['name']}**\n\nYour balance: **${balance:.2f}**\n\nEnter the amount you want to withdraw:",
+                    f"💸 **Withdraw {crypto_info['name']}**\n\nYour balance: **${balance:.2f}**\nFee: **{fee_percent:.1f}%**\nMinimum: **${min_withdraw:.2f}**\n\nEnter the amount you want to withdraw:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )

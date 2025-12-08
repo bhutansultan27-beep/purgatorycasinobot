@@ -11,7 +11,7 @@ from telegram import Update
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-SUPPORTED_CURRENCIES = ['LTC', 'SOL']
+SUPPORTED_CURRENCIES = ['LTC', 'BTC', 'ETH', 'XMR', 'SOL', 'TON', 'USDT', 'USDC', 'TRX']
 
 class WebhookServer:
     def __init__(self, bot, port=None):
@@ -119,7 +119,11 @@ class WebhookServer:
             
             self.mark_deposit_processed(tx_id, user_id, amount, credited_amount, detected_currency)
             
-            currency_names = {'LTC': 'Litecoin', 'SOL': 'Solana'}
+            currency_names = {
+                'LTC': 'Litecoin', 'BTC': 'Bitcoin', 'ETH': 'Ethereum',
+                'XMR': 'Monero', 'SOL': 'Solana', 'TON': 'Toncoin',
+                'USDT': 'Tether', 'USDC': 'USD Coin', 'TRX': 'Tron'
+            }
             currency_name = currency_names.get(detected_currency, detected_currency)
             
             try:

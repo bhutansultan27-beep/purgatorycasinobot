@@ -27,8 +27,17 @@ The Gran Tesero Casino Bot is built using Python and the `python-telegram-bot` l
 - **Referral Program**: Users get unique referral links, earning a 1% commission on their referrals' wagered volume.
 - **Leaderboard**: A paginated leaderboard displays top players based on total wagered amounts.
 - **User Wallet & Transaction Management**: Comprehensive system for managing user balances, deposits, withdrawals, and tips.
-- **Multi-Crypto Support**: Supports 5 cryptocurrencies for deposits and withdrawals via Plisio API: LTC, SOL, TRX, TON, ETH. Each user gets a unique deposit address per currency.
-- **House Fee**: 0.5% fee on all deposits and withdrawals that goes to house balance (stays in crypto wallets).
+- **Multi-Crypto Support**: Supports 9 cryptocurrencies for deposits and withdrawals via Plisio API:
+  - LTC (Litecoin): 2% fee, $2 min withdrawal
+  - BTC (Bitcoin): 5% fee, $10 min withdrawal (high network fees)
+  - ETH (Ethereum): 5% fee, $10 min withdrawal (high network fees)
+  - XMR (Monero): 2% fee, $3 min withdrawal
+  - SOL (Solana): 2% fee, $2 min withdrawal
+  - TON (Toncoin): 2% fee, $2 min withdrawal
+  - USDT (Tether ERC-20): 4% fee, $10 min withdrawal
+  - USDC (USD Coin ERC-20): 4% fee, $10 min withdrawal
+  - TRX (Tron): 1.5% fee, $1 min withdrawal (lowest fees)
+- **Per-Crypto Fees**: Each cryptocurrency has its own fee percentage to account for different network transaction costs. Higher fees for expensive networks (BTC, ETH), lower fees for cheap networks (TRX, SOL).
 - **Admin Management**: Features a dynamic admin system with permanent admins (set via `ADMIN_IDS` environment variable) and dynamic admins (added/removed via commands).
 - **House Balance**: Tracks the bot's winnings and losses, influencing the displayed house balance.
 
