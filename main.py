@@ -1057,9 +1057,9 @@ Total Won: ${total_won:,.2f}"""
     
     async def leaderboard_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show leaderboard - most wagered all time"""
-        await self.show_leaderboard_wagered(update)
+        await self.show_leaderboard_wagered(update, back_to="back_to_menu")
 
-    async def show_leaderboard_wagered(self, update: Update):
+    async def show_leaderboard_wagered(self, update: Update, back_to: str = "back_to_menu"):
         """Display the most wagered all time leaderboard"""
         leaderboard = self.db.get_leaderboard()[:10]
 
@@ -1077,9 +1077,9 @@ Total Won: ${total_won:,.2f}"""
                 leaderboard_text += f"{idx}) {level_emoji} {username} - ${total_wagered:,.2f}\n"
 
         keyboard = [
-            [InlineKeyboardButton("Biggest Dices this week", callback_data="lb_dices_week")],
-            [InlineKeyboardButton("Biggest Dices all time", callback_data="lb_dices_all")],
-            [InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")]
+            [InlineKeyboardButton("Biggest Dices this week", callback_data=f"lb_dices_week_{back_to}")],
+            [InlineKeyboardButton("Biggest Dices all time", callback_data=f"lb_dices_all_{back_to}")],
+            [InlineKeyboardButton("⬅️ Back", callback_data=back_to)]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -1096,7 +1096,7 @@ Total Won: ${total_won:,.2f}"""
                 parse_mode="Markdown"
             )
 
-    async def show_leaderboard_dices(self, update: Update, time_filter: str):
+    async def show_leaderboard_dices(self, update: Update, time_filter: str, back_to: str = "back_to_menu"):
         """Display biggest dices leaderboard"""
         dices = self.db.get_biggest_dices(time_filter)
 
@@ -1132,15 +1132,15 @@ Total Won: ${total_won:,.2f}"""
                     leaderboard_text += f"{idx}) {winner_emoji} {winner_username} vs 🤖 Bot • ${wager:,.2f}\n"
 
         keyboard = [
-            [InlineKeyboardButton("Most Wagered all time", callback_data="lb_wagered")],
+            [InlineKeyboardButton("Most Wagered all time", callback_data=f"lb_wagered_{back_to}")],
         ]
 
         if time_filter == "week":
-            keyboard.append([InlineKeyboardButton("Biggest Dices all time", callback_data="lb_dices_all")])
+            keyboard.append([InlineKeyboardButton("Biggest Dices all time", callback_data=f"lb_dices_all_{back_to}")])
         else:
-            keyboard.append([InlineKeyboardButton("Biggest Dices this week", callback_data="lb_dices_week")])
+            keyboard.append([InlineKeyboardButton("Biggest Dices this week", callback_data=f"lb_dices_week_{back_to}")])
 
-        keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
+        keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data=back_to)])
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         await update.callback_query.edit_message_text(
@@ -5263,12 +5263,19 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
                 await self.slots_play(update, context, wager)
 
             # Leaderboard Navigation
-            elif data == "lb_wagered":
-                await self.show_leaderboard_wagered(update)
-            elif data == "lb_dices_week":
-                await self.show_leaderboard_dices(update, "week")
-            elif data == "lb_dices_all":
-                await self.show_leaderboard_dices(update, "all")
+            elif data.startswith("lb_wagered"):
+                # Extract back_to from callback data (lb_wagered_menu_more_content or lb_wagered_back_to_menu)
+                parts = data.split("_", 2)
+                back_to = parts[2] if len(parts) > 2 else "back_to_menu"
+                await self.show_leaderboard_wagered(update, back_to=back_to)
+            elif data.startswith("lb_dices_week"):
+                parts = data.split("_", 3)
+                back_to = parts[3] if len(parts) > 3 else "back_to_menu"
+                await self.show_leaderboard_dices(update, "week", back_to=back_to)
+            elif data.startswith("lb_dices_all"):
+                parts = data.split("_", 3)
+                back_to = parts[3] if len(parts) > 3 else "back_to_menu"
+                await self.show_leaderboard_dices(update, "all", back_to=back_to)
             
             # Matches Pagination
             elif data.startswith("matches_page_"):
@@ -5778,7 +5785,7 @@ Total Won: ${total_won:,.2f}"""
                 await self._show_history_page(query.message, user_id, 0, edit_message=True, show_back=True)
             
             elif data == "more_leaderboard":
-                await self.show_leaderboard_wagered(update)
+                await self.show_leaderboard_wagered(update, back_to="menu_more_content")
             
             elif data == "more_raffle":
                 raffle_text = "🎟️ **Raffle**\n\nThere are no active raffles right now. Come back later!"
