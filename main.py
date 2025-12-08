@@ -2009,7 +2009,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             keyboard = [[InlineKeyboardButton("Spin Again", callback_data=f"slots_play_{wager:.2f}")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             sent_msg = await update.message.reply_text(
-                f"{result_text}\n@{username} won ${profit:.2f}",
+                f"{result_text} ({payout_multiplier}x)\n@{username} won ${payout:.2f}",
                 reply_markup=reply_markup
             )
             self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
@@ -2098,7 +2098,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             reply_markup = InlineKeyboardMarkup(keyboard)
             sent_msg = await context.bot.send_message(
                 chat_id=chat_id,
-                text=f"{result_text}\n@{username} won ${profit:.2f}",
+                text=f"{result_text} ({payout_multiplier}x)\n@{username} won ${payout:.2f}",
                 reply_markup=reply_markup
             )
             self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
