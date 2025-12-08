@@ -2444,7 +2444,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             await query.edit_message_text(f"❌ {currency} deposits temporarily unavailable. Contact admin.")
             return
         
-        keyboard = [[InlineKeyboardButton("Back to Currency Selection", callback_data="deposit_back")]]
+        keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="deposit_back")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         deposit_text = f"""{crypto_info['name']} Deposit
