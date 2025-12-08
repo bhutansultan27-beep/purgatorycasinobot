@@ -1917,6 +1917,223 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
             'balance_after': user_data['balance']
         })
     
+    async def slots_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Play slots game using Telegram's slot machine emoji"""
+        user_data = self.ensure_user_registered(update)
+        user_id = update.effective_user.id
+        
+        if self.user_has_active_game(user_id):
+            await update.message.reply_text("You can only be in 1 game at a time. Finish your current game first.")
+            return
+        
+        if not context.args:
+            await update.message.reply_text(
+                "**Slots**\n\n"
+                "**Payouts:**\n"
+                "777 Jackpot: 50x\n"
+                "Three of a Kind: 15x\n"
+                "Two 7s: 3x\n\n"
+                "**Usage:** `/slots <amount|all>`",
+                parse_mode="Markdown"
+            )
+            return
+        
+        wager = 0.0
+        if context.args[0].lower() == "all":
+            wager = user_data['balance']
+        else:
+            try:
+                wager = round(float(context.args[0]), 2)
+            except ValueError:
+                await update.message.reply_text("Invalid amount")
+                return
+        
+        if wager <= 0.01:
+            await update.message.reply_text("Min: $0.01")
+            return
+        
+        if wager > user_data['balance']:
+            await update.message.reply_text(f"Balance: ${user_data['balance']:.2f}")
+            return
+        
+        # Deduct wager from user balance
+        self.db.update_user(user_id, {'balance': user_data['balance'] - wager})
+        
+        # Send the slot machine emoji and wait for result
+        slots_message = await update.message.reply_dice(emoji="🎰")
+        dice_value = slots_message.dice.value
+        
+        await asyncio.sleep(3)
+        
+        # Determine payout based on dice value
+        # 777 Jackpot (value 64): 50x
+        # Three of a kind except 777 (values 1, 22, 43): 15x
+        # Two 7s start (values 16, 32, 48): 3x
+        # Everything else: loss
+        
+        payout_multiplier = 0
+        result_text = ""
+        
+        if dice_value == 64:
+            # 777 Jackpot
+            payout_multiplier = 50
+            result_text = "777 JACKPOT!"
+        elif dice_value in (1, 22, 43):
+            # Three of a kind (Bar-Bar-Bar, Grape-Grape-Grape, Lemon-Lemon-Lemon)
+            payout_multiplier = 15
+            result_text = "Three of a Kind!"
+        elif dice_value in (16, 32, 48):
+            # Two 7s at the start
+            payout_multiplier = 3
+            result_text = "Two 7s!"
+        else:
+            # Loss
+            payout_multiplier = 0
+            result_text = "No match"
+        
+        username = user_data.get('username', f'User{user_id}')
+        
+        if payout_multiplier > 0:
+            # Win
+            payout = wager * payout_multiplier
+            profit = payout - wager
+            new_balance = user_data['balance'] + payout
+            
+            self.db.update_user(user_id, {
+                'balance': new_balance,
+                'total_wagered': user_data['total_wagered'] + wager,
+                'wagered_since_last_withdrawal': user_data.get('wagered_since_last_withdrawal', 0) + wager,
+                'games_played': user_data['games_played'] + 1,
+                'games_won': user_data['games_won'] + 1
+            })
+            self.db.update_house_balance(-profit)
+            
+            # Play again button
+            keyboard = [[InlineKeyboardButton("Spin Again", callback_data=f"slots_play_{wager:.2f}")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            sent_msg = await update.message.reply_text(
+                f"{result_text}\n@{username} won ${profit:.2f}",
+                reply_markup=reply_markup
+            )
+            self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+        else:
+            # Loss
+            self.db.update_user(user_id, {
+                'total_wagered': user_data['total_wagered'] + wager,
+                'wagered_since_last_withdrawal': user_data.get('wagered_since_last_withdrawal', 0) + wager,
+                'games_played': user_data['games_played'] + 1
+            })
+            self.db.update_house_balance(wager)
+            
+            # Play again button
+            keyboard = [[InlineKeyboardButton("Spin Again", callback_data=f"slots_play_{wager:.2f}")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            sent_msg = await update.message.reply_text(
+                f"{result_text}\n@{username} lost ${wager:.2f}",
+                reply_markup=reply_markup
+            )
+            self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+        
+        # Record game
+        self.db.record_game({
+            'type': 'slots',
+            'player_id': user_id,
+            'wager': wager,
+            'dice_value': dice_value,
+            'result': 'win' if payout_multiplier > 0 else 'loss',
+            'payout': wager * payout_multiplier if payout_multiplier > 0 else 0,
+            'multiplier': payout_multiplier
+        })
+    
+    async def slots_play(self, update: Update, context: ContextTypes.DEFAULT_TYPE, wager: float):
+        """Play slots from button callback"""
+        query = update.callback_query
+        user_id = query.from_user.id
+        user_data = self.db.get_user(user_id)
+        chat_id = query.message.chat_id
+        
+        if wager > user_data['balance']:
+            await context.bot.send_message(chat_id=chat_id, text=f"Balance: ${user_data['balance']:.2f}")
+            return
+        
+        # Deduct wager from user balance
+        self.db.update_user(user_id, {'balance': user_data['balance'] - wager})
+        
+        # Send the slot machine emoji and wait for result
+        slots_message = await context.bot.send_dice(chat_id=chat_id, emoji="🎰")
+        dice_value = slots_message.dice.value
+        
+        await asyncio.sleep(3)
+        
+        # Determine payout based on dice value
+        payout_multiplier = 0
+        result_text = ""
+        
+        if dice_value == 64:
+            payout_multiplier = 50
+            result_text = "777 JACKPOT!"
+        elif dice_value in (1, 22, 43):
+            payout_multiplier = 15
+            result_text = "Three of a Kind!"
+        elif dice_value in (16, 32, 48):
+            payout_multiplier = 3
+            result_text = "Two 7s!"
+        else:
+            payout_multiplier = 0
+            result_text = "No match"
+        
+        username = user_data.get('username', f'User{user_id}')
+        
+        if payout_multiplier > 0:
+            payout = wager * payout_multiplier
+            profit = payout - wager
+            new_balance = user_data['balance'] + payout
+            
+            self.db.update_user(user_id, {
+                'balance': new_balance,
+                'total_wagered': user_data['total_wagered'] + wager,
+                'wagered_since_last_withdrawal': user_data.get('wagered_since_last_withdrawal', 0) + wager,
+                'games_played': user_data['games_played'] + 1,
+                'games_won': user_data['games_won'] + 1
+            })
+            self.db.update_house_balance(-profit)
+            
+            keyboard = [[InlineKeyboardButton("Spin Again", callback_data=f"slots_play_{wager:.2f}")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            sent_msg = await context.bot.send_message(
+                chat_id=chat_id,
+                text=f"{result_text}\n@{username} won ${profit:.2f}",
+                reply_markup=reply_markup
+            )
+            self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+        else:
+            self.db.update_user(user_id, {
+                'total_wagered': user_data['total_wagered'] + wager,
+                'wagered_since_last_withdrawal': user_data.get('wagered_since_last_withdrawal', 0) + wager,
+                'games_played': user_data['games_played'] + 1
+            })
+            self.db.update_house_balance(wager)
+            
+            keyboard = [[InlineKeyboardButton("Spin Again", callback_data=f"slots_play_{wager:.2f}")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            sent_msg = await context.bot.send_message(
+                chat_id=chat_id,
+                text=f"{result_text}\n@{username} lost ${wager:.2f}",
+                reply_markup=reply_markup
+            )
+            self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+        
+        # Record game
+        self.db.record_game({
+            'type': 'slots',
+            'player_id': user_id,
+            'wager': wager,
+            'dice_value': dice_value,
+            'result': 'win' if payout_multiplier > 0 else 'loss',
+            'payout': wager * payout_multiplier if payout_multiplier > 0 else 0,
+            'multiplier': payout_multiplier
+        })
+
     async def coinflip_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Play coinflip game setup"""
         user_data = self.ensure_user_registered(update)
