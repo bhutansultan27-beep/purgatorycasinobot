@@ -2210,21 +2210,6 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         
         if not context.args:
             await update.message.reply_text(
-                "🃏 **Blackjack Rules**\n\n"
-                "Get as close to 21 as possible without going over!\n\n"
-                "**Card Values:**\n"
-                "• 2-10: Face value\n"
-                "• J, Q, K: 10 points\n"
-                "• Ace: 1 or 11 points\n\n"
-                "**Payouts:**\n"
-                "• Blackjack (Ace + 10): 3:2 (1.5x)\n"
-                "• Regular Win: 1:1\n"
-                "• Push (tie): Bet returned\n\n"
-                "**Actions:**\n"
-                "• Hit: Take another card\n"
-                "• Stand: Keep current hand\n"
-                "• Double: Double bet, get 1 card\n"
-                "• Split: Split pairs into 2 hands\n\n"
                 "**Usage:** `/blackjack <amount|all>`",
                 parse_mode="Markdown"
             )
