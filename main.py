@@ -2291,7 +2291,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         # Try Plisio API first for exact real-time price
         try:
             async with aiohttp.ClientSession() as session:
-                url = f"https://plisio.net/api/v1/currencies/USD"
+                url = "https://api.plisio.net/api/v1/currencies/USD"
                 params = {"api_key": api_key}
                 
                 async with session.get(url, params=params, timeout=10) as response:
@@ -2338,7 +2338,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         logger.info(f"[PLISIO DEBUG] API Key (first 10 chars): {api_key[:10] if len(api_key) > 10 else 'SHORT'}...")
         logger.info(f"[PLISIO DEBUG] Callback URL: {callback_url}")
         
-        url = "https://plisio.net/api/v1/invoices/new"
+        url = "https://api.plisio.net/api/v1/invoices/new"
         params = {
             'source_currency': 'USD',
             'source_amount': '1',
@@ -2761,7 +2761,7 @@ Your balance will be credited automatically after confirmations."""
         
         try:
             async with aiohttp.ClientSession() as session:
-                url = f"https://plisio.net/api/v1/currencies/USD"
+                url = "https://api.plisio.net/api/v1/currencies/USD"
                 params = {"api_key": api_key}
                 
                 async with session.get(url, params=params) as response:
@@ -2806,7 +2806,7 @@ Your balance will be credited automatically after confirmations."""
         
         try:
             async with aiohttp.ClientSession() as session:
-                url = "https://plisio.net/api/v1/operations/withdraw"
+                url = "https://api.plisio.net/api/v1/operations/withdraw"
                 params = {
                     "api_key": api_key,
                     "currency": currency,
