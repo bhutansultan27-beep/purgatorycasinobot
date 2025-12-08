@@ -196,6 +196,21 @@ def get_tier_index(tier_name: str) -> int:
             return i
     return 0
 
+def get_blockchain_explorer_url(currency: str, tx_id: str) -> str:
+    """Get the blockchain explorer URL for a transaction."""
+    explorers = {
+        'LTC': f'https://blockchair.com/litecoin/transaction/{tx_id}',
+        'BTC': f'https://blockchair.com/bitcoin/transaction/{tx_id}',
+        'ETH': f'https://etherscan.io/tx/{tx_id}',
+        'SOL': f'https://solscan.io/tx/{tx_id}',
+        'TRX': f'https://tronscan.org/#/transaction/{tx_id}',
+        'XMR': f'https://xmrchain.net/tx/{tx_id}',
+        'TON': f'https://tonscan.org/tx/{tx_id}',
+        'USDT': f'https://etherscan.io/tx/{tx_id}',
+        'USDC': f'https://etherscan.io/tx/{tx_id}',
+    }
+    return explorers.get(currency.upper(), f'https://blockchair.com/search?q={tx_id}')
+
 # --- 1. Database Manager (Simulated File Storage) ---
 # This class handles loading and saving the bot's state to a local JSON file.
 class DatabaseManager:
@@ -3297,18 +3312,22 @@ Your balance will be credited automatically after confirmations."""
             self.db.add_transaction(target_user_id, "withdrawal", -withdrawal['amount'], f"LTC Withdrawal to {withdrawal['ltc_address'][:20]}...")
             self.db.save_data()
             
-            tx_info = f"\nTX: `{result.get('tx_id', 'N/A')}`" if result.get('tx_id') else ""
+            tx_id = result.get('tx_id', '')
+            tx_info = f"\nTX: `{tx_id}`" if tx_id else ""
+            explorer_link = f"\n[View on Blockchain]({get_blockchain_explorer_url('LTC', tx_id)})" if tx_id else ""
             await update.message.reply_text(
-                f"✅ **Withdrawal Sent!**\n\nUser ID: {target_user_id}\nAmount: ${withdrawal['amount']:.2f}\nTo: `{withdrawal['ltc_address']}`{tx_info}",
-                parse_mode="Markdown"
+                f"✅ **Withdrawal Sent!**\n\nUser ID: {target_user_id}\nAmount: ${withdrawal['amount']:.2f}\nTo: `{withdrawal['ltc_address']}`{tx_info}{explorer_link}",
+                parse_mode="Markdown",
+                disable_web_page_preview=True
             )
             
             # Notify user
             try:
                 await self.app.bot.send_message(
                     chat_id=target_user_id,
-                    text=f"✅ **Withdrawal Sent!**\n\n**${withdrawal['amount']:.2f}** has been sent to your LTC address.\n\nPlease allow a few minutes for blockchain confirmation.",
-                    parse_mode="Markdown"
+                    text=f"✅ **Withdrawal Sent!**\n\n**${withdrawal['amount']:.2f}** has been sent to your LTC address.{explorer_link}\n\nPlease allow a few minutes for blockchain confirmation.",
+                    parse_mode="Markdown",
+                    disable_web_page_preview=True
                 )
             except Exception as e:
                 logger.error(f"Failed to notify user {target_user_id}: {e}")
@@ -6566,18 +6585,22 @@ Total Won: ${total_won:,.2f}"""
                         self.db.add_transaction(target_user_id, "withdrawal", -amount, f"{currency} Withdrawal to {wallet_address[:20]}...")
                         self.db.save_data()
                         
-                        tx_info = f"\nTX: `{result.get('tx_id', 'N/A')}`" if result.get('tx_id') else ""
+                        tx_id = result.get('tx_id', '')
+                        tx_info = f"\nTX: `{tx_id}`" if tx_id else ""
+                        explorer_link = f"\n[View on Blockchain]({get_blockchain_explorer_url(currency, tx_id)})" if tx_id else ""
                         await query.edit_message_text(
-                            f"✅ **Withdrawal Sent!**\n\nUser: @{username} (ID: `{target_user_id}`)\nAmount: **${amount:.2f}**\nCurrency: **{currency}**\nTo: `{wallet_address}`{tx_info}\n\nApproved by @{update.effective_user.username or update.effective_user.first_name}",
-                            parse_mode="Markdown"
+                            f"✅ **Withdrawal Sent!**\n\nUser: @{username} (ID: `{target_user_id}`)\nAmount: **${amount:.2f}**\nCurrency: **{currency}**\nTo: `{wallet_address}`{tx_info}{explorer_link}\n\nApproved by @{update.effective_user.username or update.effective_user.first_name}",
+                            parse_mode="Markdown",
+                            disable_web_page_preview=True
                         )
                         
                         # Notify the user
                         try:
                             await self.app.bot.send_message(
                                 chat_id=target_user_id,
-                                text=f"✅ **Withdrawal Sent!**\n\n**${amount:.2f}** in {crypto_info['name']} has been sent to your address.\n\nPlease allow a few minutes for blockchain confirmation.",
-                                parse_mode="Markdown"
+                                text=f"✅ **Withdrawal Sent!**\n\n**${amount:.2f}** in {crypto_info['name']} has been sent to your address.{explorer_link}\n\nPlease allow a few minutes for blockchain confirmation.",
+                                parse_mode="Markdown",
+                                disable_web_page_preview=True
                             )
                         except Exception as e:
                             logger.error(f"Failed to notify user {target_user_id}: {e}")
