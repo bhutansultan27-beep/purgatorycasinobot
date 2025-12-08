@@ -1403,6 +1403,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                     history_text += f"   Predicted: {predicted} | Rolled: {actual} | {time_str}{balance_str}\n\n"
                 elif game_type in ['slots', 'slots_bot']:
                     multiplier = game.get('multiplier', 0)
+                    dice_value = game.get('dice_value', '?')
                     if multiplier == 22:
                         outcome_text = "777 JACKPOT! (22x)"
                     elif multiplier == 8:
@@ -1412,7 +1413,7 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
                     else:
                         outcome_text = "No match"
                     history_text += f"{result_emoji} **Slots** - ${wager:.2f}\n"
-                    history_text += f"   {outcome_text} | {time_str}{balance_str}\n\n"
+                    history_text += f"   [{dice_value}] {outcome_text} | {time_str}{balance_str}\n\n"
                 else:
                     history_text += f"{result_emoji} **{game_type.replace('_', ' ').title()}** - ${wager:.2f}\n"
                     history_text += f"   {time_str}{balance_str}\n\n"
