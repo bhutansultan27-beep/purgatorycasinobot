@@ -148,15 +148,8 @@ LEVELS.insert(0, {"id": "unranked", "name": "Unranked", "emoji": "⚪", "thresho
 # Each crypto has its own fee percentage to account for different network fees
 # Higher fees for expensive networks (BTC, ETH), lower fees for cheap networks (TRX, SOL)
 SUPPORTED_CRYPTOS = {
-    'LTC': {'name': 'Litecoin', 'emoji': '💎', 'plisio_code': 'LTC', 'fee_percent': 0.02, 'min_withdraw': 2.00},
-    'BTC': {'name': 'Bitcoin', 'emoji': '🟠', 'plisio_code': 'BTC', 'fee_percent': 0.05, 'min_withdraw': 10.00},
-    'ETH': {'name': 'Ethereum', 'emoji': '💠', 'plisio_code': 'ETH', 'fee_percent': 0.05, 'min_withdraw': 10.00},
-    'XMR': {'name': 'Monero', 'emoji': '🔘', 'plisio_code': 'XMR', 'fee_percent': 0.02, 'min_withdraw': 3.00},
     'SOL': {'name': 'Solana', 'emoji': '💜', 'plisio_code': 'SOL', 'fee_percent': 0.02, 'min_withdraw': 2.00},
-    'TON': {'name': 'Toncoin', 'emoji': '💎', 'plisio_code': 'TON', 'fee_percent': 0.02, 'min_withdraw': 2.00},
-    'USDT': {'name': 'Tether (ERC-20)', 'emoji': '💵', 'plisio_code': 'USDT', 'fee_percent': 0.04, 'min_withdraw': 10.00},
-    'USDC': {'name': 'USD Coin (ERC-20)', 'emoji': '💲', 'plisio_code': 'USDC', 'fee_percent': 0.04, 'min_withdraw': 10.00},
-    'TRX': {'name': 'Tron', 'emoji': '🔴', 'plisio_code': 'TRX', 'fee_percent': 0.015, 'min_withdraw': 1.00},
+    'LTC': {'name': 'Litecoin', 'emoji': '💎', 'plisio_code': 'LTC', 'fee_percent': 0.02, 'min_withdraw': 2.00},
 }
 
 SUPPORTED_DEPOSIT_CRYPTOS = SUPPORTED_CRYPTOS
@@ -2571,25 +2564,16 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         user_data = self.ensure_user_registered(update)
         user_id = update.effective_user.id
         
-        deposit_info = "\n".join([f"{info.get('emoji', '💰')} {code}: {info['name']}" 
-                                  for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items()])
-        
         keyboard = []
-        row = []
-        for code in SUPPORTED_DEPOSIT_CRYPTOS.keys():
-            btn = InlineKeyboardButton(code, callback_data=f"deposit_crypto_{code}")
-            row.append(btn)
-            if len(row) == 3:
-                keyboard.append(row)
-                row = []
-        if row:
-            keyboard.append(row)
+        for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items():
+            btn = InlineKeyboardButton(f"{info['emoji']} {info['name']}", callback_data=f"deposit_crypto_{code}")
+            keyboard.append([btn])
         keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(
-            f"💰 **Deposit**\n\nYour balance: **${user_data['balance']:.2f}**\n\n**Available currencies:**\n{deposit_info}\n\nChoose a cryptocurrency:",
+            f"💰 **Deposit**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
             parse_mode="Markdown",
             reply_markup=reply_markup
         )
@@ -2690,24 +2674,15 @@ Your balance will be credited automatically after confirmations."""
             )
             return
         
-        fee_info = "\n".join([f"{code}: {info.get('fee_percent', 0.02)*100:.1f}% fee, min ${info.get('min_withdraw', 1.00):.2f}" 
-                              for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items()])
-        
         keyboard = []
-        row = []
-        for code in SUPPORTED_WITHDRAWAL_CRYPTOS.keys():
-            btn = InlineKeyboardButton(code, callback_data=f"withdraw_method_{code.lower()}")
-            row.append(btn)
-            if len(row) == 3:
-                keyboard.append(row)
-                row = []
-        if row:
-            keyboard.append(row)
+        for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items():
+            btn = InlineKeyboardButton(f"{info['emoji']} {info['name']}", callback_data=f"withdraw_method_{code.lower()}")
+            keyboard.append([btn])
         keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(
-            f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\n**Fees & Minimums:**\n{fee_info}\n\nSelect withdrawal currency:",
+            f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
             parse_mode="Markdown",
             reply_markup=reply_markup
         )
@@ -5403,19 +5378,13 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
             elif data == "deposit_back":
                 user_data = self.db.get_user(user_id)
                 keyboard = []
-                row = []
-                for code in SUPPORTED_DEPOSIT_CRYPTOS.keys():
-                    btn = InlineKeyboardButton(code, callback_data=f"deposit_crypto_{code}")
-                    row.append(btn)
-                    if len(row) == 3:
-                        keyboard.append(row)
-                        row = []
-                if row:
-                    keyboard.append(row)
+                for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items():
+                    btn = InlineKeyboardButton(f"{info['emoji']} {info['name']}", callback_data=f"deposit_crypto_{code}")
+                    keyboard.append([btn])
                 keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
-                    f"Your balance: **${user_data['balance']:.2f}**\n\nChoose a cryptocurrency:",
+                    f"💰 **Deposit**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
@@ -6245,25 +6214,16 @@ Total Won: ${total_won:,.2f}"""
                 await query.answer()
                 user_data = self.db.get_user(user_id)
                 
-                deposit_info = "\n".join([f"{info.get('emoji', '💰')} {code}: {info['name']}" 
-                                          for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items()])
-                
                 keyboard = []
-                row = []
-                for code in SUPPORTED_DEPOSIT_CRYPTOS.keys():
-                    btn = InlineKeyboardButton(code, callback_data=f"deposit_crypto_{code}")
-                    row.append(btn)
-                    if len(row) == 3:
-                        keyboard.append(row)
-                        row = []
-                if row:
-                    keyboard.append(row)
+                for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items():
+                    btn = InlineKeyboardButton(f"{info['emoji']} {info['name']}", callback_data=f"deposit_crypto_{code}")
+                    keyboard.append([btn])
                 keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
                 
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
                 await query.edit_message_text(
-                    f"💰 **Deposit**\n\nYour balance: **${user_data['balance']:.2f}**\n\n**Available currencies:**\n{deposit_info}\n\nChoose a cryptocurrency:",
+                    f"💰 **Deposit**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
@@ -6277,22 +6237,14 @@ Total Won: ${total_won:,.2f}"""
                 if user_data['balance'] < min_possible:
                     await query.edit_message_text(f"❌ Minimum withdrawal is ${min_possible:.2f}\n\nYour balance: **${user_data['balance']:.2f}**", parse_mode="Markdown")
                 else:
-                    fee_info = "\n".join([f"{code}: {info.get('fee_percent', 0.02)*100:.1f}% fee, min ${info.get('min_withdraw', 1.00):.2f}" 
-                                          for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items()])
                     keyboard = []
-                    row = []
-                    for code in SUPPORTED_WITHDRAWAL_CRYPTOS.keys():
-                        btn = InlineKeyboardButton(code, callback_data=f"withdraw_method_{code.lower()}")
-                        row.append(btn)
-                        if len(row) == 3:
-                            keyboard.append(row)
-                            row = []
-                    if row:
-                        keyboard.append(row)
+                    for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items():
+                        btn = InlineKeyboardButton(f"{info['emoji']} {info['name']}", callback_data=f"withdraw_method_{code.lower()}")
+                        keyboard.append([btn])
                     keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
                     reply_markup = InlineKeyboardMarkup(keyboard)
                     await query.edit_message_text(
-                        f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\n**Fees & Minimums:**\n{fee_info}\n\nSelect withdrawal currency:",
+                        f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
                         parse_mode="Markdown",
                         reply_markup=reply_markup
                     )
@@ -6337,22 +6289,14 @@ Total Won: ${total_won:,.2f}"""
                 context.user_data.pop('pending_withdraw_amount', None)
                 
                 user_data = self.db.get_user(user_id)
-                fee_info = "\n".join([f"{code}: {info.get('fee_percent', 0.02)*100:.1f}% fee, min ${info.get('min_withdraw', 1.00):.2f}" 
-                                      for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items()])
                 keyboard = []
-                row = []
-                for code in SUPPORTED_WITHDRAWAL_CRYPTOS.keys():
-                    btn = InlineKeyboardButton(code, callback_data=f"withdraw_method_{code.lower()}")
-                    row.append(btn)
-                    if len(row) == 3:
-                        keyboard.append(row)
-                        row = []
-                if row:
-                    keyboard.append(row)
+                for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items():
+                    btn = InlineKeyboardButton(f"{info['emoji']} {info['name']}", callback_data=f"withdraw_method_{code.lower()}")
+                    keyboard.append([btn])
                 keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
-                    f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\n**Fees & Minimums:**\n{fee_info}\n\nSelect withdrawal currency:",
+                    f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
