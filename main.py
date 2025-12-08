@@ -148,8 +148,8 @@ LEVELS.insert(0, {"id": "unranked", "name": "Unranked", "emoji": "⚪", "thresho
 # Each crypto has its own fee percentage to account for different network fees
 # Higher fees for expensive networks (BTC, ETH), lower fees for cheap networks (TRX, SOL)
 SUPPORTED_CRYPTOS = {
-    'SOL': {'name': 'Solana', 'emoji': '💜', 'plisio_code': 'SOL', 'fee_percent': 0.02, 'min_withdraw': 2.00},
-    'LTC': {'name': 'Litecoin', 'emoji': '💎', 'plisio_code': 'LTC', 'fee_percent': 0.02, 'min_withdraw': 2.00},
+    'SOL': {'name': 'Solana', 'emoji': '💜', 'plisio_code': 'SOL', 'fee_percent': 0.01, 'deposit_fee_percent': 0.01, 'min_withdraw': 2.00},
+    'LTC': {'name': 'Litecoin', 'emoji': '💎', 'plisio_code': 'LTC', 'fee_percent': 0.01, 'deposit_fee_percent': 0.01, 'min_withdraw': 2.00},
 }
 
 SUPPORTED_DEPOSIT_CRYPTOS = SUPPORTED_CRYPTOS
@@ -597,7 +597,8 @@ class GranTeseroCasinoBot:
             return
         
         target_data = self.db.get_user(target_user_id)
-        credited_amount = round(ltc_amount, 2)
+        deposit_fee = 0.01  # 1% deposit fee (not shown to user)
+        credited_amount = round(ltc_amount * (1 - deposit_fee), 2)
         
         target_data['balance'] += credited_amount
         self.db.update_user(target_user_id, target_data)
@@ -621,8 +622,7 @@ class GranTeseroCasinoBot:
             await self.app.bot.send_message(
                 chat_id=target_user_id,
                 text=f"✅ **Deposit Confirmed!**\n\n"
-                     f"Received: {ltc_amount:.8f} LTC\n"
-                     f"Credited: **${credited_amount:.2f}**\n\n"
+                     f"Amount: **${ltc_amount:.2f}**\n\n"
                      f"New Balance: ${target_data['balance']:.2f}",
                 parse_mode="Markdown"
             )
@@ -2566,9 +2566,9 @@ Unclaimed: ${user_data.get('unclaimed_referral_earnings', 0):.2f}
         
         keyboard = []
         for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items():
-            btn = InlineKeyboardButton(f"{info['emoji']} {info['name']}", callback_data=f"deposit_crypto_{code}")
+            btn = InlineKeyboardButton(info['name'], callback_data=f"deposit_crypto_{code}")
             keyboard.append([btn])
-        keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
+        keyboard.append([InlineKeyboardButton("Back", callback_data="back_to_main_menu")])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -2676,9 +2676,9 @@ Your balance will be credited automatically after confirmations."""
         
         keyboard = []
         for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items():
-            btn = InlineKeyboardButton(f"{info['emoji']} {info['name']}", callback_data=f"withdraw_method_{code.lower()}")
+            btn = InlineKeyboardButton(info['name'], callback_data=f"withdraw_method_{code.lower()}")
             keyboard.append([btn])
-        keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
+        keyboard.append([InlineKeyboardButton("Back", callback_data="back_to_main_menu")])
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(
@@ -2909,9 +2909,11 @@ Your balance will be credited automatically after confirmations."""
             return
         
         user_data = self.db.get_user(target_user_id)
-        user_data['balance'] += amount
+        deposit_fee = 0.01  # 1% deposit fee (not shown to user)
+        credited_amount = round(amount * (1 - deposit_fee), 2)
+        user_data['balance'] += credited_amount
         self.db.update_user(target_user_id, user_data)
-        self.db.add_transaction(target_user_id, "deposit", amount, "LTC Deposit (Approved)")
+        self.db.add_transaction(target_user_id, "deposit", credited_amount, "LTC Deposit (Approved)")
         self.db.record_deposit(target_user_id, user_data.get('username', f'User{target_user_id}'), amount)
         
         # Mark deposit as approved
@@ -3363,10 +3365,12 @@ Choose an option:"""
             return
         
         target_user_id = target_user['user_id']
-        target_user['balance'] += amount
+        deposit_fee = 0.01  # 1% deposit fee (not shown to user)
+        credited_amount = round(amount * (1 - deposit_fee), 2)
+        target_user['balance'] += credited_amount
         self.db.update_user(target_user_id, target_user)
-        self.db.add_transaction(target_user_id, "deposit", amount, f"Manual deposit by admin {update.effective_user.id}")
-        self.db.record_deposit(target_user_id, target_user.get('username', f'User{target_user_id}'), amount)
+        self.db.add_transaction(target_user_id, "deposit", credited_amount, f"Manual deposit by admin {update.effective_user.id}")
+        self.db.record_deposit(target_user_id, target_user.get('username', f'User{target_user_id}'), credited_amount)
         
         username_display = f"@{target_user.get('username', target_user_id)}"
         await update.message.reply_text(
@@ -5379,9 +5383,9 @@ Referral Earnings: ${target_user.get('referral_earnings', 0):.2f}
                 user_data = self.db.get_user(user_id)
                 keyboard = []
                 for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items():
-                    btn = InlineKeyboardButton(f"{info['emoji']} {info['name']}", callback_data=f"deposit_crypto_{code}")
+                    btn = InlineKeyboardButton(info['name'], callback_data=f"deposit_crypto_{code}")
                     keyboard.append([btn])
-                keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
+                keyboard.append([InlineKeyboardButton("Back", callback_data="back_to_main_menu")])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
                     f"💰 **Deposit**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
@@ -6216,9 +6220,9 @@ Total Won: ${total_won:,.2f}"""
                 
                 keyboard = []
                 for code, info in SUPPORTED_DEPOSIT_CRYPTOS.items():
-                    btn = InlineKeyboardButton(f"{info['emoji']} {info['name']}", callback_data=f"deposit_crypto_{code}")
+                    btn = InlineKeyboardButton(info['name'], callback_data=f"deposit_crypto_{code}")
                     keyboard.append([btn])
-                keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
+                keyboard.append([InlineKeyboardButton("Back", callback_data="back_to_menu")])
                 
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
@@ -6239,9 +6243,9 @@ Total Won: ${total_won:,.2f}"""
                 else:
                     keyboard = []
                     for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items():
-                        btn = InlineKeyboardButton(f"{info['emoji']} {info['name']}", callback_data=f"withdraw_method_{code.lower()}")
+                        btn = InlineKeyboardButton(info['name'], callback_data=f"withdraw_method_{code.lower()}")
                         keyboard.append([btn])
-                    keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
+                    keyboard.append([InlineKeyboardButton("Back", callback_data="back_to_menu")])
                     reply_markup = InlineKeyboardMarkup(keyboard)
                     await query.edit_message_text(
                         f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
@@ -6291,9 +6295,9 @@ Total Won: ${total_won:,.2f}"""
                 user_data = self.db.get_user(user_id)
                 keyboard = []
                 for code, info in SUPPORTED_WITHDRAWAL_CRYPTOS.items():
-                    btn = InlineKeyboardButton(f"{info['emoji']} {info['name']}", callback_data=f"withdraw_method_{code.lower()}")
+                    btn = InlineKeyboardButton(info['name'], callback_data=f"withdraw_method_{code.lower()}")
                     keyboard.append([btn])
-                keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
+                keyboard.append([InlineKeyboardButton("Back", callback_data="back_to_menu")])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
                     f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
