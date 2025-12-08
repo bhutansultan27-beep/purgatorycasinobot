@@ -2508,13 +2508,17 @@ Total Won: ${total_won:,.2f}"""
         # Build message
         revealed = len(game.revealed_tiles)
         safe_tiles = 25 - game.num_mines
+        result_message = None
         
         if game.game_over:
             if game.hit_mine:
-                message = f"💣 **BOOM!** You hit a mine!\n\n"
+                # Grid message (no result text)
+                message = f"💎 **Mines**\n\n"
                 message += f"**Mines:** {game.num_mines} | **Revealed:** {revealed}/{safe_tiles}\n"
-                message += f"**Bet:** ${game.wager:.2f}\n"
-                message += f"❌ **Lost ${game.wager:.2f}**"
+                message += f"**Bet:** ${game.wager:.2f}"
+                
+                # Separate result message
+                result_message = f"💣 **BOOM!** You hit a mine!\n❌ **Lost ${game.wager:.2f}**"
                 
                 # Update stats
                 user_data = self.db.get_user(user_id)
@@ -2542,11 +2546,15 @@ Total Won: ${total_won:,.2f}"""
             elif game.cashed_out:
                 payout = game.wager * game.current_multiplier
                 profit = payout - game.wager
-                message = f"💰 **Cashed Out!**\n\n"
+                
+                # Grid message (no result text)
+                message = f"💎 **Mines**\n\n"
                 message += f"**Mines:** {game.num_mines} | **Revealed:** {revealed}/{safe_tiles}\n"
                 message += f"**Multiplier:** {game.current_multiplier:.2f}x\n"
-                message += f"**Bet:** ${game.wager:.2f}\n"
-                message += f"✅ **Won ${profit:.2f}!** (Payout: ${payout:.2f})"
+                message += f"**Bet:** ${game.wager:.2f}"
+                
+                # Separate result message
+                result_message = f"💰 **Cashed Out!**\n✅ **Won ${profit:.2f}!** (Payout: ${payout:.2f})"
                 
                 # Update user balance
                 user_data = self.db.get_user(user_id)
@@ -2592,6 +2600,9 @@ Total Won: ${total_won:,.2f}"""
             await update.callback_query.edit_message_text(message, reply_markup=reply_markup, parse_mode="Markdown")
             if not game.game_over:
                 self.button_ownership[(update.callback_query.message.chat_id, update.callback_query.message.message_id)] = user_id
+            # Send separate result message after the game ends
+            if result_message:
+                await context.bot.send_message(chat_id=update.callback_query.message.chat_id, text=result_message, parse_mode="Markdown")
         else:
             sent_msg = await update.effective_message.reply_text(message, reply_markup=reply_markup, parse_mode="Markdown")
             if not game.game_over:
