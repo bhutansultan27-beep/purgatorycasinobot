@@ -6,6 +6,12 @@ import hmac
 import hashlib
 from urllib.parse import parse_qsl
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sql_database import SQLDatabaseManager
 
