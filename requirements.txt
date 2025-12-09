@@ -30,3 +30,8 @@ flask
 flask
 psycopg2-binary
 sqlalchemy
+APScheduler
+flask
+psycopg2-binary
+python-dotenv
+sqlalchemy
