@@ -14,6 +14,8 @@ try:
 except ImportError:
     pass
 
+from sql_database import SQLDatabaseManager, migrate_json_to_sql
+
 # Import Blackjack game logic
 from blackjack import BlackjackGame
 
@@ -224,196 +226,15 @@ def get_blockchain_explorer_url(currency: str, tx_id: str) -> str:
     }
     return explorers.get(currency.upper(), f'https://blockchair.com/search?q={tx_id}')
 
-# --- 1. Database Manager (Simulated File Storage) ---
-# This class handles loading and saving the bot's state to a local JSON file.
-class DatabaseManager:
-    def __init__(self, file_path: str = 'casino_data.json'):
-        self.file_path = file_path
-        self.data: Dict[str, Any] = self.load_data()
-        
-    def load_data(self) -> Dict[str, Any]:
-        """Loads data from the JSON file or returns a default structure."""
-        if os.path.exists(self.file_path):
-            try:
-                with open(self.file_path, 'r') as f:
-                    return json.load(f)
-            except (json.JSONDecodeError, IOError) as e:
-                logger.error(f"Error loading database file: {e}. Starting with default data.")
-        
-        # Default starting data structure
-        return {
-            "users": {},
-            "games": [],
-            "transactions": {},
-            "pending_pvp": {},
-            "house_balance": 10000.00, # Initial house seed money
-            "dynamic_admins": [],  # Additional admins added via commands
-            "stickers": {
-                "roulette": {}  # Will store stickers for roulette numbers: "00", "0", "1", "2", ... "36"
-            },
-            "biggest_dices": []  # Track biggest PvP dice wins
-        }
+# --- 1. Database Manager (SQL-backed storage) ---
+# Use SQL database for persistent storage shared between bot and webapp
+DatabaseManager = SQLDatabaseManager
 
-    def save_data(self):
-        """Saves the current state back to the JSON file."""
-        try:
-            with open(self.file_path, 'w') as f:
-                json.dump(self.data, f, indent=4)
-        except IOError as e:
-            logger.error(f"Error saving database file: {e}")
-
-    def get_user(self, user_id: int) -> Dict[str, Any]:
-        """Retrieves user data, initializing a new user if necessary."""
-        user_id_str = str(user_id)
-        if user_id_str not in self.data['users']:
-            # New player default: $0 starting balance
-            new_user = {
-                "user_id": user_id,
-                "username": f"User{user_id}",
-                "balance": 0.0,
-                "playthrough_required": 0.0,
-                "last_bonus_claim": None,
-                "total_wagered": 0.0,
-                "total_pnl": 0.0,
-                "games_played": 0,
-                "games_won": 0,
-                "win_streak": 0,
-                "best_win_streak": 0,
-                "wagered_since_last_withdrawal": 0.0,
-                "first_wager_date": None,
-                "join_date": datetime.now().isoformat(),
-                "last_game_date": None,
-                "claimed_level_bonuses": [],
-                "referral_code": None,
-                "referred_by": None,
-                "referral_count": 0,
-                "referral_earnings": 0.0,
-                "unclaimed_referral_earnings": 0.0,
-                "achievements": []
-            }
-            self.data['users'][user_id_str] = new_user
-            self.save_data()
-        return self.data['users'][user_id_str]
-
-    def update_user(self, user_id: int, updates: Dict[str, Any]):
-        """Updates specific fields for a user."""
-        user_id_str = str(user_id)
-        if user_id_str in self.data['users']:
-            self.data['users'][user_id_str].update(updates)
-            self.save_data()
-
-    def get_house_balance(self) -> float:
-        """Retrieves the current house balance."""
-        return self.data['house_balance']
-
-    def update_house_balance(self, change: float):
-        """Adds or subtracts from the house balance."""
-        self.data['house_balance'] += change
-        self.save_data()
-        
-    def add_transaction(self, user_id: int, type: str, amount: float, description: str):
-        """Records a transaction for historical purposes."""
-        user_id_str = str(user_id)
-        if user_id_str not in self.data['transactions']:
-            self.data['transactions'][user_id_str] = []
-        
-        transaction = {
-            "type": type,
-            "amount": amount,
-            "description": description,
-            "timestamp": datetime.now().isoformat()
-        }
-        self.data['transactions'][user_id_str].append(transaction)
-        # Note: Transaction save is implicitly handled by self.save_data() called in update_user/update_house_balance
-
-    def record_game(self, game_data: Dict[str, Any]):
-        """Records a completed game to the global history."""
-        game_data['timestamp'] = datetime.now().isoformat()
-        self.data['games'].append(game_data)
-        # We only keep the last 500 games to prevent the file from getting too large
-        if len(self.data['games']) > 500:
-            self.data['games'] = self.data['games'][-500:]
-        self.save_data()
-
-    def record_biggest_dice(self, winner_id: int, winner_username: str, loser_id: int, loser_username: str, amount: float, game_mode: str = "pvp"):
-        """Records a dice win for biggest dices tracking (both PvP and vs Bot)."""
-        if 'biggest_dices' not in self.data:
-            self.data['biggest_dices'] = []
-        
-        self.data['biggest_dices'].append({
-            "winner_id": winner_id,
-            "winner_username": winner_username,
-            "loser_id": loser_id,
-            "loser_username": loser_username,
-            "amount": amount,
-            "game_mode": game_mode,
-            "timestamp": datetime.now().isoformat()
-        })
-        # Keep last 1000 entries
-        if len(self.data['biggest_dices']) > 1000:
-            self.data['biggest_dices'] = self.data['biggest_dices'][-1000:]
-        self.save_data()
-
-    def get_biggest_dices(self, time_filter: str = "all") -> List[Dict[str, Any]]:
-        """Get biggest dice wins, optionally filtered by time period."""
-        if 'biggest_dices' not in self.data:
-            return []
-        
-        dices = self.data['biggest_dices']
-        
-        if time_filter == "week":
-            one_week_ago = datetime.now() - timedelta(days=7)
-            dices = [d for d in dices if datetime.fromisoformat(d['timestamp']) > one_week_ago]
-        
-        # Sort by amount descending
-        dices_sorted = sorted(dices, key=lambda x: x['amount'], reverse=True)
-        return dices_sorted[:10]
-
-    def record_deposit(self, user_id: int, username: str, amount: float, ltc_amount: float = 0.0, tx_id: str = ""):
-        """Records a deposit for tracking biggest deposits."""
-        if 'deposit_records' not in self.data:
-            self.data['deposit_records'] = []
-        
-        self.data['deposit_records'].append({
-            "user_id": user_id,
-            "username": username,
-            "amount": amount,
-            "ltc_amount": ltc_amount,
-            "tx_id": tx_id,
-            "timestamp": datetime.now().isoformat()
-        })
-        # Keep last 1000 entries
-        if len(self.data['deposit_records']) > 1000:
-            self.data['deposit_records'] = self.data['deposit_records'][-1000:]
-        self.save_data()
-
-    def get_biggest_deposits(self, time_filter: str = "all") -> List[Dict[str, Any]]:
-        """Get biggest deposits, optionally filtered by time period."""
-        if 'deposit_records' not in self.data:
-            return []
-        
-        deposits = self.data['deposit_records']
-        
-        if time_filter == "week":
-            one_week_ago = datetime.now() - timedelta(days=7)
-            deposits = [d for d in deposits if datetime.fromisoformat(d['timestamp']) > one_week_ago]
-        
-        # Sort by amount descending
-        deposits_sorted = sorted(deposits, key=lambda x: x['amount'], reverse=True)
-        return deposits_sorted[:10]
-
-    def get_leaderboard(self) -> List[Dict[str, Any]]:
-        """Returns top players by total wagered."""
-        leaderboard_data = []
-        for user_data in self.data['users'].values():
-            leaderboard_data.append({
-                "username": user_data.get('username', f'User{user_data["user_id"]}'),
-                "total_wagered": user_data.get('total_wagered', 0.0)
-            })
-        
-        # Sort by total_wagered descending
-        leaderboard_data.sort(key=lambda x: x['total_wagered'], reverse=True)
-        return leaderboard_data[:50] # Limit to top 50
+# Run migration from JSON to SQL on startup (only migrates if SQL is empty)
+try:
+    migrate_json_to_sql()
+except Exception as e:
+    logger.warning(f"Migration check: {e}")
 
 # --- 2. Gran Tesero Casino Bot Class ---
 class GranTeseroCasinoBot:
@@ -433,20 +254,16 @@ class GranTeseroCasinoBot:
                 logger.error("Invalid ADMIN_IDS format. Use comma-separated numbers.")
         
         # Load dynamic admins from database
-        if 'dynamic_admins' not in self.db.data:
-            self.db.data['dynamic_admins'] = []
-            self.db.save_data()
-        
-        self.dynamic_admin_ids = set(self.db.data.get('dynamic_admins', []))
+        self.dynamic_admin_ids = set(self.db.get_dynamic_admins())
         if self.dynamic_admin_ids:
             logger.info(f"Loaded {len(self.dynamic_admin_ids)} dynamic admin(s) from database")
         
         # Load withdrawal approvers from database (can only approve/deny withdrawals)
-        if 'withdrawal_approvers' not in self.db.data:
-            self.db.data['withdrawal_approvers'] = []
-            self.db.save_data()
-        
-        self.withdrawal_approvers = set(self.db.data.get('withdrawal_approvers', []))
+        approvers_str = self.db.get_config('withdrawal_approvers', '[]')
+        try:
+            self.withdrawal_approvers = set(json.loads(approvers_str))
+        except:
+            self.withdrawal_approvers = set()
         if self.withdrawal_approvers:
             logger.info(f"Loaded {len(self.withdrawal_approvers)} withdrawal approver(s) from database")
         
@@ -454,8 +271,8 @@ class GranTeseroCasinoBot:
         self.app = Application.builder().token(token).build()
         self.setup_handlers()
         
-        # Dictionary to store ongoing PvP challenges
-        self.pending_pvp: Dict[str, Any] = self.db.data.get('pending_pvp', {})
+        # Dictionary to store ongoing PvP challenges (in-memory, not persisted)
+        self.pending_pvp: Dict[str, Any] = {}
         
         # Track button ownership: (chat_id, message_id) -> user_id mapping
         self.button_ownership: Dict[tuple, int] = {}
@@ -465,8 +282,9 @@ class GranTeseroCasinoBot:
         self.pending_opponent_selection: set = set()
         
         # Sticker configuration - Load from database or initialize with defaults
-        if 'stickers' not in self.db.data:
-            self.db.data['stickers'] = {
+        stickers_config = self.db.get_config('stickers', None)
+        if not stickers_config:
+            default_stickers = {
                 "roulette": {
                     "00": "CAACAgQAAxkBAAEPnjFo-TLLYpgTZExC4IIOG6PIXwsviAAC1BgAAkmhgFG_0u82E59m3DYE",
                     "0": "CAACAgQAAxkBAAEPnjNo-TMFaqDdWCkRDNlus4jcuamAAwACOh0AAtQAAYBRlMLfm2ulRSM2BA",
@@ -508,9 +326,10 @@ class GranTeseroCasinoBot:
                     "36": "CAACAgQAAxkBAAEPnoBo-Tik1zRaZMCVCaOi9J1FtVvEiAACrBcAAtbQgVFt8Uw1gyn4MDYE"
                 }
             }
-            self.db.save_data()
-        
-        self.stickers = self.db.data['stickers']
+            self.db.set_config('stickers', json.dumps(default_stickers))
+            self.stickers = default_stickers
+        else:
+            self.stickers = json.loads(stickers_config)
         
         # Dictionary to store active Blackjack games: user_id -> BlackjackGame instance
         self.blackjack_sessions: Dict[int, BlackjackGame] = {}

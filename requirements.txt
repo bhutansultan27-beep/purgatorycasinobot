@@ -28,3 +28,5 @@ flask
 flask
 flask
 flask
+psycopg2-binary
+sqlalchemy

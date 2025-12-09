@@ -1,11 +1,17 @@
 from flask import Flask, render_template, jsonify, request
 import os
+import sys
 import json
 import hmac
 import hashlib
 from urllib.parse import parse_qsl
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from sql_database import SQLDatabaseManager
+
 app = Flask(__name__, static_folder='static', template_folder='templates')
+
+db = SQLDatabaseManager()
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 ADMIN_IDS_STR = os.getenv("ADMIN_IDS", "")
@@ -18,10 +24,7 @@ if ADMIN_IDS_STR:
 
 def load_dynamic_admins():
     try:
-        if os.path.exists('casino_data.json'):
-            with open('casino_data.json', 'r') as f:
-                data = json.load(f)
-                return set(data.get('dynamic_admins', []))
+        return set(db.get_dynamic_admins())
     except:
         pass
     return set()
@@ -93,93 +96,77 @@ def get_user_level(total_wagered):
 
 def get_user_from_db(user_id):
     try:
-        if os.path.exists('casino_data.json'):
-            with open('casino_data.json', 'r') as f:
-                data = json.load(f)
-                user = data.get('users', {}).get(str(user_id), {})
-                if user:
-                    total_wagered = user.get('total_wagered', 0)
-                    games_played = user.get('games_played', 0)
-                    games_won = user.get('games_won', 0)
-                    win_rate = round((games_won / games_played * 100) if games_played > 0 else 0, 1)
-                    level, next_level = get_user_level(total_wagered)
-                    return {
-                        "balance": user.get('balance', 0),
-                        "level_emoji": level["emoji"],
-                        "level_name": level["name"],
-                        "total_wagered": total_wagered,
-                        "total_won": user.get('total_pnl', 0) if user.get('total_pnl', 0) > 0 else 0,
-                        "games_played": games_played,
-                        "win_rate": win_rate
-                    }
-    except:
-        pass
+        user = db.get_user(user_id)
+        if user:
+            total_wagered = user.get('total_wagered', 0)
+            games_played = user.get('games_played', 0)
+            games_won = user.get('games_won', 0)
+            win_rate = round((games_won / games_played * 100) if games_played > 0 else 0, 1)
+            level, next_level = get_user_level(total_wagered)
+            return {
+                "balance": user.get('balance', 0),
+                "level_emoji": level["emoji"],
+                "level_name": level["name"],
+                "total_wagered": total_wagered,
+                "total_won": user.get('total_pnl', 0) if user.get('total_pnl', 0) > 0 else 0,
+                "games_played": games_played,
+                "win_rate": win_rate
+            }
+    except Exception as e:
+        print(f"Error getting user from db: {e}")
     return None
 
 def get_full_user_from_db(user_id):
     try:
-        if os.path.exists('casino_data.json'):
-            with open('casino_data.json', 'r') as f:
-                data = json.load(f)
-                user = data.get('users', {}).get(str(user_id), {})
-                if user:
-                    total_wagered = user.get('total_wagered', 0)
-                    games_played = user.get('games_played', 0)
-                    games_won = user.get('games_won', 0)
-                    win_rate = round((games_won / games_played * 100) if games_played > 0 else 0, 1)
-                    level, next_level = get_user_level(total_wagered)
-                    return {
-                        "balance": user.get('balance', 0),
-                        "level_emoji": level["emoji"],
-                        "level_name": level["name"],
-                        "current_threshold": level["threshold"],
-                        "total_wagered": total_wagered,
-                        "total_pnl": user.get('total_pnl', 0),
-                        "games_played": games_played,
-                        "games_won": games_won,
-                        "win_rate": win_rate,
-                        "best_win_streak": user.get('best_win_streak', 0),
-                        "join_date": user.get('join_date'),
-                        "next_level": next_level
-                    }
-    except:
-        pass
+        user = db.get_user(user_id)
+        if user:
+            total_wagered = user.get('total_wagered', 0)
+            games_played = user.get('games_played', 0)
+            games_won = user.get('games_won', 0)
+            win_rate = round((games_won / games_played * 100) if games_played > 0 else 0, 1)
+            level, next_level = get_user_level(total_wagered)
+            return {
+                "balance": user.get('balance', 0),
+                "level_emoji": level["emoji"],
+                "level_name": level["name"],
+                "current_threshold": level["threshold"],
+                "total_wagered": total_wagered,
+                "total_pnl": user.get('total_pnl', 0),
+                "games_played": games_played,
+                "games_won": games_won,
+                "win_rate": win_rate,
+                "best_win_streak": user.get('best_win_streak', 0),
+                "join_date": user.get('join_date'),
+                "next_level": next_level
+            }
+    except Exception as e:
+        print(f"Error getting full user from db: {e}")
     return None
 
 def get_leaderboard_data():
     try:
-        if os.path.exists('casino_data.json'):
-            with open('casino_data.json', 'r') as f:
-                data = json.load(f)
-                users = data.get('users', {})
-                leaderboard = []
-                for user_id, user in users.items():
-                    total_wagered = user.get('total_wagered', 0)
-                    if total_wagered > 0:
-                        level, _ = get_user_level(total_wagered)
-                        leaderboard.append({
-                            "username": user.get('username', f'User{user_id}'),
-                            "total_wagered": total_wagered,
-                            "level_emoji": level["emoji"],
-                            "level_name": level["name"]
-                        })
-                leaderboard.sort(key=lambda x: x['total_wagered'], reverse=True)
-                return leaderboard[:50]
-    except:
-        pass
+        users = db.get_leaderboard()
+        leaderboard = []
+        for user in users:
+            total_wagered = user.get('total_wagered', 0)
+            if total_wagered > 0:
+                level, _ = get_user_level(total_wagered)
+                leaderboard.append({
+                    "username": user.get('username', f'User{user.get("user_id")}'),
+                    "total_wagered": total_wagered,
+                    "level_emoji": level["emoji"],
+                    "level_name": level["name"]
+                })
+        return leaderboard[:50]
+    except Exception as e:
+        print(f"Error getting leaderboard: {e}")
     return []
 
 def get_user_history(user_id):
     try:
-        if os.path.exists('casino_data.json'):
-            with open('casino_data.json', 'r') as f:
-                data = json.load(f)
-                games = data.get('games', [])
-                user_games = [g for g in games if g.get('user_id') == user_id]
-                user_games.reverse()
-                return user_games[:50]
-    except:
-        pass
+        return db.get_user_history(user_id, limit=50)
+    except Exception as e:
+        print(f"Error getting user history: {e}")
     return []
 
 @app.route('/')
