@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Blackjack - Gran Tesero Casino</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/blackjack.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🎰</div>
+                <span class="logo-text">BLACKJACK</span>
+            </div>
+            <div class="balance-display">
+                <span class="balance-icon">💰</span>
+                <span class="balance-amount" id="balance">$1,000.00</span>
+            </div>
+        </header>
+
+        <div class="game-area">
+            <div class="table">
+                <div class="hand-section" id="dealer-section">
+                    <div class="hand-label">
+                        <span class="hand-name">Dealer</span>
+                        <span class="hand-value" id="dealer-value">0</span>
+                    </div>
+                    <div class="cards-container" id="dealer-cards"></div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="hand-section" id="player-section">
+                    <div class="hand-label">
+                        <span class="hand-name">Your Hand</span>
+                        <span class="hand-value" id="player-value">0</span>
+                    </div>
+                    <div class="cards-container" id="player-cards"></div>
+                </div>
+            </div>
+
+            <div class="betting-section" id="betting-section">
+                <div class="bet-header">
+                    <div class="bet-title">Your Bet</div>
+                    <div class="bet-amount-display" id="bet-display">$0</div>
+                </div>
+                <div class="bet-chips">
+                    <div class="chip chip-1" data-value="1">$1</div>
+                    <div class="chip chip-5" data-value="5">$5</div>
+                    <div class="chip chip-25" data-value="25">$25</div>
+                    <div class="chip chip-100" data-value="100">$100</div>
+                    <div class="chip chip-500" data-value="500">$500</div>
+                    <div class="chip chip-1000" data-value="1000">$1K</div>
+                </div>
+                <div class="bet-actions">
+                    <button class="btn-bet btn-clear" id="btn-clear">Clear</button>
+                    <button class="btn-bet btn-deal" id="btn-deal" disabled>Deal</button>
+                </div>
+            </div>
+
+            <div class="game-controls" id="game-controls">
+                <button class="btn-action btn-hit" id="btn-hit">Hit</button>
+                <button class="btn-action btn-stand" id="btn-stand">Stand</button>
+                <button class="btn-action btn-double" id="btn-double">Double</button>
+                <button class="btn-action btn-split" id="btn-split" disabled>Split</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="result-overlay" id="result-overlay">
+        <div class="result-card">
+            <div class="result-title" id="result-title">You Win!</div>
+            <div class="result-amount" id="result-amount">+$100</div>
+            <button class="btn-new-game" id="btn-new-game">Play Again</button>
+        </div>
+    </div>
+
+    <div class="insurance-modal" id="insurance-modal">
+        <div class="insurance-card">
+            <div class="insurance-title">Insurance?</div>
+            <div class="insurance-desc">Dealer shows an Ace. Take insurance for half your bet?</div>
+            <div class="insurance-buttons">
+                <button class="btn-insurance yes" id="btn-insurance-yes">Yes</button>
+                <button class="btn-insurance no" id="btn-insurance-no">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="message-toast" id="message-toast"></div>
+
+    <script src="/static/js/blackjack.js"></script>
+</body>
+</html>

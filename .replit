@@ -17,6 +17,10 @@ author = "agent"
 task = "workflow.run"
 args = "Casino Bot Info"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Blackjack Mini App"
+
 [[workflows.workflow]]
 name = "Casino Bot Info"
 author = "agent"
@@ -27,6 +31,18 @@ args = "python replit_info.py"
 
 [workflows.workflow.metadata]
 outputType = "console"
+
+[[workflows.workflow]]
+name = "Blackjack Mini App"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd webapp && python app.py"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [userenv]
 
@@ -47,7 +63,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 46147
+localPort = 38229
 externalPort = 3000
 
 [deployment]
