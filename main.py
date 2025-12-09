@@ -3930,7 +3930,7 @@ Total Won: ${total_won:,.2f}"""
             game_key = f"connect4_{game_id}"
             self.start_game_timeout(game_key, "connect4", first_player_id, chat_id, wager, 
                                     bot=context.bot, game_id=game_id, 
-                                    other_player_id=challenger_id if first_player_id == opponent_id else opponent_id,
+                                    opponent_id=challenger_id if first_player_id == opponent_id else opponent_id,
                                     is_pvp=True)
             
             await self._display_connect4_state(update, context, game_id)
@@ -8728,9 +8728,9 @@ Total Won: ${total_won:,.2f}"""
                     chat_id = query.message.chat_id
                     game_key = f"connect4_{game_id}"
                     next_player_id = game.get_current_player_id()
-                    other_player_id = game.player1_id if next_player_id == game.player2_id else game.player2_id
+                    opponent_player_id = game.player1_id if next_player_id == game.player2_id else game.player2_id
                     self.reset_game_timeout(game_key, "connect4", next_player_id, chat_id, game.wager,
-                                            bot=context.bot, game_id=game_id, other_player_id=other_player_id,
+                                            bot=context.bot, game_id=game_id, opponent_id=opponent_player_id,
                                             is_pvp=True)
                 
                 await query.answer()
