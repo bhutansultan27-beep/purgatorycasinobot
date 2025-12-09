@@ -8,6 +8,7 @@ class KenoGame:
     TOTAL_NUMBERS = 40
     DRAW_COUNT = 10
     MAX_PICKS = 10
+    ROUND_OPTIONS = [1, 3, 5, 10, 25, 50, 100, -1]
     
     PAYOUTS = {
         1: {1: 3.0},
@@ -32,6 +33,14 @@ class KenoGame:
         self.hits = 0
         self.payout = 0.0
         self.created_at = datetime.now()
+        
+        self.total_rounds = 1
+        self.current_round = 0
+        self.is_auto_playing = False
+        self.round_results: List[Dict] = []
+        self.total_wagered = 0.0
+        self.total_payout = 0.0
+        self.selecting_rounds = False
         
         if seed:
             self.seed = seed
@@ -83,6 +92,59 @@ class KenoGame:
             if self.hits in payout_table:
                 multiplier = payout_table[self.hits]
                 self.payout = self.wager * multiplier
+
+    def set_rounds(self, rounds: int):
+        self.total_rounds = rounds
+        self.is_auto_playing = rounds != 1
+        self.selecting_rounds = False
+
+    def run_single_draw(self) -> Dict:
+        self.current_round += 1
+        new_seed = hashlib.sha256(f"{self.seed}{self.current_round}{random.random()}".encode()).hexdigest()[:16]
+        
+        random.seed(new_seed)
+        all_numbers = list(range(1, self.TOTAL_NUMBERS + 1))
+        random.shuffle(all_numbers)
+        self.drawn_numbers = set(all_numbers[:self.DRAW_COUNT])
+        random.seed()
+        
+        self.hits = len(self.picked_numbers & self.drawn_numbers)
+        self.payout = 0.0
+        self._calculate_payout()
+        
+        result = {
+            'round': self.current_round,
+            'drawn': sorted(list(self.drawn_numbers)),
+            'hits': self.hits,
+            'payout': self.payout,
+            'multiplier': self.get_multiplier()
+        }
+        self.round_results.append(result)
+        self.total_wagered += self.wager
+        self.total_payout += self.payout
+        
+        is_infinite = self.total_rounds == -1
+        if not is_infinite and self.current_round >= self.total_rounds:
+            self.game_over = True
+            self.game_started = True
+        
+        return result
+
+    def should_continue_auto_play(self) -> bool:
+        if self.total_rounds == -1:
+            return True
+        return self.current_round < self.total_rounds
+
+    def get_auto_play_summary(self) -> Dict:
+        wins = sum(1 for r in self.round_results if r['payout'] > 0)
+        return {
+            'total_rounds': len(self.round_results),
+            'wins': wins,
+            'losses': len(self.round_results) - wins,
+            'total_wagered': self.total_wagered,
+            'total_payout': self.total_payout,
+            'net_profit': self.total_payout - self.total_wagered
+        }
     
     def get_multiplier(self) -> float:
         if self.wager == 0:

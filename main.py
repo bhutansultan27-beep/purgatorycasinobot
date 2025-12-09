@@ -3434,9 +3434,28 @@ Total Won: ${total_won:,.2f}"""
         if not game.game_over:
             action_row = []
             if len(game.picked_numbers) > 0:
-                action_row.append(InlineKeyboardButton("🎰 Draw!", callback_data=f"keno_draw_{user_id}"))
-                action_row.append(InlineKeyboardButton("🗑️ Clear", callback_data=f"keno_clear_{user_id}"))
-            keyboard.append(action_row)
+                if game.selecting_rounds:
+                    keyboard.append([
+                        InlineKeyboardButton("1x", callback_data=f"keno_rounds_{user_id}_1"),
+                        InlineKeyboardButton("3x", callback_data=f"keno_rounds_{user_id}_3"),
+                        InlineKeyboardButton("5x", callback_data=f"keno_rounds_{user_id}_5"),
+                        InlineKeyboardButton("10x", callback_data=f"keno_rounds_{user_id}_10"),
+                    ])
+                    keyboard.append([
+                        InlineKeyboardButton("25x", callback_data=f"keno_rounds_{user_id}_25"),
+                        InlineKeyboardButton("50x", callback_data=f"keno_rounds_{user_id}_50"),
+                        InlineKeyboardButton("100x", callback_data=f"keno_rounds_{user_id}_100"),
+                        InlineKeyboardButton("Infinite", callback_data=f"keno_rounds_{user_id}_-1"),
+                    ])
+                    keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data=f"keno_back_{user_id}")])
+                elif game.is_auto_playing and game.current_round > 0:
+                    action_row.append(InlineKeyboardButton("🔄 Next Draw", callback_data=f"keno_next_{user_id}"))
+                    action_row.append(InlineKeyboardButton("🛑 Stop", callback_data=f"keno_stop_{user_id}"))
+                    keyboard.append(action_row)
+                else:
+                    action_row.append(InlineKeyboardButton("🎰 Draw!", callback_data=f"keno_select_rounds_{user_id}"))
+                    action_row.append(InlineKeyboardButton("🗑️ Clear", callback_data=f"keno_clear_{user_id}"))
+                    keyboard.append(action_row)
         else:
             keyboard.append([
                 InlineKeyboardButton("🔄 Play Again", callback_data=f"keno_again_{user_id}_{game.wager}")
@@ -3456,55 +3475,66 @@ Total Won: ${total_won:,.2f}"""
         picked_str = ", ".join(str(n) for n in sorted(game.picked_numbers)) if picks > 0 else "None"
         
         if game.game_over:
+            if game.is_auto_playing and len(game.round_results) > 1:
+                summary = game.get_auto_play_summary()
+                message = f"🎱 **Keno - Auto-Play Complete**\n\n"
+                message += f"**Your picks:** {picked_str}\n"
+                message += f"**Rounds played:** {summary['total_rounds']}\n"
+                message += f"**Wins:** {summary['wins']} | **Losses:** {summary['losses']}\n"
+                message += f"**Total wagered:** ${summary['total_wagered']:.2f}\n"
+                message += f"**Total won:** ${summary['total_payout']:.2f}\n"
+                net = summary['net_profit']
+                if net >= 0:
+                    message += f"**Net profit:** +${net:.2f}\n"
+                else:
+                    message += f"**Net loss:** -${abs(net):.2f}\n"
+                
+                user_data = self.db.get_user(user_id)
+                result_message = f"@{user_data.get('username', 'Player')} finished {summary['total_rounds']} Keno rounds: {'won' if net >= 0 else 'lost'} ${abs(net):.2f}"
+            else:
+                drawn_str = ", ".join(str(n) for n in sorted(game.drawn_numbers))
+                message = f"🎱 **Keno**\n\n"
+                message += f"**Your picks:** {picked_str}\n"
+                message += f"**Drawn:** {drawn_str}\n"
+                message += f"**Hits:** {game.hits}/{picks}\n"
+                message += f"**Bet:** ${game.wager:.2f}\n"
+                
+                if game.payout > 0:
+                    user_data = self.db.get_user(user_id)
+                    result_message = f"@{user_data.get('username', 'Player')} won ${game.payout:.2f} ({game.get_multiplier():.0f}x)"
+                else:
+                    user_data = self.db.get_user(user_id)
+                    result_message = f"@{user_data.get('username', 'Player')} lost ${game.wager:.2f}"
+            
+            game_key = f"keno_{user_id}"
+            self.cancel_game_timeout(game_key)
+            
+            del self.keno_sessions[user_id]
+        elif game.is_auto_playing and game.current_round > 0:
             drawn_str = ", ".join(str(n) for n in sorted(game.drawn_numbers))
-            message = f"🎱 **Keno**\n\n"
+            rounds_display = "Infinite" if game.total_rounds == -1 else f"{game.current_round}/{game.total_rounds}"
+            message = f"🎱 **Keno - Round {rounds_display}**\n\n"
             message += f"**Your picks:** {picked_str}\n"
             message += f"**Drawn:** {drawn_str}\n"
             message += f"**Hits:** {game.hits}/{picks}\n"
             message += f"**Bet:** ${game.wager:.2f}\n"
             
             if game.payout > 0:
-                user_data = self.db.get_user(user_id)
-                user_data['balance'] += game.payout
-                user_data['total_wagered'] += game.wager
-                user_data['games_played'] += 1
-                user_data['games_won'] += 1
-                user_data['total_pnl'] += game.get_profit()
-                user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + game.wager
-                self.db.update_user(user_id, user_data)
-                self.db.update_house_balance(-game.get_profit())
-                
-                result_message = f"@{user_data.get('username', 'Player')} won ${game.payout:.2f} ({game.get_multiplier():.0f}x)"
+                message += f"**Won:** ${game.payout:.2f} ({game.get_multiplier():.0f}x)\n"
             else:
-                user_data = self.db.get_user(user_id)
-                user_data['total_wagered'] += game.wager
-                user_data['games_played'] += 1
-                user_data['total_pnl'] -= game.wager
-                user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + game.wager
-                self.db.update_user(user_id, user_data)
-                self.db.update_house_balance(game.wager)
-                
-                result_message = f"@{user_data.get('username', 'Player')} lost ${game.wager:.2f}"
+                message += f"**Lost this round**\n"
             
-            self.db.record_game({
-                'type': 'keno',
-                'player_id': user_id,
-                'username': user_data.get('username', 'Unknown'),
-                'wager': game.wager,
-                'picks': list(game.picked_numbers),
-                'drawn': list(game.drawn_numbers),
-                'hits': game.hits,
-                'multiplier': game.get_multiplier(),
-                'payout': game.payout,
-                'result': 'win' if game.payout > 0 else 'loss',
-                'balance_after': user_data['balance']
-            })
-            
-            # Cancel timeout since game is over
-            game_key = f"keno_{user_id}"
-            self.cancel_game_timeout(game_key)
-            
-            del self.keno_sessions[user_id]
+            summary = game.get_auto_play_summary()
+            net = summary['net_profit']
+            if net >= 0:
+                message += f"\n**Running total:** +${net:.2f}"
+            else:
+                message += f"\n**Running total:** -${abs(net):.2f}"
+        elif game.selecting_rounds:
+            message = f"🎱 **Keno** - Select number of draws\n\n"
+            message += f"**Picked ({picks}/10):** {picked_str}\n"
+            message += f"**Bet per draw:** ${game.wager:.2f}\n\n"
+            message += f"How many draws do you want to run?"
         else:
             message = f"🎱 **Keno** - Pick up to 10 numbers\n\n"
             message += f"**Picked ({picks}/10):** {picked_str}\n"
@@ -3523,6 +3553,59 @@ Total Won: ${total_won:,.2f}"""
             sent_msg = await update.effective_message.reply_text(message, reply_markup=reply_markup, parse_mode="Markdown")
             if not game.game_over:
                 self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+
+    async def _run_keno_draw(self, update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int):
+        """Run a single keno draw and update user balance"""
+        if user_id not in self.keno_sessions:
+            return
+        
+        game = self.keno_sessions[user_id]
+        user_data = self.db.get_user(user_id)
+        
+        if game.current_round > 0:
+            user_data['balance'] -= game.wager
+            self.db.update_user(user_id, user_data)
+        
+        result = game.run_single_draw()
+        
+        if result['payout'] > 0:
+            user_data['balance'] += result['payout']
+            user_data['total_wagered'] += game.wager
+            user_data['games_played'] += 1
+            user_data['games_won'] += 1
+            user_data['total_pnl'] += result['payout'] - game.wager
+            user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + game.wager
+            self.db.update_user(user_id, user_data)
+            self.db.update_house_balance(-(result['payout'] - game.wager))
+        else:
+            user_data['total_wagered'] += game.wager
+            user_data['games_played'] += 1
+            user_data['total_pnl'] -= game.wager
+            user_data['wagered_since_last_withdrawal'] = user_data.get('wagered_since_last_withdrawal', 0) + game.wager
+            self.db.update_user(user_id, user_data)
+            self.db.update_house_balance(game.wager)
+        
+        self.db.record_game({
+            'type': 'keno',
+            'player_id': user_id,
+            'username': user_data.get('username', 'Unknown'),
+            'wager': game.wager,
+            'picks': list(game.picked_numbers),
+            'drawn': result['drawn'],
+            'hits': result['hits'],
+            'multiplier': result['multiplier'],
+            'payout': result['payout'],
+            'result': 'win' if result['payout'] > 0 else 'loss',
+            'balance_after': user_data['balance'],
+            'auto_play_round': result['round'],
+            'total_rounds': game.total_rounds
+        })
+        
+        chat_id = update.callback_query.message.chat_id if update.callback_query else update.effective_chat.id
+        game_key = f"keno_{user_id}"
+        self.reset_game_timeout(game_key, "keno", user_id, chat_id, game.wager, bot=context.bot)
+        
+        await self._display_keno_state(update, context, user_id)
     
     async def limbo_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Start a Limbo game"""
@@ -6781,7 +6864,7 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
         # Baccarat buttons
         baccarat_buttons = ["bacc_"]
         # Keno buttons (they verify ownership internally via user_id in callback data)
-        keno_buttons = ["keno_pick_", "keno_draw_", "keno_clear_", "keno_again_", "keno_noop"]
+        keno_buttons = ["keno_pick_", "keno_draw_", "keno_clear_", "keno_again_", "keno_noop", "keno_select_rounds_", "keno_rounds_", "keno_back_", "keno_next_", "keno_stop_"]
         # Limbo buttons
         limbo_buttons = ["limbo_play_", "limbo_again_"]
         # Hi-Lo buttons
@@ -8592,6 +8675,106 @@ Total Won: ${total_won:,.2f}"""
                 
                 self.keno_sessions[user_id] = KenoGame(user_id, wager)
                 await query.answer("🎮 New game started!")
+                await self._display_keno_state(update, context, user_id)
+            
+            elif data.startswith("keno_select_rounds_"):
+                parts = data.split('_')
+                game_user_id = int(parts[3])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if user_id not in self.keno_sessions:
+                    await query.answer("❌ No active game!", show_alert=True)
+                    return
+                
+                game = self.keno_sessions[user_id]
+                game.selecting_rounds = True
+                await self._display_keno_state(update, context, user_id)
+            
+            elif data.startswith("keno_back_"):
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if user_id not in self.keno_sessions:
+                    await query.answer("❌ No active game!", show_alert=True)
+                    return
+                
+                game = self.keno_sessions[user_id]
+                game.selecting_rounds = False
+                await self._display_keno_state(update, context, user_id)
+            
+            elif data.startswith("keno_rounds_"):
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                rounds = int(parts[3])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if user_id not in self.keno_sessions:
+                    await query.answer("❌ No active game!", show_alert=True)
+                    return
+                
+                game = self.keno_sessions[user_id]
+                user_data = self.db.get_user(user_id)
+                
+                if rounds == -1:
+                    await query.answer("Starting infinite auto-play!")
+                else:
+                    total_cost = game.wager * (rounds - 1)
+                    if user_data['balance'] < total_cost:
+                        await query.answer(f"❌ Need ${total_cost + game.wager:.2f} for {rounds} draws", show_alert=True)
+                        return
+                    await query.answer(f"Starting {rounds} draws!")
+                
+                game.set_rounds(rounds)
+                await self._run_keno_draw(update, context, user_id)
+            
+            elif data.startswith("keno_next_"):
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if user_id not in self.keno_sessions:
+                    await query.answer("❌ No active game!", show_alert=True)
+                    return
+                
+                game = self.keno_sessions[user_id]
+                user_data = self.db.get_user(user_id)
+                
+                if user_data['balance'] < game.wager:
+                    game.game_over = True
+                    await query.answer("❌ Insufficient balance! Stopping auto-play.", show_alert=True)
+                    await self._display_keno_state(update, context, user_id)
+                    return
+                
+                await self._run_keno_draw(update, context, user_id)
+            
+            elif data.startswith("keno_stop_"):
+                parts = data.split('_')
+                game_user_id = int(parts[2])
+                
+                if user_id != game_user_id:
+                    await query.answer("❌ This is not your game!", show_alert=True)
+                    return
+                
+                if user_id not in self.keno_sessions:
+                    await query.answer("❌ No active game!", show_alert=True)
+                    return
+                
+                game = self.keno_sessions[user_id]
+                game.game_over = True
+                await query.answer("Stopping auto-play!")
                 await self._display_keno_state(update, context, user_id)
             
             elif data == "keno_noop":
