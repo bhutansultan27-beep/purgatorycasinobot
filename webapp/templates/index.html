@@ -79,11 +79,11 @@
         <div class="menu-section">
             <h2 class="section-title">💰 Wallet</h2>
             <div class="wallet-buttons">
-                <button class="wallet-btn deposit-btn" onclick="showDeposit()">
+                <button class="wallet-btn deposit-btn" onclick="openBotCommand('/deposit')">
                     <span class="btn-icon">📥</span>
                     <span>Deposit</span>
                 </button>
-                <button class="wallet-btn withdraw-btn" onclick="showWithdraw()">
+                <button class="wallet-btn withdraw-btn" onclick="openBotCommand('/withdraw')">
                     <span class="btn-icon">📤</span>
                     <span>Withdraw</span>
                 </button>
@@ -115,17 +115,32 @@
         <div class="menu-section">
             <h2 class="section-title">🔗 Quick Links</h2>
             <div class="links-grid">
-                <button class="link-btn" onclick="showProfile()">
+                <button class="link-btn" onclick="openBotCommand('/profile')">
                     <span>👤</span> Profile
                 </button>
-                <button class="link-btn" onclick="showLeaderboard()">
+                <button class="link-btn" onclick="openBotCommand('/leaderboard')">
                     <span>🏆</span> Leaderboard
                 </button>
-                <button class="link-btn" onclick="showHistory()">
+                <button class="link-btn" onclick="openBotCommand('/history')">
                     <span>📜</span> History
                 </button>
-                <button class="link-btn" onclick="showSupport()">
-                    <span>💬</span> Support
+                <button class="link-btn" onclick="openBotCommand('/menu')">
+                    <span>💬</span> Menu
+                </button>
+            </div>
+        </div>
+
+        <div class="menu-section admin-section" id="admin-section" style="display: none;">
+            <h2 class="section-title">🛡️ Admin Panel</h2>
+            <div class="links-grid">
+                <button class="link-btn admin-btn" onclick="openBotCommand('/admin')">
+                    <span>⚙️</span> Admin Menu
+                </button>
+                <button class="link-btn admin-btn" onclick="openBotCommand('/stats')">
+                    <span>📊</span> Bot Stats
+                </button>
+                <button class="link-btn admin-btn" onclick="openBotCommand('/pending')">
+                    <span>⏳</span> Pending
                 </button>
             </div>
         </div>

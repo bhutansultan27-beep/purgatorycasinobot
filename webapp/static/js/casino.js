@@ -42,6 +42,9 @@ function loadUserData() {
     .then(data => {
         if (data.success) {
             userData = data.user;
+            if (data.bot_username) {
+                setBotUsername(data.bot_username);
+            }
             updateUI();
         } else {
             showDemoData();
@@ -61,6 +64,13 @@ function updateUI() {
         document.getElementById('total-won').textContent = '$' + formatNumber(userData.total_won);
         document.getElementById('games-played').textContent = userData.games_played || 0;
         document.getElementById('win-rate').textContent = (userData.win_rate || 0) + '%';
+        
+        if (userData.is_admin) {
+            const adminSection = document.getElementById('admin-section');
+            if (adminSection) {
+                adminSection.style.display = 'block';
+            }
+        }
     }
 }
 
@@ -78,12 +88,28 @@ function formatNumber(num) {
     return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+let botUsername = null;
+
+function setBotUsername(username) {
+    botUsername = username;
+}
+
+function openBotCommand(command) {
+    const cleanCommand = command.startsWith('/') ? command.substring(1) : command;
+    
+    if (botUsername) {
+        tg.openTelegramLink(`https://t.me/${botUsername}?start=${cleanCommand}`);
+    } else {
+        tg.showAlert(`Use /${cleanCommand} in the bot chat.`);
+    }
+}
+
 function showDeposit() {
-    document.getElementById('deposit-modal').classList.add('active');
+    openBotCommand('/deposit');
 }
 
 function showWithdraw() {
-    document.getElementById('withdraw-modal').classList.add('active');
+    openBotCommand('/withdraw');
 }
 
 function closeModal(id) {
@@ -91,24 +117,23 @@ function closeModal(id) {
 }
 
 function selectCrypto(crypto) {
-    tg.showAlert(`To deposit ${crypto}, use /deposit ${crypto.toLowerCase()} in the bot chat.`);
-    closeModal('deposit-modal');
+    openBotCommand(`/deposit_${crypto.toLowerCase()}`);
 }
 
 function showProfile() {
-    tg.showAlert('Use /profile in the bot to view your full profile.');
+    openBotCommand('/profile');
 }
 
 function showLeaderboard() {
-    tg.showAlert('Use /leaderboard in the bot to view the leaderboard.');
+    openBotCommand('/leaderboard');
 }
 
 function showHistory() {
-    tg.showAlert('Use /history in the bot to view your game history.');
+    openBotCommand('/history');
 }
 
 function showSupport() {
-    tg.showAlert('Contact @YourSupportUsername for support.');
+    openBotCommand('/support');
 }
 
 document.addEventListener('click', function(e) {
