@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Leaderboard - Gild Tesoro</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <style>
+        .leaderboard-header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .leaderboard-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+        .leaderboard-subtitle {
+            color: #888;
+            font-size: 14px;
+        }
+        .leaderboard-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: #1a1a2e;
+            border: none;
+            border-radius: 10px;
+            color: #888;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #d4af37, #f4d03f);
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+        .leaderboard-list {
+            background: #1a1a2e;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #2a2a3e;
+        }
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+        .leaderboard-item.top-1 {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+        }
+        .leaderboard-item.top-2 {
+            background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), rgba(192, 192, 192, 0.05));
+        }
+        .leaderboard-item.top-3 {
+            background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), rgba(205, 127, 50, 0.05));
+        }
+        .rank {
+            width: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #888;
+        }
+        .rank.gold { color: #ffd700; }
+        .rank.silver { color: #c0c0c0; }
+        .rank.bronze { color: #cd7f32; }
+        .player-info {
+            flex: 1;
+            margin-left: 10px;
+        }
+        .player-name {
+            font-weight: 600;
+            color: #fff;
+            font-size: 16px;
+        }
+        .player-level {
+            font-size: 12px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .player-stat {
+            text-align: right;
+        }
+        .player-stat-value {
+            font-weight: bold;
+            color: #4ade80;
+            font-size: 16px;
+        }
+        .player-stat-label {
+            font-size: 11px;
+            color: #888;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Menu</a>
+        
+        <div class="leaderboard-header">
+            <div class="leaderboard-title">Leaderboard</div>
+            <div class="leaderboard-subtitle">Top players by total wagered</div>
+        </div>
+
+        <div class="leaderboard-list" id="leaderboard-list">
+            <div class="loading">Loading leaderboard...</div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLeaderboard();
+        });
+
+        function loadLeaderboard() {
+            fetch('/api/leaderboard')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderLeaderboard(data.leaderboard);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('leaderboard-list').innerHTML = '<div class="empty-state">Failed to load leaderboard</div>';
+            });
+        }
+
+        function renderLeaderboard(players) {
+            const container = document.getElementById('leaderboard-list');
+            
+            if (!players || players.length === 0) {
+                container.innerHTML = '<div class="empty-state">No players yet</div>';
+                return;
+            }
+
+            let html = '';
+            players.forEach((player, index) => {
+                const rank = index + 1;
+                let rankClass = '';
+                let rankDisplay = rank;
+                let itemClass = '';
+                
+                if (rank === 1) {
+                    rankClass = 'gold';
+                    rankDisplay = '🥇';
+                    itemClass = 'top-1';
+                } else if (rank === 2) {
+                    rankClass = 'silver';
+                    rankDisplay = '🥈';
+                    itemClass = 'top-2';
+                } else if (rank === 3) {
+                    rankClass = 'bronze';
+                    rankDisplay = '🥉';
+                    itemClass = 'top-3';
+                }
+
+                html += `
+                    <div class="leaderboard-item ${itemClass}">
+                        <div class="rank ${rankClass}">${rankDisplay}</div>
+                        <div class="player-info">
+                            <div class="player-name">${escapeHtml(player.username)}</div>
+                            <div class="player-level">${player.level_emoji || '⚪'} ${player.level_name || 'Unranked'}</div>
+                        </div>
+                        <div class="player-stat">
+                            <div class="player-stat-value">$${formatNumber(player.total_wagered)}</div>
+                            <div class="player-stat-label">wagered</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '0';
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>History - Gild Tesoro</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <style>
+        .history-header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .history-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+        .history-subtitle {
+            color: #888;
+            font-size: 14px;
+        }
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .history-item {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .game-icon {
+            width: 45px;
+            height: 45px;
+            background: #2a2a3e;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .game-info {
+            flex: 1;
+            margin-left: 15px;
+        }
+        .game-name {
+            font-weight: 600;
+            color: #fff;
+            font-size: 16px;
+        }
+        .game-time {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
+        }
+        .game-result {
+            text-align: right;
+        }
+        .game-amount {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .game-amount.win {
+            color: #4ade80;
+        }
+        .game-amount.loss {
+            color: #ef4444;
+        }
+        .game-amount.push {
+            color: #888;
+        }
+        .game-bet {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Menu</a>
+        
+        <div class="history-header">
+            <div class="history-title">Game History</div>
+            <div class="history-subtitle">Your recent games</div>
+        </div>
+
+        <div class="history-list" id="history-list">
+            <div class="loading">Loading history...</div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const gameIcons = {
+            'blackjack': '🃏',
+            'slots': '🎰',
+            'mines': '💣',
+            'limbo': '🚀',
+            'keno': '🎱',
+            'hilo': '⬆️',
+            'baccarat': '👔',
+            'roulette': '🎡',
+            'dice': '🎲',
+            'crash': '📈'
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHistory();
+        });
+
+        function loadHistory() {
+            const initData = tg.initData || '';
+            
+            fetch('/api/history', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderHistory(data.history);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('history-list').innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div>Failed to load history</div>';
+            });
+        }
+
+        function renderHistory(games) {
+            const container = document.getElementById('history-list');
+            
+            if (!games || games.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🎮</div>
+                        <div>No games played yet</div>
+                        <div style="margin-top: 10px; font-size: 14px;">Play some games to see your history here!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            games.forEach(game => {
+                const icon = gameIcons[game.game_type?.toLowerCase()] || '🎮';
+                const gameName = game.game_type ? game.game_type.charAt(0).toUpperCase() + game.game_type.slice(1) : 'Game';
+                
+                let resultClass = 'push';
+                let resultPrefix = '';
+                if (game.payout > game.bet) {
+                    resultClass = 'win';
+                    resultPrefix = '+';
+                } else if (game.payout < game.bet) {
+                    resultClass = 'loss';
+                    resultPrefix = '-';
+                }
+                
+                const profit = game.payout - game.bet;
+                const timeAgo = formatTimeAgo(game.timestamp);
+
+                html += `
+                    <div class="history-item">
+                        <div class="game-icon">${icon}</div>
+                        <div class="game-info">
+                            <div class="game-name">${gameName}</div>
+                            <div class="game-time">${timeAgo}</div>
+                        </div>
+                        <div class="game-result">
+                            <div class="game-amount ${resultClass}">${resultPrefix}$${formatNumber(Math.abs(profit))}</div>
+                            <div class="game-bet">Bet: $${formatNumber(game.bet)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '0.00';
+            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return '';
+            const now = new Date();
+            const date = new Date(timestamp);
+            const seconds = Math.floor((now - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+            if (seconds < 604800) return Math.floor(seconds / 86400) + 'd ago';
+            return date.toLocaleDateString();
+        }
+    </script>
+</body>
+</html>

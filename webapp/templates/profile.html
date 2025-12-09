@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Profile - Gild Tesoro</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <style>
+        .profile-header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #d4af37, #f4d03f);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 15px;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+        .profile-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        .profile-level {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(212, 175, 55, 0.2);
+            border: 1px solid #d4af37;
+            border-radius: 20px;
+            color: #d4af37;
+            font-size: 14px;
+        }
+        .profile-balance {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4ade80;
+            margin: 20px 0 10px;
+        }
+        .stats-section {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stats-title {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #2a2a3e;
+        }
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+        .stat-label {
+            color: #888;
+        }
+        .stat-value {
+            color: #fff;
+            font-weight: 600;
+        }
+        .stat-value.positive {
+            color: #4ade80;
+        }
+        .stat-value.negative {
+            color: #ef4444;
+        }
+        .level-progress {
+            background: #2a2a3e;
+            border-radius: 10px;
+            height: 8px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        .level-progress-bar {
+            background: linear-gradient(90deg, #d4af37, #f4d03f);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .level-progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Menu</a>
+        
+        <div class="profile-header">
+            <div class="profile-avatar" id="profile-avatar">?</div>
+            <div class="profile-name" id="profile-name">Loading...</div>
+            <div class="profile-level" id="profile-level">Loading...</div>
+            <div class="profile-balance" id="profile-balance">$0.00</div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stats-title">Gaming Statistics</div>
+            <div class="stat-row">
+                <span class="stat-label">Total Wagered</span>
+                <span class="stat-value" id="total-wagered">$0.00</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Total P&L</span>
+                <span class="stat-value" id="total-pnl">$0.00</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Games Played</span>
+                <span class="stat-value" id="games-played">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Games Won</span>
+                <span class="stat-value" id="games-won">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Win Rate</span>
+                <span class="stat-value" id="win-rate">0%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Best Win Streak</span>
+                <span class="stat-value" id="best-streak">0</span>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stats-title">Level Progress</div>
+            <div class="stat-row">
+                <span class="stat-label">Current Level</span>
+                <span class="stat-value" id="current-level">Unranked</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Next Level</span>
+                <span class="stat-value" id="next-level">-</span>
+            </div>
+            <div class="level-progress">
+                <div class="level-progress-bar" id="level-progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="level-progress-text">
+                <span id="progress-current">$0</span>
+                <span id="progress-next">$0</span>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stats-title">Account Info</div>
+            <div class="stat-row">
+                <span class="stat-label">Member Since</span>
+                <span class="stat-value" id="join-date">-</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">User ID</span>
+                <span class="stat-value" id="user-id">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProfile();
+        });
+
+        function loadProfile() {
+            const initData = tg.initData || '';
+            
+            fetch('/api/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateProfile(data.profile);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+            
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                document.getElementById('profile-name').textContent = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+                document.getElementById('profile-avatar').textContent = user.first_name.charAt(0).toUpperCase();
+                document.getElementById('user-id').textContent = user.id;
+            }
+        }
+
+        function updateProfile(profile) {
+            document.getElementById('profile-balance').textContent = '$' + formatNumber(profile.balance);
+            document.getElementById('profile-level').textContent = profile.level_emoji + ' ' + profile.level_name;
+            document.getElementById('total-wagered').textContent = '$' + formatNumber(profile.total_wagered);
+            
+            const pnl = profile.total_pnl || 0;
+            const pnlEl = document.getElementById('total-pnl');
+            pnlEl.textContent = (pnl >= 0 ? '+$' : '-$') + formatNumber(Math.abs(pnl));
+            pnlEl.className = 'stat-value ' + (pnl >= 0 ? 'positive' : 'negative');
+            
+            document.getElementById('games-played').textContent = profile.games_played || 0;
+            document.getElementById('games-won').textContent = profile.games_won || 0;
+            document.getElementById('win-rate').textContent = (profile.win_rate || 0) + '%';
+            document.getElementById('best-streak').textContent = profile.best_win_streak || 0;
+            document.getElementById('current-level').textContent = profile.level_emoji + ' ' + profile.level_name;
+            
+            if (profile.next_level) {
+                document.getElementById('next-level').textContent = profile.next_level.emoji + ' ' + profile.next_level.name;
+                document.getElementById('progress-current').textContent = '$' + formatNumber(profile.total_wagered);
+                document.getElementById('progress-next').textContent = '$' + formatNumber(profile.next_level.threshold);
+                
+                const progress = ((profile.total_wagered - profile.current_threshold) / (profile.next_level.threshold - profile.current_threshold)) * 100;
+                document.getElementById('level-progress-bar').style.width = Math.min(100, Math.max(0, progress)) + '%';
+            } else {
+                document.getElementById('next-level').textContent = 'Max Level!';
+                document.getElementById('level-progress-bar').style.width = '100%';
+            }
+            
+            if (profile.join_date) {
+                const date = new Date(profile.join_date);
+                document.getElementById('join-date').textContent = date.toLocaleDateString();
+            }
+        }
+
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '0.00';
+            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    </script>
+</body>
+</html>
