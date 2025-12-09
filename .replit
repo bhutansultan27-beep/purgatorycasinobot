@@ -1,4 +1,4 @@
-modules = ["python-3.11", "nodejs-20", "web"]
+modules = ["python-3.11", "web", "nodejs-20"]
 [agent]
 expertMode = true
 
@@ -50,6 +50,10 @@ externalPort = 80
 [[ports]]
 localPort = 40739
 externalPort = 3000
+
+[[ports]]
+localPort = 44017
+externalPort = 3001
 
 [deployment]
 deploymentTarget = "vm"
