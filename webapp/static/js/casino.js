@@ -92,16 +92,18 @@ let botUsername = null;
 
 function setBotUsername(username) {
     botUsername = username;
+    console.log('Bot username set to:', username);
 }
 
 function openBotCommand(command) {
     const cleanCommand = command.startsWith('/') ? command.substring(1) : command;
     
-    if (botUsername) {
-        tg.openTelegramLink(`https://t.me/${botUsername}?start=${cleanCommand}`);
-    } else {
-        tg.showAlert(`Use /${cleanCommand} in the bot chat.`);
-    }
+    // Show user the command they need to use, then close the mini app
+    tg.showConfirm(`Close and use /${cleanCommand} in the bot chat?`, function(confirmed) {
+        if (confirmed) {
+            tg.close();
+        }
+    });
 }
 
 function showDeposit() {
