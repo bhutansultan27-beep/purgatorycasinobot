@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Deposit - Gild Tesoro</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <style>
+        .deposit-header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .deposit-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4ade80;
+            margin-bottom: 10px;
+        }
+        .deposit-subtitle {
+            color: #888;
+            font-size: 14px;
+        }
+        .balance-display {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .balance-label {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .balance-amount {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4ade80;
+        }
+        .crypto-section {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 16px;
+            color: #d4af37;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .crypto-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .crypto-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 20px;
+            background: #2a2a3e;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .crypto-btn:hover {
+            border-color: #d4af37;
+            background: #3a3a4e;
+        }
+        .crypto-btn.selected {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+        .crypto-icon {
+            font-size: 32px;
+        }
+        .crypto-info {
+            flex: 1;
+            text-align: left;
+        }
+        .crypto-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .crypto-network {
+            font-size: 12px;
+            color: #888;
+        }
+        .deposit-address-section {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .deposit-address-section.active {
+            display: block;
+        }
+        .qr-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .qr-placeholder {
+            width: 180px;
+            height: 180px;
+            background: #fff;
+            border-radius: 12px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a1a2e;
+            font-size: 14px;
+        }
+        .address-box {
+            background: #2a2a3e;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .address-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .address-value {
+            font-family: monospace;
+            font-size: 12px;
+            color: #fff;
+            word-break: break-all;
+            line-height: 1.5;
+        }
+        .copy-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #d4af37, #f4d03f);
+            border: none;
+            border-radius: 10px;
+            color: #1a1a2e;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .deposit-info {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid #4ade80;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .deposit-info p {
+            color: #4ade80;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .warning-box p {
+            color: #ef4444;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Menu</a>
+        
+        <div class="deposit-header">
+            <div class="deposit-title">Deposit</div>
+            <div class="deposit-subtitle">Add funds to your account</div>
+        </div>
+
+        <div class="balance-display">
+            <div class="balance-label">Current Balance</div>
+            <div class="balance-amount" id="current-balance">$0.00</div>
+        </div>
+
+        <div class="crypto-section">
+            <div class="section-title">Select Cryptocurrency</div>
+            <div class="crypto-options">
+                <button class="crypto-btn" onclick="selectCrypto('LTC')" id="btn-ltc">
+                    <span class="crypto-icon">💎</span>
+                    <div class="crypto-info">
+                        <div class="crypto-name">Litecoin (LTC)</div>
+                        <div class="crypto-network">Litecoin Network</div>
+                    </div>
+                </button>
+                <button class="crypto-btn" onclick="selectCrypto('SOL')" id="btn-sol">
+                    <span class="crypto-icon">💜</span>
+                    <div class="crypto-info">
+                        <div class="crypto-name">Solana (SOL)</div>
+                        <div class="crypto-network">Solana Network</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <div class="deposit-address-section" id="ltc-section">
+            <div class="section-title">LTC Deposit Address</div>
+            <div class="address-box">
+                <div class="address-label">Send LTC to this address:</div>
+                <div class="address-value" id="ltc-address">Loading...</div>
+            </div>
+            <button class="copy-btn" onclick="copyAddress('ltc')">Copy Address</button>
+            <div class="deposit-info">
+                <p>Minimum deposit: $1.00</p>
+                <p>Confirmations required: 1</p>
+                <p>Deposits are credited automatically</p>
+            </div>
+            <div class="warning-box">
+                <p>Only send LTC to this address!</p>
+                <p>Sending other tokens will result in loss of funds.</p>
+            </div>
+        </div>
+
+        <div class="deposit-address-section" id="sol-section">
+            <div class="section-title">SOL Deposit Address</div>
+            <div class="address-box">
+                <div class="address-label">Send SOL to this address:</div>
+                <div class="address-value" id="sol-address">Coming Soon</div>
+            </div>
+            <button class="copy-btn" onclick="copyAddress('sol')">Copy Address</button>
+            <div class="deposit-info">
+                <p>Minimum deposit: $1.00</p>
+                <p>Confirmations required: 1</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let selectedCrypto = null;
+        let depositAddresses = {};
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            loadDepositInfo();
+        });
+
+        function loadUserData() {
+            const initData = tg.initData || '';
+            fetch('/api/user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.user) {
+                    document.getElementById('current-balance').textContent = '$' + formatNumber(data.user.balance);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function loadDepositInfo() {
+            const initData = tg.initData || '';
+            fetch('/api/deposit-info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    depositAddresses = data.addresses || {};
+                    if (depositAddresses.ltc) {
+                        document.getElementById('ltc-address').textContent = depositAddresses.ltc;
+                    }
+                    if (depositAddresses.sol) {
+                        document.getElementById('sol-address').textContent = depositAddresses.sol;
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function selectCrypto(crypto) {
+            document.querySelectorAll('.crypto-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('.deposit-address-section').forEach(sec => sec.classList.remove('active'));
+            
+            document.getElementById('btn-' + crypto.toLowerCase()).classList.add('selected');
+            document.getElementById(crypto.toLowerCase() + '-section').classList.add('active');
+            selectedCrypto = crypto;
+        }
+
+        function copyAddress(crypto) {
+            const address = document.getElementById(crypto + '-address').textContent;
+            navigator.clipboard.writeText(address).then(() => {
+                tg.showAlert('Address copied to clipboard!');
+            }).catch(() => {
+                tg.showAlert('Failed to copy address');
+            });
+        }
+
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '0.00';
+            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    </script>
+</body>
+</html>

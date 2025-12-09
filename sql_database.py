@@ -499,6 +499,152 @@ class SQLDatabaseManager:
         finally:
             session.close()
     
+    def update_balance(self, user_id: int, amount: float):
+        session = self.get_session()
+        try:
+            user = session.query(User).filter_by(user_id=user_id).first()
+            if user:
+                user.balance = max(0, user.balance + amount)
+                session.commit()
+        finally:
+            session.close()
+    
+    def add_pending_withdrawal(self, user_id: int, amount: float, crypto: str, address: str):
+        session = self.get_session()
+        try:
+            import time
+            unique_id = int(time.time() * 1000) % 1000000000
+            
+            withdrawal_data = {
+                "id": unique_id,
+                "user_id": user_id,
+                "amount": amount,
+                "crypto": crypto,
+                "address": address,
+                "status": "pending",
+                "timestamp": datetime.now().isoformat()
+            }
+            config = session.query(HouseConfig).filter_by(key="pending_withdrawals").first()
+            if config:
+                pending = json.loads(config.value) if config.value else []
+            else:
+                pending = []
+                config = HouseConfig(key="pending_withdrawals", value="[]")
+                session.add(config)
+            
+            pending.append(withdrawal_data)
+            config.value = json.dumps(pending)
+            session.commit()
+        finally:
+            session.close()
+    
+    def get_pending_withdrawals(self) -> List[Dict[str, Any]]:
+        session = self.get_session()
+        try:
+            config = session.query(HouseConfig).filter_by(key="pending_withdrawals").first()
+            if config and config.value:
+                pending = json.loads(config.value)
+                result = []
+                for p in pending:
+                    if p.get("status") == "pending":
+                        user = session.query(User).filter_by(user_id=p.get("user_id")).first()
+                        p["username"] = user.username if user else "Unknown"
+                        result.append(p)
+                return result
+            return []
+        finally:
+            session.close()
+    
+    def approve_withdrawal(self, withdrawal_id: int):
+        session = self.get_session()
+        try:
+            config = session.query(HouseConfig).filter_by(key="pending_withdrawals").first()
+            if config and config.value:
+                pending = json.loads(config.value)
+                new_pending = []
+                for p in pending:
+                    if p.get("id") == withdrawal_id and p.get("status") == "pending":
+                        amount = p.get("amount", 0)
+                        house_config = session.query(HouseConfig).filter_by(key="house_balance").first()
+                        if house_config:
+                            current_balance = float(house_config.value)
+                            house_config.value = str(current_balance - amount)
+                        self.add_transaction(p.get("user_id"), "withdrawal_approved", -amount, f"Withdrawal approved: ${amount}")
+                    else:
+                        new_pending.append(p)
+                config.value = json.dumps(new_pending)
+                session.commit()
+        finally:
+            session.close()
+    
+    def reject_withdrawal(self, withdrawal_id: int):
+        session = self.get_session()
+        try:
+            config = session.query(HouseConfig).filter_by(key="pending_withdrawals").first()
+            if config and config.value:
+                pending = json.loads(config.value)
+                new_pending = []
+                for p in pending:
+                    if p.get("id") == withdrawal_id and p.get("status") == "pending":
+                        user_id = p.get("user_id")
+                        amount = p.get("amount", 0)
+                        user = session.query(User).filter_by(user_id=user_id).first()
+                        if user:
+                            user.balance += amount
+                        self.add_transaction(user_id, "withdrawal_rejected", amount, f"Withdrawal rejected, refunded: ${amount}")
+                    else:
+                        new_pending.append(p)
+                config.value = json.dumps(new_pending)
+                session.commit()
+        finally:
+            session.close()
+    
+    def search_user(self, query: str) -> Optional[Dict[str, Any]]:
+        session = self.get_session()
+        try:
+            user = None
+            if query.isdigit():
+                user = session.query(User).filter_by(user_id=int(query)).first()
+            else:
+                clean_query = query.lstrip('@')
+                user = session.query(User).filter(User.username.ilike(f"%{clean_query}%")).first()
+            
+            if user:
+                return {
+                    "user_id": user.user_id,
+                    "username": user.username,
+                    "balance": user.balance,
+                    "total_wagered": user.total_wagered,
+                    "games_played": user.games_played
+                }
+            return None
+        finally:
+            session.close()
+    
+    def get_bot_stats(self) -> Dict[str, Any]:
+        session = self.get_session()
+        try:
+            total_users = session.query(User).count()
+            total_wagered = session.query(User).with_entities(
+                session.query(User.total_wagered).as_scalar()
+            ).scalar() or 0
+            
+            users = session.query(User).all()
+            total_wagered = sum(u.total_wagered for u in users)
+            total_pnl = sum(u.total_pnl for u in users)
+            
+            house_config = session.query(HouseConfig).filter_by(key="house_balance").first()
+            house_balance = float(house_config.value) if house_config else 10000.0
+            
+            return {
+                "total_users": total_users,
+                "total_wagered": total_wagered,
+                "house_balance": house_balance,
+                "house_profit": -total_pnl
+            }
+        finally:
+            session.close()
+    
     def save_data(self):
         pass
 

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Withdraw - Gild Tesoro</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <style>
+        .withdraw-header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .withdraw-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ef4444;
+            margin-bottom: 10px;
+        }
+        .withdraw-subtitle {
+            color: #888;
+            font-size: 14px;
+        }
+        .balance-display {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .balance-label {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .balance-amount {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4ade80;
+        }
+        .withdraw-form {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 16px;
+            color: #d4af37;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: #2a2a3e;
+            border: 2px solid #3a3a4e;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+        .form-input::placeholder {
+            color: #666;
+        }
+        .crypto-select {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .crypto-option {
+            flex: 1;
+            padding: 14px;
+            background: #2a2a3e;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            color: #fff;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .crypto-option:hover {
+            border-color: #d4af37;
+        }
+        .crypto-option.selected {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+        .crypto-option-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .crypto-option-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .amount-presets {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .preset-btn {
+            flex: 1;
+            padding: 10px;
+            background: #2a2a3e;
+            border: 1px solid #3a3a4e;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .preset-btn:hover {
+            border-color: #d4af37;
+            background: #3a3a4e;
+        }
+        .withdraw-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ef4444, #f87171);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .withdraw-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        .withdraw-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .info-section {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #2a2a3e;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            color: #888;
+        }
+        .info-value {
+            color: #fff;
+            font-weight: 600;
+        }
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .warning-box p {
+            color: #ef4444;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+        .success-message {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid #4ade80;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+        .success-message.active {
+            display: block;
+        }
+        .success-message p {
+            color: #4ade80;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Menu</a>
+        
+        <div class="withdraw-header">
+            <div class="withdraw-title">Withdraw</div>
+            <div class="withdraw-subtitle">Cash out your winnings</div>
+        </div>
+
+        <div class="balance-display">
+            <div class="balance-label">Available Balance</div>
+            <div class="balance-amount" id="current-balance">$0.00</div>
+        </div>
+
+        <div class="withdraw-form">
+            <div class="section-title">Withdrawal Details</div>
+            
+            <div class="form-group">
+                <label class="form-label">Select Cryptocurrency</label>
+                <div class="crypto-select">
+                    <div class="crypto-option selected" onclick="selectCrypto('LTC')" id="opt-ltc">
+                        <div class="crypto-option-icon">💎</div>
+                        <div class="crypto-option-name">LTC</div>
+                    </div>
+                    <div class="crypto-option" onclick="selectCrypto('SOL')" id="opt-sol">
+                        <div class="crypto-option-icon">💜</div>
+                        <div class="crypto-option-name">SOL</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Amount (USD)</label>
+                <div class="amount-presets">
+                    <button class="preset-btn" onclick="setAmount(5)">$5</button>
+                    <button class="preset-btn" onclick="setAmount(10)">$10</button>
+                    <button class="preset-btn" onclick="setAmount(25)">$25</button>
+                    <button class="preset-btn" onclick="setAmount('max')">MAX</button>
+                </div>
+                <input type="number" class="form-input" id="withdraw-amount" placeholder="Enter amount" min="2" step="0.01">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Wallet Address</label>
+                <input type="text" class="form-input" id="wallet-address" placeholder="Enter your LTC wallet address">
+            </div>
+
+            <button class="withdraw-btn" onclick="submitWithdraw()" id="withdraw-btn">Request Withdrawal</button>
+
+            <div class="success-message" id="success-message">
+                <p>Withdrawal request submitted successfully!</p>
+                <p>Your request is being processed and will be reviewed shortly.</p>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="section-title">Withdrawal Info</div>
+            <div class="info-row">
+                <span class="info-label">Minimum Withdrawal</span>
+                <span class="info-value">$2.00</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Processing Time</span>
+                <span class="info-value">1-24 hours</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Fee</span>
+                <span class="info-value">2%</span>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <p>Please double-check your wallet address before submitting.</p>
+            <p>Withdrawals to incorrect addresses cannot be recovered.</p>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let selectedCrypto = 'LTC';
+        let userBalance = 0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+        });
+
+        function loadUserData() {
+            const initData = tg.initData || '';
+            fetch('/api/user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.user) {
+                    userBalance = data.user.balance || 0;
+                    document.getElementById('current-balance').textContent = '$' + formatNumber(userBalance);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function selectCrypto(crypto) {
+            document.querySelectorAll('.crypto-option').forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('opt-' + crypto.toLowerCase()).classList.add('selected');
+            selectedCrypto = crypto;
+            
+            const placeholder = crypto === 'LTC' ? 'Enter your LTC wallet address' : 'Enter your SOL wallet address';
+            document.getElementById('wallet-address').placeholder = placeholder;
+        }
+
+        function setAmount(amount) {
+            if (amount === 'max') {
+                document.getElementById('withdraw-amount').value = userBalance.toFixed(2);
+            } else {
+                document.getElementById('withdraw-amount').value = amount;
+            }
+        }
+
+        function submitWithdraw() {
+            const amount = parseFloat(document.getElementById('withdraw-amount').value);
+            const address = document.getElementById('wallet-address').value.trim();
+
+            if (!amount || amount < 2) {
+                tg.showAlert('Minimum withdrawal is $2.00');
+                return;
+            }
+
+            if (amount > userBalance) {
+                tg.showAlert('Insufficient balance');
+                return;
+            }
+
+            if (!address) {
+                tg.showAlert('Please enter a wallet address');
+                return;
+            }
+
+            const initData = tg.initData || '';
+            document.getElementById('withdraw-btn').disabled = true;
+            document.getElementById('withdraw-btn').textContent = 'Processing...';
+
+            fetch('/api/withdraw', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    initData: initData,
+                    amount: amount,
+                    crypto: selectedCrypto,
+                    address: address
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('success-message').classList.add('active');
+                    document.getElementById('withdraw-btn').textContent = 'Request Submitted';
+                    loadUserData();
+                } else {
+                    tg.showAlert(data.error || 'Withdrawal failed');
+                    document.getElementById('withdraw-btn').disabled = false;
+                    document.getElementById('withdraw-btn').textContent = 'Request Withdrawal';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                tg.showAlert('An error occurred');
+                document.getElementById('withdraw-btn').disabled = false;
+                document.getElementById('withdraw-btn').textContent = 'Request Withdrawal';
+            });
+        }
+
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '0.00';
+            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    </script>
+</body>
+</html>

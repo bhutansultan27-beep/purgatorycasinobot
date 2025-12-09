@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Panel - Gild Tesoro</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <style>
+        .admin-header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .admin-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+        .admin-subtitle {
+            color: #888;
+            font-size: 14px;
+        }
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ade80;
+            margin-bottom: 5px;
+        }
+        .stat-value.negative {
+            color: #ef4444;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        .admin-section {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 16px;
+            color: #d4af37;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .admin-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            background: #2a2a3e;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .admin-btn:hover {
+            border-color: #d4af37;
+            background: #3a3a4e;
+        }
+        .admin-btn-icon {
+            font-size: 28px;
+        }
+        .admin-btn-label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .pending-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .pending-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #2a2a3e;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .pending-info {
+            flex: 1;
+        }
+        .pending-user {
+            font-weight: 600;
+            color: #fff;
+            font-size: 14px;
+        }
+        .pending-amount {
+            color: #4ade80;
+            font-size: 13px;
+        }
+        .pending-time {
+            color: #888;
+            font-size: 11px;
+        }
+        .pending-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .action-btn.approve {
+            background: #4ade80;
+            color: #1a1a2e;
+        }
+        .action-btn.reject {
+            background: #ef4444;
+            color: #fff;
+        }
+        .user-search {
+            margin-bottom: 15px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #2a2a3e;
+            border: 2px solid #3a3a4e;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+        .user-result {
+            background: #2a2a3e;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+            display: none;
+        }
+        .user-result.active {
+            display: block;
+        }
+        .user-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #3a3a4e;
+        }
+        .user-detail:last-child {
+            border-bottom: none;
+        }
+        .user-action-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .user-action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .user-action-btn.add-balance {
+            background: #4ade80;
+            color: #1a1a2e;
+        }
+        .user-action-btn.remove-balance {
+            background: #ef4444;
+            color: #fff;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #888;
+        }
+        .access-denied {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .access-denied-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        .access-denied-title {
+            font-size: 24px;
+            color: #ef4444;
+            margin-bottom: 10px;
+        }
+        .access-denied-text {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Menu</a>
+        
+        <div id="admin-content" style="display: none;">
+            <div class="admin-header">
+                <div class="admin-title">Admin Panel</div>
+                <div class="admin-subtitle">Manage your casino</div>
+            </div>
+
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-users">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="house-balance">$0</div>
+                    <div class="stat-label">House Balance</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-wagered">$0</div>
+                    <div class="stat-label">Total Wagered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="house-profit">$0</div>
+                    <div class="stat-label">House Profit</div>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <div class="section-title">Quick Actions</div>
+                <div class="admin-grid">
+                    <a href="/admin/pending" class="admin-btn">
+                        <span class="admin-btn-icon">⏳</span>
+                        <span class="admin-btn-label">Pending Withdrawals</span>
+                    </a>
+                    <a href="/admin/users" class="admin-btn">
+                        <span class="admin-btn-icon">👥</span>
+                        <span class="admin-btn-label">User Management</span>
+                    </a>
+                    <button class="admin-btn" onclick="openBotCommand('/broadcast')">
+                        <span class="admin-btn-icon">📢</span>
+                        <span class="admin-btn-label">Broadcast</span>
+                    </button>
+                    <button class="admin-btn" onclick="openBotCommand('/stats')">
+                        <span class="admin-btn-icon">📊</span>
+                        <span class="admin-btn-label">Full Stats</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <div class="section-title">Search User</div>
+                <div class="user-search">
+                    <input type="text" class="search-input" id="user-search" placeholder="Enter username or user ID">
+                </div>
+                <button class="admin-btn" style="width: 100%;" onclick="searchUser()">
+                    <span class="admin-btn-icon">🔍</span>
+                    <span class="admin-btn-label">Search</span>
+                </button>
+                <div class="user-result" id="user-result">
+                    <div class="user-detail">
+                        <span style="color: #888;">Username</span>
+                        <span id="result-username" style="color: #fff;">-</span>
+                    </div>
+                    <div class="user-detail">
+                        <span style="color: #888;">User ID</span>
+                        <span id="result-userid" style="color: #fff;">-</span>
+                    </div>
+                    <div class="user-detail">
+                        <span style="color: #888;">Balance</span>
+                        <span id="result-balance" style="color: #4ade80;">$0.00</span>
+                    </div>
+                    <div class="user-detail">
+                        <span style="color: #888;">Total Wagered</span>
+                        <span id="result-wagered" style="color: #fff;">$0.00</span>
+                    </div>
+                    <div class="user-action-btns">
+                        <button class="user-action-btn add-balance" onclick="modifyBalance('add')">+ Add</button>
+                        <button class="user-action-btn remove-balance" onclick="modifyBalance('remove')">- Remove</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <div class="section-title">Pending Withdrawals</div>
+                <div class="pending-list" id="pending-list">
+                    <div class="empty-state">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="access-denied" style="display: none;">
+            <div class="access-denied">
+                <div class="access-denied-icon">🔒</div>
+                <div class="access-denied-title">Access Denied</div>
+                <div class="access-denied-text">You don't have permission to access this page.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let isAdmin = false;
+        let searchedUser = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminAccess();
+        });
+
+        function checkAdminAccess() {
+            const initData = tg.initData || '';
+            fetch('/api/admin/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.is_admin) {
+                    isAdmin = true;
+                    document.getElementById('admin-content').style.display = 'block';
+                    loadAdminData();
+                } else {
+                    document.getElementById('access-denied').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('access-denied').style.display = 'block';
+            });
+        }
+
+        function loadAdminData() {
+            const initData = tg.initData || '';
+            fetch('/api/admin/stats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('total-users').textContent = data.stats.total_users || 0;
+                    document.getElementById('house-balance').textContent = '$' + formatNumber(data.stats.house_balance);
+                    document.getElementById('total-wagered').textContent = '$' + formatNumber(data.stats.total_wagered);
+                    document.getElementById('house-profit').textContent = '$' + formatNumber(data.stats.house_profit);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+
+            loadPendingWithdrawals();
+        }
+
+        function loadPendingWithdrawals() {
+            const initData = tg.initData || '';
+            fetch('/api/admin/pending', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('pending-list');
+                if (data.success && data.pending && data.pending.length > 0) {
+                    let html = '';
+                    data.pending.forEach(item => {
+                        html += `
+                            <div class="pending-item" id="pending-${item.id}">
+                                <div class="pending-info">
+                                    <div class="pending-user">@${item.username || item.user_id}</div>
+                                    <div class="pending-amount">$${formatNumber(item.amount)} ${item.crypto}</div>
+                                    <div class="pending-time">${item.time_ago || 'Just now'}</div>
+                                </div>
+                                <div class="pending-actions">
+                                    <button class="action-btn approve" onclick="handleWithdrawal(${item.id}, 'approve')">✓</button>
+                                    <button class="action-btn reject" onclick="handleWithdrawal(${item.id}, 'reject')">✕</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<div class="empty-state">No pending withdrawals</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('pending-list').innerHTML = '<div class="empty-state">Failed to load</div>';
+            });
+        }
+
+        function searchUser() {
+            const query = document.getElementById('user-search').value.trim();
+            if (!query) {
+                tg.showAlert('Please enter a username or user ID');
+                return;
+            }
+
+            const initData = tg.initData || '';
+            fetch('/api/admin/user-search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData, query: query })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.user) {
+                    searchedUser = data.user;
+                    document.getElementById('result-username').textContent = '@' + (data.user.username || 'Unknown');
+                    document.getElementById('result-userid').textContent = data.user.user_id;
+                    document.getElementById('result-balance').textContent = '$' + formatNumber(data.user.balance);
+                    document.getElementById('result-wagered').textContent = '$' + formatNumber(data.user.total_wagered);
+                    document.getElementById('user-result').classList.add('active');
+                } else {
+                    tg.showAlert('User not found');
+                    document.getElementById('user-result').classList.remove('active');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                tg.showAlert('Search failed');
+            });
+        }
+
+        function modifyBalance(action) {
+            if (!searchedUser) return;
+            
+            const amount = prompt('Enter amount:');
+            if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+                tg.showAlert('Invalid amount');
+                return;
+            }
+
+            const initData = tg.initData || '';
+            fetch('/api/admin/modify-balance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    initData: initData,
+                    user_id: searchedUser.user_id,
+                    amount: parseFloat(amount),
+                    action: action
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    tg.showAlert('Balance updated successfully');
+                    searchUser();
+                } else {
+                    tg.showAlert(data.error || 'Failed to update balance');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                tg.showAlert('An error occurred');
+            });
+        }
+
+        function handleWithdrawal(id, action) {
+            const initData = tg.initData || '';
+            fetch('/api/admin/handle-withdrawal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData, id: id, action: action })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('pending-' + id).remove();
+                    tg.showAlert('Withdrawal ' + (action === 'approve' ? 'approved' : 'rejected'));
+                    loadAdminData();
+                } else {
+                    tg.showAlert(data.error || 'Action failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                tg.showAlert('An error occurred');
+            });
+        }
+
+        function openBotCommand(command) {
+            tg.showConfirm(`Close and use ${command} in the bot chat?`, function(confirmed) {
+                if (confirmed) {
+                    tg.close();
+                }
+            });
+        }
+
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '0.00';
+            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    </script>
+</body>
+</html>

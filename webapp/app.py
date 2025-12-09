@@ -321,5 +321,176 @@ def get_user():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
+@app.route('/deposit')
+def deposit_page():
+    return render_template('deposit.html')
+
+@app.route('/withdraw')
+def withdraw_page():
+    return render_template('withdraw.html')
+
+@app.route('/admin')
+def admin_page():
+    return render_template('admin.html')
+
+@app.route('/api/deposit-info', methods=['POST'])
+def get_deposit_info():
+    try:
+        ltc_address = os.getenv("LTC_MASTER_ADDRESS", "")
+        sol_address = os.getenv("SOL_MASTER_ADDRESS", "")
+        return jsonify({
+            "success": True,
+            "addresses": {
+                "ltc": ltc_address,
+                "sol": sol_address or "Coming Soon"
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/withdraw', methods=['POST'])
+def request_withdraw():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        user_id = user_info.get('id') if user_info else None
+        
+        if not user_id:
+            return jsonify({"success": False, "error": "Authentication required"})
+        
+        amount = data.get('amount', 0)
+        crypto = data.get('crypto', 'LTC')
+        address = data.get('address', '')
+        
+        if amount < 2:
+            return jsonify({"success": False, "error": "Minimum withdrawal is $2.00"})
+        
+        if not address:
+            return jsonify({"success": False, "error": "Wallet address required"})
+        
+        user = db.get_user(user_id)
+        if not user or user.get('balance', 0) < amount:
+            return jsonify({"success": False, "error": "Insufficient balance"})
+        
+        db.update_balance(user_id, -amount)
+        db.add_pending_withdrawal(user_id, amount, crypto, address)
+        
+        return jsonify({"success": True, "message": "Withdrawal request submitted"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/admin/check', methods=['POST'])
+def check_admin():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        user_id = user_info.get('id') if user_info else None
+        
+        if user_id and is_admin(user_id):
+            return jsonify({"success": True, "is_admin": True})
+        return jsonify({"success": True, "is_admin": False})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/admin/stats', methods=['POST'])
+def get_admin_stats():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        user_id = user_info.get('id') if user_info else None
+        
+        if not user_id or not is_admin(user_id):
+            return jsonify({"success": False, "error": "Unauthorized"})
+        
+        stats = db.get_bot_stats()
+        return jsonify({"success": True, "stats": stats})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/admin/pending', methods=['POST'])
+def get_pending_withdrawals():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        user_id = user_info.get('id') if user_info else None
+        
+        if not user_id or not is_admin(user_id):
+            return jsonify({"success": False, "error": "Unauthorized"})
+        
+        pending = db.get_pending_withdrawals()
+        return jsonify({"success": True, "pending": pending})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/admin/user-search', methods=['POST'])
+def admin_user_search():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        user_id = user_info.get('id') if user_info else None
+        
+        if not user_id or not is_admin(user_id):
+            return jsonify({"success": False, "error": "Unauthorized"})
+        
+        query = data.get('query', '')
+        user = db.search_user(query)
+        
+        if user:
+            return jsonify({"success": True, "user": user})
+        return jsonify({"success": False, "error": "User not found"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/admin/modify-balance', methods=['POST'])
+def admin_modify_balance():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        admin_id = user_info.get('id') if user_info else None
+        
+        if not admin_id or not is_admin(admin_id):
+            return jsonify({"success": False, "error": "Unauthorized"})
+        
+        target_user_id = data.get('user_id')
+        amount = data.get('amount', 0)
+        action = data.get('action', 'add')
+        
+        if action == 'remove':
+            amount = -amount
+        
+        db.update_balance(target_user_id, amount)
+        return jsonify({"success": True, "message": "Balance updated"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/admin/handle-withdrawal', methods=['POST'])
+def admin_handle_withdrawal():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        admin_id = user_info.get('id') if user_info else None
+        
+        if not admin_id or not is_admin(admin_id):
+            return jsonify({"success": False, "error": "Unauthorized"})
+        
+        withdrawal_id = data.get('id')
+        action = data.get('action')
+        
+        if action == 'approve':
+            db.approve_withdrawal(withdrawal_id)
+        elif action == 'reject':
+            db.reject_withdrawal(withdrawal_id)
+        
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
