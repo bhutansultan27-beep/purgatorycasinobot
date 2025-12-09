@@ -1,0 +1,407 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --gold: #FFD700;
+    --gold-dark: #B8860B;
+    --gold-light: #FFF8DC;
+    --black: #0a0a0a;
+    --black-light: #1a1a1a;
+    --black-card: #141414;
+    --green: #44cc44;
+    --red: #ff4444;
+    --white: #ffffff;
+    --gray: #888888;
+    --gray-dark: #333333;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--black) 0%, var(--black-light) 50%, var(--black) 100%);
+    min-height: 100vh;
+    color: var(--white);
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 10px;
+    padding-bottom: 30px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: linear-gradient(180deg, var(--black-card) 0%, transparent 100%);
+    border-bottom: 1px solid var(--gold-dark);
+    margin-bottom: 15px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.logo-text {
+    font-size: 16px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.balance-display {
+    background: var(--black-card);
+    border: 1px solid var(--gold-dark);
+    border-radius: 20px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.balance-icon {
+    color: var(--gold);
+}
+
+.balance-amount {
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--black-card);
+    border: 1px solid var(--gray-dark);
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.user-level {
+    display: flex;
+    align-items: center;
+}
+
+.level-badge {
+    font-size: 12px;
+    color: var(--gray);
+}
+
+.menu-section {
+    margin-bottom: 25px;
+}
+
+.section-title {
+    font-size: 14px;
+    color: var(--gold);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.game-card {
+    background: var(--black-card);
+    border: 1px solid var(--gray-dark);
+    border-radius: 15px;
+    padding: 20px 15px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--white);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.game-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.1);
+}
+
+.game-card:active {
+    transform: scale(0.98);
+}
+
+.game-card.coming-soon {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.game-icon {
+    font-size: 36px;
+    margin-bottom: 5px;
+}
+
+.game-name {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.game-desc {
+    font-size: 11px;
+    color: var(--gray);
+}
+
+.wallet-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.wallet-btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.deposit-btn {
+    background: linear-gradient(135deg, var(--green) 0%, #228822 100%);
+    color: white;
+}
+
+.withdraw-btn {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: var(--black);
+}
+
+.wallet-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.btn-icon {
+    font-size: 18px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.stat-card {
+    background: var(--black-card);
+    border: 1px solid var(--gray-dark);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.links-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.link-btn {
+    background: var(--black-card);
+    border: 1px solid var(--gray-dark);
+    border-radius: 10px;
+    padding: 12px;
+    color: var(--white);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.link-btn:hover {
+    border-color: var(--gold);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--black-card);
+    border: 2px solid var(--gold);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 350px;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--gray-dark);
+}
+
+.modal-header h3 {
+    color: var(--gold);
+    font-size: 16px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--gray);
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 20px;
+    text-align: center;
+}
+
+.crypto-options {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+.crypto-btn {
+    background: var(--black);
+    border: 1px solid var(--gray-dark);
+    border-radius: 10px;
+    padding: 15px 25px;
+    color: var(--white);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.crypto-btn:hover {
+    border-color: var(--gold);
+}
+
+.modal-note {
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 15px;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--black-card);
+    border: 1px solid var(--gray-dark);
+    border-radius: 10px;
+    padding: 10px 15px;
+    color: var(--white);
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    text-decoration: none;
+}
+
+.back-button:hover {
+    border-color: var(--gold);
+}
+
+@media (max-width: 400px) {
+    .games-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .game-card {
+        padding: 15px 10px;
+    }
+    
+    .game-icon {
+        font-size: 28px;
+    }
+    
+    .game-name {
+        font-size: 12px;
+    }
+}

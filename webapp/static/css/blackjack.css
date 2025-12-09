@@ -4,6 +4,25 @@
     box-sizing: border-box;
 }
 
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--black-card);
+    border: 1px solid var(--gray-dark);
+    border-radius: 10px;
+    padding: 10px 15px;
+    color: var(--white);
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    text-decoration: none;
+}
+
+.back-button:hover {
+    border-color: var(--gold);
+}
+
 :root {
     --gold: #FFD700;
     --gold-dark: #B8860B;
@@ -16,6 +35,7 @@
     --red: #ff4444;
     --white: #ffffff;
     --gray: #888888;
+    --gray-dark: #333333;
 }
 
 body {

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Keno - Gild Tesoro Casino</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <style>
+        .keno-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 5px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: var(--black-card);
+            border-radius: 15px;
+        }
+        .keno-num {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3a 100%);
+            border: 2px solid var(--gray-dark);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .keno-num:hover { border-color: var(--gold); }
+        .keno-num.selected { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); color: var(--black); border-color: var(--gold); }
+        .keno-num.hit { background: linear-gradient(135deg, #44cc44 0%, #228822 100%); border-color: #44cc44; }
+        .keno-num.miss { background: linear-gradient(135deg, #444 0%, #333 100%); opacity: 0.5; }
+        .keno-num.drawn { border-color: #ff4444; border-width: 3px; }
+        .info-bar {
+            display: flex;
+            justify-content: space-around;
+            background: var(--black-card);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .info-item { text-align: center; }
+        .info-label { font-size: 10px; color: var(--gray); }
+        .info-value { font-size: 16px; font-weight: 700; color: var(--gold); }
+        .controls {
+            background: var(--black-card);
+            border-radius: 15px;
+            padding: 15px;
+        }
+        .bet-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .bet-row label { font-size: 14px; }
+        .bet-input { width: 80px; padding: 8px; background: var(--black); border: 1px solid var(--gray-dark); border-radius: 8px; color: var(--white); text-align: center; }
+        .btn-row { display: flex; gap: 10px; }
+        .action-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .clear-btn { background: var(--black); border: 1px solid var(--gray-dark); color: var(--white); }
+        .play-btn { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); color: var(--black); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Menu</a>
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🎱</div>
+                <span class="logo-text">KENO</span>
+            </div>
+            <div class="balance-display">
+                <span class="balance-icon">💰</span>
+                <span class="balance-amount" id="balance">$1,000.00</span>
+            </div>
+        </header>
+
+        <div class="info-bar">
+            <div class="info-item">
+                <div class="info-label">Selected</div>
+                <div class="info-value" id="selected-count">0/10</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Hits</div>
+                <div class="info-value" id="hits">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Win</div>
+                <div class="info-value" id="win-amount">$0</div>
+            </div>
+        </div>
+
+        <div class="keno-grid" id="keno-grid"></div>
+
+        <div class="controls">
+            <div class="bet-row">
+                <label>Bet Amount</label>
+                <input type="number" class="bet-input" id="bet-amount" value="10" min="1">
+            </div>
+            <div class="btn-row">
+                <button class="action-btn clear-btn" onclick="clearSelection()">Clear</button>
+                <button class="action-btn play-btn" onclick="play()">Play</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let balance = 1000;
+        let selected = [];
+        let gameActive = false;
+
+        const grid = document.getElementById('keno-grid');
+        for (let i = 1; i <= 40; i++) {
+            const num = document.createElement('div');
+            num.className = 'keno-num';
+            num.textContent = i;
+            num.onclick = () => toggleNumber(i, num);
+            grid.appendChild(num);
+        }
+
+        function toggleNumber(n, el) {
+            if (gameActive) return;
+            if (selected.includes(n)) {
+                selected = selected.filter(x => x !== n);
+                el.classList.remove('selected');
+            } else if (selected.length < 10) {
+                selected.push(n);
+                el.classList.add('selected');
+            }
+            document.getElementById('selected-count').textContent = selected.length + '/10';
+        }
+
+        function clearSelection() {
+            if (gameActive) return;
+            selected = [];
+            document.querySelectorAll('.keno-num').forEach(el => {
+                el.className = 'keno-num';
+            });
+            document.getElementById('selected-count').textContent = '0/10';
+            document.getElementById('hits').textContent = '0';
+            document.getElementById('win-amount').textContent = '$0';
+        }
+
+        function play() {
+            if (gameActive || selected.length === 0) return;
+            
+            const bet = parseFloat(document.getElementById('bet-amount').value);
+            if (bet > balance) {
+                alert('Insufficient balance!');
+                return;
+            }
+            
+            balance -= bet;
+            updateBalance();
+            gameActive = true;
+            
+            // Draw 10 random numbers
+            const drawn = [];
+            while (drawn.length < 10) {
+                const n = Math.floor(Math.random() * 40) + 1;
+                if (!drawn.includes(n)) drawn.push(n);
+            }
+            
+            // Animate reveals
+            let revealIndex = 0;
+            const interval = setInterval(() => {
+                if (revealIndex >= drawn.length) {
+                    clearInterval(interval);
+                    calculateWin(bet, drawn);
+                    gameActive = false;
+                    return;
+                }
+                
+                const n = drawn[revealIndex];
+                const el = grid.children[n - 1];
+                el.classList.add('drawn');
+                
+                if (selected.includes(n)) {
+                    el.classList.add('hit');
+                    document.getElementById('hits').textContent = parseInt(document.getElementById('hits').textContent) + 1;
+                }
+                
+                revealIndex++;
+            }, 300);
+        }
+
+        function calculateWin(bet, drawn) {
+            const hits = selected.filter(n => drawn.includes(n)).length;
+            const payouts = {1: {1: 3}, 2: {2: 5}, 3: {2: 2, 3: 10}, 4: {2: 1, 3: 5, 4: 20}, 5: {3: 3, 4: 10, 5: 50}, 6: {3: 2, 4: 5, 5: 25, 6: 100}, 7: {4: 3, 5: 10, 6: 50, 7: 200}, 8: {4: 2, 5: 5, 6: 25, 7: 100, 8: 500}, 9: {5: 3, 6: 10, 7: 50, 8: 250, 9: 1000}, 10: {5: 2, 6: 5, 7: 25, 8: 100, 9: 500, 10: 2500}};
+            
+            const mult = payouts[selected.length]?.[hits] || 0;
+            const win = bet * mult;
+            
+            if (win > 0) {
+                balance += win;
+                updateBalance();
+            }
+            
+            document.getElementById('win-amount').textContent = '$' + win.toFixed(2);
+        }
+
+        function updateBalance() {
+            document.getElementById('balance').textContent = '$' + balance.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        }
+    </script>
+</body>
+</html>

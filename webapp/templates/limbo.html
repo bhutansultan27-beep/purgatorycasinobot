@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limbo - Gild Tesoro Casino</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <style>
+        .limbo-display {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 4px solid var(--gold-dark);
+            border-radius: 20px;
+            padding: 40px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .limbo-result {
+            font-size: 60px;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+        .limbo-result.win { color: #44cc44; }
+        .limbo-result.lose { color: #ff4444; }
+        .target-display {
+            font-size: 16px;
+            color: var(--gray);
+        }
+        .controls-section {
+            background: var(--black-card);
+            border: 1px solid var(--gray-dark);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .bet-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .bet-row label { font-size: 14px; color: var(--white); }
+        .bet-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .bet-input-group input {
+            width: 100px;
+            padding: 10px;
+            text-align: center;
+            background: var(--black);
+            border: 1px solid var(--gray-dark);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 14px;
+        }
+        .preset-btns {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .preset-btn {
+            flex: 1;
+            min-width: 60px;
+            padding: 10px;
+            background: var(--black);
+            border: 1px solid var(--gray-dark);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .preset-btn.active { border-color: var(--gold); color: var(--gold); }
+        .play-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            border: none;
+            border-radius: 12px;
+            color: var(--black);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Menu</a>
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🚀</div>
+                <span class="logo-text">LIMBO</span>
+            </div>
+            <div class="balance-display">
+                <span class="balance-icon">💰</span>
+                <span class="balance-amount" id="balance">$1,000.00</span>
+            </div>
+        </header>
+
+        <div class="limbo-display">
+            <div class="limbo-result" id="result">1.00x</div>
+            <div class="target-display">Target: <span id="target">2.00x</span></div>
+        </div>
+
+        <div class="controls-section">
+            <div class="bet-row">
+                <label>Bet Amount</label>
+                <div class="bet-input-group">
+                    <input type="number" id="bet-amount" value="10" min="1">
+                </div>
+            </div>
+            <div class="bet-row">
+                <label>Target Multiplier</label>
+                <div class="bet-input-group">
+                    <input type="number" id="target-mult" value="2.00" min="1.01" step="0.01">
+                </div>
+            </div>
+            <div class="preset-btns">
+                <button class="preset-btn" onclick="setTarget(1.5)">1.5x</button>
+                <button class="preset-btn active" onclick="setTarget(2)">2x</button>
+                <button class="preset-btn" onclick="setTarget(5)">5x</button>
+                <button class="preset-btn" onclick="setTarget(10)">10x</button>
+                <button class="preset-btn" onclick="setTarget(100)">100x</button>
+            </div>
+            <button class="play-btn" id="play-btn" onclick="play()">PLAY</button>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let balance = 1000;
+
+        function setTarget(mult) {
+            document.getElementById('target-mult').value = mult.toFixed(2);
+            document.getElementById('target').textContent = mult.toFixed(2) + 'x';
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function play() {
+            const bet = parseFloat(document.getElementById('bet-amount').value);
+            const target = parseFloat(document.getElementById('target-mult').value);
+            
+            if (bet > balance) {
+                alert('Insufficient balance!');
+                return;
+            }
+            
+            balance -= bet;
+            updateBalance();
+            
+            const resultEl = document.getElementById('result');
+            resultEl.className = 'limbo-result';
+            
+            // Generate result (house edge ~3%)
+            const random = Math.random();
+            const result = 0.99 / random;
+            const displayResult = Math.min(result, 1000000).toFixed(2);
+            
+            // Animate
+            let current = 1.00;
+            const interval = setInterval(() => {
+                current += Math.random() * result * 0.1;
+                if (current >= result) {
+                    clearInterval(interval);
+                    resultEl.textContent = displayResult + 'x';
+                    
+                    if (result >= target) {
+                        resultEl.classList.add('win');
+                        const win = bet * target;
+                        balance += win;
+                        updateBalance();
+                    } else {
+                        resultEl.classList.add('lose');
+                    }
+                } else {
+                    resultEl.textContent = current.toFixed(2) + 'x';
+                }
+            }, 50);
+        }
+
+        function updateBalance() {
+            document.getElementById('balance').textContent = '$' + balance.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        }
+    </script>
+</body>
+</html>

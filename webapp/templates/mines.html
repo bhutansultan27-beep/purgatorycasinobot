@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mines - Gild Tesoro Casino</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <link rel="stylesheet" href="/static/css/mines.css">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Menu</a>
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">💣</div>
+                <span class="logo-text">MINES</span>
+            </div>
+            <div class="balance-display">
+                <span class="balance-icon">💰</span>
+                <span class="balance-amount" id="balance">$1,000.00</span>
+            </div>
+        </header>
+
+        <div class="game-info">
+            <div class="info-item">
+                <span class="info-label">Multiplier</span>
+                <span class="info-value" id="multiplier">1.00x</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Potential Win</span>
+                <span class="info-value" id="potential-win">$0.00</span>
+            </div>
+        </div>
+
+        <div class="mines-grid" id="mines-grid"></div>
+
+        <div class="controls-section">
+            <div class="bet-row">
+                <label>Bet Amount</label>
+                <div class="bet-input-group">
+                    <button class="bet-adjust" onclick="adjustBet(-5)">-</button>
+                    <input type="number" id="bet-amount" value="10" min="1">
+                    <button class="bet-adjust" onclick="adjustBet(5)">+</button>
+                </div>
+            </div>
+            <div class="bet-row">
+                <label>Mines (1-24)</label>
+                <div class="bet-input-group">
+                    <button class="bet-adjust" onclick="adjustMines(-1)">-</button>
+                    <input type="number" id="mines-count" value="3" min="1" max="24">
+                    <button class="bet-adjust" onclick="adjustMines(1)">+</button>
+                </div>
+            </div>
+            <button class="action-btn start-btn" id="start-btn" onclick="startGame()">Start Game</button>
+            <button class="action-btn cashout-btn" id="cashout-btn" onclick="cashout()" style="display: none;">Cash Out</button>
+        </div>
+    </div>
+
+    <script src="/static/js/mines.js"></script>
+</body>
+</html>

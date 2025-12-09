@@ -47,6 +47,10 @@ WEBHOOK_URL = "https://replit-casino-bot--stugbak2.replit.app"
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 40739
+externalPort = 3000
+
 [deployment]
 deploymentTarget = "vm"
 run = ["python", "main.py"]

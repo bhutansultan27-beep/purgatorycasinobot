@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Slots - Gild Tesoro Casino</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <link rel="stylesheet" href="/static/css/slots.css">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Menu</a>
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🎰</div>
+                <span class="logo-text">SLOTS</span>
+            </div>
+            <div class="balance-display">
+                <span class="balance-icon">💰</span>
+                <span class="balance-amount" id="balance">$1,000.00</span>
+            </div>
+        </header>
+
+        <div class="slots-machine">
+            <div class="slots-display">
+                <div class="reel" id="reel1">🍒</div>
+                <div class="reel" id="reel2">🍋</div>
+                <div class="reel" id="reel3">🍊</div>
+            </div>
+            <div class="win-display" id="win-display"></div>
+        </div>
+
+        <div class="betting-section">
+            <div class="bet-header">
+                <div class="bet-title">Your Bet</div>
+                <div class="bet-amount-display" id="bet-display">$10</div>
+            </div>
+            <div class="bet-controls">
+                <button class="bet-adjust" id="bet-decrease">-</button>
+                <div class="bet-presets">
+                    <button class="preset" data-value="5">$5</button>
+                    <button class="preset active" data-value="10">$10</button>
+                    <button class="preset" data-value="25">$25</button>
+                    <button class="preset" data-value="100">$100</button>
+                </div>
+                <button class="bet-adjust" id="bet-increase">+</button>
+            </div>
+            <button class="spin-button" id="spin-btn">SPIN</button>
+        </div>
+
+        <div class="paytable">
+            <h3>Paytable</h3>
+            <div class="pay-row"><span>🍒🍒🍒</span><span>5x</span></div>
+            <div class="pay-row"><span>🍋🍋🍋</span><span>10x</span></div>
+            <div class="pay-row"><span>🍊🍊🍊</span><span>15x</span></div>
+            <div class="pay-row"><span>🍇🍇🍇</span><span>20x</span></div>
+            <div class="pay-row"><span>⭐⭐⭐</span><span>50x</span></div>
+            <div class="pay-row"><span>💎💎💎</span><span>100x</span></div>
+            <div class="pay-row"><span>7️⃣7️⃣7️⃣</span><span>777x</span></div>
+        </div>
+    </div>
+
+    <script src="/static/js/slots.js"></script>
+</body>
+</html>

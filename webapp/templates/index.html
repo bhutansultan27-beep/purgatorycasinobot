@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gild Tesoro Casino</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🏴‍☠️</div>
+                <span class="logo-text">GILD TESORO</span>
+            </div>
+            <div class="balance-display">
+                <span class="balance-icon">💰</span>
+                <span class="balance-amount" id="balance">$0.00</span>
+            </div>
+        </header>
+
+        <div class="user-info" id="user-info">
+            <div class="user-avatar" id="user-avatar">👤</div>
+            <div class="user-details">
+                <div class="user-name" id="user-name">Loading...</div>
+                <div class="user-level" id="user-level">
+                    <span class="level-badge">⚪ Unranked</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h2 class="section-title">🎰 Casino Games</h2>
+            <div class="games-grid">
+                <a href="/blackjack" class="game-card">
+                    <div class="game-icon">🃏</div>
+                    <div class="game-name">Blackjack</div>
+                    <div class="game-desc">Beat the dealer to 21</div>
+                </a>
+                <a href="/slots" class="game-card">
+                    <div class="game-icon">🎰</div>
+                    <div class="game-name">Slots</div>
+                    <div class="game-desc">Spin to win big</div>
+                </a>
+                <a href="/mines" class="game-card">
+                    <div class="game-icon">💣</div>
+                    <div class="game-name">Mines</div>
+                    <div class="game-desc">Avoid the bombs</div>
+                </a>
+                <a href="/limbo" class="game-card">
+                    <div class="game-icon">🚀</div>
+                    <div class="game-name">Limbo</div>
+                    <div class="game-desc">Pick your multiplier</div>
+                </a>
+                <a href="/keno" class="game-card">
+                    <div class="game-icon">🎱</div>
+                    <div class="game-name">Keno</div>
+                    <div class="game-desc">Pick your lucky numbers</div>
+                </a>
+                <a href="/hilo" class="game-card">
+                    <div class="game-icon">⬆️⬇️</div>
+                    <div class="game-name">Hi-Lo</div>
+                    <div class="game-desc">Higher or lower?</div>
+                </a>
+                <a href="/baccarat" class="game-card">
+                    <div class="game-icon">👔</div>
+                    <div class="game-name">Baccarat</div>
+                    <div class="game-desc">Player vs Banker</div>
+                </a>
+                <a href="/roulette" class="game-card coming-soon">
+                    <div class="game-icon">🎡</div>
+                    <div class="game-name">Roulette</div>
+                    <div class="game-desc">Coming Soon</div>
+                </a>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h2 class="section-title">💰 Wallet</h2>
+            <div class="wallet-buttons">
+                <button class="wallet-btn deposit-btn" onclick="showDeposit()">
+                    <span class="btn-icon">📥</span>
+                    <span>Deposit</span>
+                </button>
+                <button class="wallet-btn withdraw-btn" onclick="showWithdraw()">
+                    <span class="btn-icon">📤</span>
+                    <span>Withdraw</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h2 class="section-title">📊 Quick Stats</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-wagered">$0</div>
+                    <div class="stat-label">Total Wagered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-won">$0</div>
+                    <div class="stat-label">Total Won</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="games-played">0</div>
+                    <div class="stat-label">Games Played</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="win-rate">0%</div>
+                    <div class="stat-label">Win Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h2 class="section-title">🔗 Quick Links</h2>
+            <div class="links-grid">
+                <button class="link-btn" onclick="showProfile()">
+                    <span>👤</span> Profile
+                </button>
+                <button class="link-btn" onclick="showLeaderboard()">
+                    <span>🏆</span> Leaderboard
+                </button>
+                <button class="link-btn" onclick="showHistory()">
+                    <span>📜</span> History
+                </button>
+                <button class="link-btn" onclick="showSupport()">
+                    <span>💬</span> Support
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="deposit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>💰 Deposit</h3>
+                <button class="modal-close" onclick="closeModal('deposit-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Select cryptocurrency to deposit:</p>
+                <div class="crypto-options">
+                    <button class="crypto-btn" onclick="selectCrypto('SOL')">
+                        <span>💜</span> SOL
+                    </button>
+                    <button class="crypto-btn" onclick="selectCrypto('LTC')">
+                        <span>💎</span> LTC
+                    </button>
+                </div>
+                <p class="modal-note">Use /deposit in the bot for full deposit options</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="withdraw-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📤 Withdraw</h3>
+                <button class="modal-close" onclick="closeModal('withdraw-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Use /withdraw in the bot to withdraw your funds.</p>
+                <p class="modal-note">Minimum withdrawal: $2.00</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/casino.js"></script>
+</body>
+</html>

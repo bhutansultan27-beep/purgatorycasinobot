@@ -1,0 +1,150 @@
+.game-info {
+    display: flex;
+    justify-content: space-around;
+    background: var(--black-card);
+    border: 1px solid var(--gold-dark);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.info-item {
+    text-align: center;
+}
+
+.info-label {
+    font-size: 11px;
+    color: var(--gray);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+}
+
+.mines-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: var(--black-card);
+    border-radius: 15px;
+    border: 2px solid var(--gray-dark);
+}
+
+.mine-tile {
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3a 100%);
+    border: 2px solid var(--gray-dark);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mine-tile:hover:not(.revealed) {
+    border-color: var(--gold);
+    transform: scale(1.05);
+}
+
+.mine-tile.revealed {
+    cursor: default;
+}
+
+.mine-tile.gem {
+    background: linear-gradient(135deg, #228822 0%, #115511 100%);
+    border-color: #44cc44;
+}
+
+.mine-tile.bomb {
+    background: linear-gradient(135deg, #882222 0%, #551111 100%);
+    border-color: #cc4444;
+}
+
+.mine-tile.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.controls-section {
+    background: var(--black-card);
+    border: 1px solid var(--gray-dark);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.bet-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.bet-row label {
+    font-size: 14px;
+    color: var(--white);
+}
+
+.bet-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bet-input-group input {
+    width: 70px;
+    padding: 10px;
+    text-align: center;
+    background: var(--black);
+    border: 1px solid var(--gray-dark);
+    border-radius: 8px;
+    color: var(--white);
+    font-size: 14px;
+}
+
+.bet-adjust {
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    border: 1px solid var(--gold);
+    background: var(--black);
+    color: var(--gold);
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+}
+
+.start-btn {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: var(--black);
+}
+
+.cashout-btn {
+    background: linear-gradient(135deg, #44cc44 0%, #228822 100%);
+    color: white;
+}
+
+.action-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
