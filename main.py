@@ -1343,13 +1343,14 @@ class GranTeseroCasinoBot:
             command_mapping = {
                 'deposit': self.deposit_command,
                 'withdraw': self.withdraw_command,
-                'profile': self.profile_command,
+                'profile': self.balance_command,
                 'leaderboard': self.leaderboard_command,
                 'history': self.history_command,
                 'admin': self.admin_command,
                 'stats': self.stats_command,
                 'pending': self.pending_withdraws_command,
                 'menu': self.menu_command,
+                'support': self.menu_command,
             }
             if deep_link_param in command_mapping:
                 # Clear context.args so handlers don't misinterpret them
