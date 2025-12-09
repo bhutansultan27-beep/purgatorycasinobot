@@ -1,4 +1,4 @@
-modules = ["python-3.11"]
+modules = ["python-3.11", "nodejs-20", "web"]
 [agent]
 expertMode = true
 
@@ -15,34 +15,19 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Casino Bot Info"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "Blackjack Mini App"
-
-[[workflows.workflow]]
-name = "Casino Bot Info"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python replit_info.py"
-
-[workflows.workflow.metadata]
-outputType = "console"
 
 [[workflows.workflow]]
 name = "Blackjack Mini App"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd webapp && python app.py"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python webapp/app.py"
+waitForPort = 5000
 
 [userenv]
 
@@ -63,7 +48,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 38229
+localPort = 32943
 externalPort = 3000
 
 [deployment]
