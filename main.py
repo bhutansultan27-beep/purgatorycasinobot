@@ -4157,6 +4157,8 @@ Total Won: ${total_won:,.2f}"""
         message += f"🔴 @{p1_username}\n"
         message += f"🟡 @{p2_username}\n"
         
+        win_announcement = None
+        
         if game.game_over:
             final_board = self._build_connect4_final_board(game)
             if game.is_draw:
@@ -4167,7 +4169,6 @@ Total Won: ${total_won:,.2f}"""
                 self.db.update_user(game.player1_id, {'balance': p1_data['balance']})
                 self.db.update_user(game.player2_id, {'balance': p2_data['balance']})
                 
-                # Cancel timeout since game is over
                 game_key = f"connect4_{game_id}"
                 self.cancel_game_timeout(game_key)
                 
@@ -4180,6 +4181,7 @@ Total Won: ${total_won:,.2f}"""
                 winner_emoji = "🔴" if winner_id == game.player1_id else "🟡"
                 
                 total_pot = game.wager * 2
+                profit = game.wager
                 winner_data = self.db.get_user(winner_id)
                 loser_data = self.db.get_user(loser_id)
                 
@@ -4196,7 +4198,8 @@ Total Won: ${total_won:,.2f}"""
                 self.db.update_user(winner_id, winner_data)
                 self.db.update_user(loser_id, loser_data)
                 
-                message += f"\n**{winner_emoji} @{winner_username} wins ${total_pot:.2f}!**"
+                message += f"\n**{winner_emoji} @{winner_username} wins!**"
+                win_announcement = f"{winner_emoji} @{winner_username} won ${profit:.2f}"
                 
                 self.db.record_game({
                     'type': 'connect4',
@@ -4209,7 +4212,6 @@ Total Won: ${total_won:,.2f}"""
                     'loser_balance_after': loser_data['balance']
                 })
                 
-                # Cancel timeout since game is over
                 game_key = f"connect4_{game_id}"
                 self.cancel_game_timeout(game_key)
                 
@@ -4221,10 +4223,19 @@ Total Won: ${total_won:,.2f}"""
             reply_markup = self._build_connect4_keyboard(game, game_id)
         
         chat_id = update.effective_chat.id
-        sent_msg = await context.bot.send_message(chat_id=chat_id, text=message, reply_markup=reply_markup, parse_mode="Markdown")
         
-        if reply_markup:
-            self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = game.get_current_player_id()
+        if is_new:
+            sent_msg = await context.bot.send_message(chat_id=chat_id, text=message, reply_markup=reply_markup, parse_mode="Markdown")
+            if reply_markup and not game.game_over:
+                self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = game.get_current_player_id()
+        else:
+            query = update.callback_query
+            await query.edit_message_text(text=message, reply_markup=reply_markup, parse_mode="Markdown")
+            if reply_markup and game_id in self.connect4_sessions:
+                self.button_ownership[(query.message.chat_id, query.message.message_id)] = game.get_current_player_id()
+        
+        if win_announcement:
+            await context.bot.send_message(chat_id=chat_id, text=win_announcement, parse_mode="Markdown")
     
     async def tip_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Send money to another player."""
