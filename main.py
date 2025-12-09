@@ -580,6 +580,85 @@ class GranTeseroCasinoBot:
                 return True
         return False
 
+    def clear_user_game_state(self, user_id: int) -> list:
+        """Clear all game states for a user. Returns list of cleared game types."""
+        cleared = []
+        
+        if user_id in self.blackjack_sessions:
+            del self.blackjack_sessions[user_id]
+            cleared.append("blackjack")
+        
+        if user_id in self.mines_sessions:
+            del self.mines_sessions[user_id]
+            cleared.append("mines")
+        
+        if user_id in self.keno_sessions:
+            del self.keno_sessions[user_id]
+            cleared.append("keno")
+        
+        if user_id in self.limbo_sessions:
+            del self.limbo_sessions[user_id]
+            cleared.append("limbo")
+        
+        if user_id in self.hilo_sessions:
+            del self.hilo_sessions[user_id]
+            cleared.append("hilo")
+        
+        connect4_to_remove = []
+        for game_id, game in self.connect4_sessions.items():
+            if user_id == game.player1_id or user_id == game.player2_id:
+                connect4_to_remove.append(game_id)
+        for game_id in connect4_to_remove:
+            del self.connect4_sessions[game_id]
+            if "connect4" not in cleared:
+                cleared.append("connect4")
+        
+        if user_id in self.pending_opponent_selection:
+            self.pending_opponent_selection.discard(user_id)
+            cleared.append("pending_selection")
+        
+        pvp_to_remove = []
+        for game_id, challenge in self.pending_pvp.items():
+            challenger = challenge.get('challenger')
+            opponent = challenge.get('opponent')
+            player = challenge.get('player')
+            if challenger == user_id or opponent == user_id or player == user_id:
+                pvp_to_remove.append(game_id)
+        for game_id in pvp_to_remove:
+            del self.pending_pvp[game_id]
+            if "pvp" not in cleared:
+                cleared.append("pvp")
+        
+        timeout_keys_to_cancel = [key for key in self.game_timeout_tasks if str(user_id) in key]
+        for key in timeout_keys_to_cancel:
+            self.cancel_game_timeout(key)
+            cleared.append(f"timeout_{key}")
+        
+        return cleared
+
+    async def resetgame_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Reset stuck game state for a user"""
+        user_id = update.effective_user.id
+        
+        target_user_id = user_id
+        if context.args and self.is_admin(user_id):
+            try:
+                target_user_id = int(context.args[0])
+            except ValueError:
+                await update.message.reply_text("❌ Invalid user ID")
+                return
+        
+        cleared = self.clear_user_game_state(target_user_id)
+        
+        if cleared:
+            if target_user_id == user_id:
+                await update.message.reply_text(f"✅ Game state reset! Cleared: {', '.join(cleared)}\n\nYou can now start a new game.")
+            else:
+                await update.message.reply_text(f"✅ Reset game state for user {target_user_id}. Cleared: {', '.join(cleared)}")
+            logger.info(f"[RESET] User {user_id} reset game state for {target_user_id}: {cleared}")
+        else:
+            await update.message.reply_text("ℹ️ No active games found to reset.")
+
     def get_active_game_type(self, user_id: int) -> str:
         """Get the type of active game for a user"""
         if user_id in self.blackjack_sessions:
@@ -988,6 +1067,7 @@ class GranTeseroCasinoBot:
         self.app.add_handler(CommandHandler("biggestdeposits", self.biggestdeposits_command))
         self.app.add_handler(CommandHandler("setltcrate", self.setltcrate_command))
         self.app.add_handler(CommandHandler("ltcrate", self.ltcrate_command))
+        self.app.add_handler(CommandHandler("resetgame", self.resetgame_command))
         
         self.app.add_handler(MessageHandler(filters.Sticker.ALL, self.sticker_handler))
         self.app.add_handler(MessageHandler(filters.Dice.ALL, self.handle_emoji_response))
