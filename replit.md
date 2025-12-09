@@ -47,8 +47,22 @@ The Gran Tesero Casino Bot is built using Python and the `python-telegram-bot` l
 - **Admin Management**: Features a dynamic admin system with permanent admins (set via `ADMIN_IDS` environment variable) and dynamic admins (added/removed via commands).
 - **House Balance**: Tracks the bot's winnings and losses, influencing the displayed house balance.
 
+### Webapp (Mini App)
+The project includes a Flask-based webapp that serves as a Telegram Mini App interface:
+- **Location**: `webapp/` directory with `app.py` and templates
+- **Pages**:
+  - `/` - Main menu with game links, wallet buttons, and admin panel
+  - `/deposit` - Cryptocurrency deposit page (LTC/SOL)
+  - `/withdraw` - Withdrawal request form with amount and address
+  - `/admin` - Admin panel with pending withdrawals, user search, and stats
+  - `/profile` - User profile and statistics
+  - `/leaderboard` - Top players leaderboard
+  - `/history` - Game history for users
+- **Port**: Runs on port 5000
+- **Database**: Uses sql_database.py with PostgreSQL via SQLAlchemy
+
 ### System Design Choices
-- **Database**: Employs a JSON-based database (`casino_data.json`) for data persistence, featuring auto-save functionality every 5 minutes and a manual backup command.
+- **Database**: PostgreSQL database with SQLAlchemy ORM for data persistence. The `sql_database.py` module provides the SQLDatabaseManager class with methods for user management, transactions, withdrawals, and game history.
 - **Configuration**: Bot token and admin IDs are managed via environment variables (`BOT_TOKEN`, `ADMIN_IDS`).
 - **Error Handling**: Comprehensive error handling is built into the system.
 - **Security**: Includes playthrough requirements, bonus cooldowns, balance validation, and anti-spam withdrawal protection.
