@@ -4326,7 +4326,7 @@ Total Won: ${total_won:,.2f}"""
 
 Click the button below to view your deposit address.
 
-⏱️ **Time Remaining:** 1 hour
+59:59
 
 TX ID: _waiting for deposit..._"""
         else:
@@ -4338,7 +4338,7 @@ TX ID: _waiting for deposit..._"""
 
 `{user_deposit_address}`
 
-⏱️ **Time Remaining:** 1 hour
+59:59
 
 TX ID: _waiting for deposit..._"""
         
@@ -7117,7 +7117,7 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
 
 Send any amount of LTC - you will be credited the exact USD value.
 
-⏱️ **Time Remaining:** 1 hour
+59:59
 
 TX ID: _waiting for deposit..._"""
                     
