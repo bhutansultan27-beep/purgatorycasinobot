@@ -8,3 +8,8 @@ sqlalchemy
 aiohttp
 python-telegram-bot
 telegram
+APScheduler
+flask
+psycopg2-binary
+python-dotenv
+sqlalchemy
