@@ -36,7 +36,7 @@ from hilo import HiLoGame
 from connect4 import Connect4Game
 
 # External dependencies (assuming they are installed via pip install python-telegram-bot)
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -166,8 +166,8 @@ LEVELS.insert(0, {"id": "unranked", "name": "Unranked", "emoji": "⚪", "thresho
 # Each crypto has its own fee percentage to account for different network fees
 # Higher fees for expensive networks (BTC, ETH), lower fees for cheap networks (TRX, SOL)
 SUPPORTED_CRYPTOS = {
-    'SOL': {'name': 'Solana', 'emoji': '💜', 'plisio_code': 'SOL', 'fee_percent': 0.01, 'deposit_fee_percent': 0.01, 'min_withdraw': 2.00},
-    'LTC': {'name': 'Litecoin', 'emoji': '💎', 'plisio_code': 'LTC', 'fee_percent': 0.01, 'deposit_fee_percent': 0.01, 'min_withdraw': 2.00},
+    'SOL': {'name': 'Solana', 'emoji': '💜', 'plisio_code': 'SOL', 'fee_percent': 0.0, 'deposit_fee_percent': 0.0, 'min_withdraw': 2.00},
+    'LTC': {'name': 'Litecoin', 'emoji': '💎', 'plisio_code': 'LTC', 'fee_percent': 0.0, 'deposit_fee_percent': 0.0, 'min_withdraw': 2.00},
 }
 
 SUPPORTED_DEPOSIT_CRYPTOS = SUPPORTED_CRYPTOS
@@ -8830,6 +8830,34 @@ async def main():
     
     await bot.app.initialize()
     await bot.app.start()
+    
+    # Set up the bot menu commands (hamburger menu / 3 bars panel)
+    commands = [
+        BotCommand("start", "Start the bot"),
+        BotCommand("menu", "Open main menu"),
+        BotCommand("balance", "Check your balance"),
+        BotCommand("deposit", "Deposit funds"),
+        BotCommand("withdraw", "Withdraw funds"),
+        BotCommand("bonus", "View bonuses"),
+        BotCommand("dice", "Play Dice"),
+        BotCommand("slots", "Play Slots"),
+        BotCommand("blackjack", "Play Blackjack"),
+        BotCommand("roulette", "Play Roulette"),
+        BotCommand("mines", "Play Mines"),
+        BotCommand("flip", "Play Coinflip"),
+        BotCommand("baccarat", "Play Baccarat"),
+        BotCommand("keno", "Play Keno"),
+        BotCommand("limbo", "Play Limbo"),
+        BotCommand("hilo", "Play Hi-Lo"),
+        BotCommand("connect", "Play Connect 4"),
+        BotCommand("levels", "View level progress"),
+        BotCommand("stats", "View your statistics"),
+        BotCommand("history", "View game history"),
+        BotCommand("referral", "View referral program"),
+        BotCommand("admin", "Admin panel (admins only)"),
+    ]
+    await bot.app.bot.set_my_commands(commands)
+    logger.info("Bot menu commands set successfully")
     
     if USE_POLLING:
         logger.info("Polling mode active - using long-polling for updates (webhook server disabled)")
