@@ -81,11 +81,6 @@ function loadUserData() {
 function updateUI() {
     if (userData) {
         document.getElementById('balance').textContent = '$' + formatNumber(userData.balance);
-        document.getElementById('user-level').innerHTML = `<span class="level-badge">${userData.level_emoji} ${userData.level_name}</span>`;
-        document.getElementById('total-wagered').textContent = '$' + formatNumber(userData.total_wagered);
-        document.getElementById('total-won').textContent = '$' + formatNumber(userData.total_won);
-        document.getElementById('games-played').textContent = userData.games_played || 0;
-        document.getElementById('win-rate').textContent = (userData.win_rate || 0) + '%';
         
         if (userData.photo_url) {
             setAvatarPhoto(userData.photo_url);
@@ -102,11 +97,6 @@ function updateUI() {
 
 function showDemoData() {
     document.getElementById('balance').textContent = '$0.00';
-    document.getElementById('user-name').textContent = 'Demo Player';
-    document.getElementById('total-wagered').textContent = '$0';
-    document.getElementById('total-won').textContent = '$0';
-    document.getElementById('games-played').textContent = '0';
-    document.getElementById('win-rate').textContent = '0%';
 }
 
 function formatNumber(num) {
