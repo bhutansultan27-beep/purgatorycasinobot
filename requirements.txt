@@ -6,10 +6,3 @@ flask
 psycopg2-binary
 sqlalchemy
 requests
-APScheduler
-flask
-psycopg2-binary
-python-dotenv
-requests
-sqlalchemy
-telegram
