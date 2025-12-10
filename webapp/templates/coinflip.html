@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Coinflip - Gild Tesoro Casino</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/coinflip.css">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Menu</a>
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🪙</div>
+                <span class="logo-text">COINFLIP</span>
+            </div>
+            <div class="balance-display">
+                <span class="balance-icon">💰</span>
+                <span class="balance-amount" id="balance">$0.00</span>
+            </div>
+        </header>
+
+        <div class="game-area">
+            <div class="coin-container">
+                <div class="coin" id="coin">
+                    <div class="coin-side heads">👑</div>
+                    <div class="coin-side tails">🦅</div>
+                </div>
+            </div>
+
+            <div class="choice-section" id="choice-section">
+                <div class="choice-label">Pick your side:</div>
+                <div class="choice-buttons">
+                    <button class="choice-btn heads" data-choice="heads" id="btn-heads">
+                        <span class="choice-icon">👑</span>
+                        <span class="choice-text">Heads</span>
+                    </button>
+                    <button class="choice-btn tails" data-choice="tails" id="btn-tails">
+                        <span class="choice-icon">🦅</span>
+                        <span class="choice-text">Tails</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="betting-section" id="betting-section">
+                <div class="bet-header">
+                    <div class="bet-title">Your Bet</div>
+                    <div class="bet-amount-display" id="bet-display">$0</div>
+                </div>
+                <div class="bet-chips">
+                    <div class="chip chip-1" data-value="1">$1</div>
+                    <div class="chip chip-5" data-value="5">$5</div>
+                    <div class="chip chip-25" data-value="25">$25</div>
+                    <div class="chip chip-100" data-value="100">$100</div>
+                    <div class="chip chip-500" data-value="500">$500</div>
+                    <div class="chip chip-1000" data-value="1000">$1K</div>
+                </div>
+                <div class="bet-actions">
+                    <button class="btn-bet btn-clear" id="btn-clear">Clear</button>
+                    <button class="btn-bet btn-flip" id="btn-flip" disabled>Flip!</button>
+                </div>
+            </div>
+
+            <div class="payout-info">
+                <span>Win multiplier: 1.98x</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="result-overlay" id="result-overlay">
+        <div class="result-card">
+            <div class="result-icon" id="result-icon">👑</div>
+            <div class="result-title" id="result-title">You Win!</div>
+            <div class="result-amount" id="result-amount">+$100</div>
+            <button class="btn-new-game" id="btn-new-game">Play Again</button>
+        </div>
+    </div>
+
+    <div class="message-toast" id="message-toast"></div>
+
+    <script src="/static/js/coinflip.js"></script>
+</body>
+</html>

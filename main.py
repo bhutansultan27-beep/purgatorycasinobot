@@ -824,18 +824,12 @@ class GranTeseroCasinoBot:
                             )
 
     def setup_handlers(self):
-        """Setup all command and callback handlers"""
+        """Setup all command and callback handlers - Emoji games only"""
         self.app.add_handler(CommandHandler("start", self.start_command))
-        self.app.add_handler(CommandHandler("menu", self.menu_command))
-        self.app.add_handler(CommandHandler("adminhelp", self.adminhelp_command))
         self.app.add_handler(CommandHandler("balance", self.balance_command))
         self.app.add_handler(CommandHandler("bal", self.balance_command))
-        self.app.add_handler(CommandHandler("bonus", self.bonus_command))
-        self.app.add_handler(CommandHandler("stats", self.stats_command))
-        self.app.add_handler(CommandHandler("levels", self.levels_command))
-        self.app.add_handler(CommandHandler("leaderboard", self.leaderboard_command))
-        self.app.add_handler(CommandHandler("housebal", self.housebal_command))
-        self.app.add_handler(CommandHandler("history", self.history_command))
+        
+        # Emoji games only
         self.app.add_handler(CommandHandler("dice", self.dice_command))
         self.app.add_handler(CommandHandler("darts", self.darts_command))
         self.app.add_handler(CommandHandler("basketball", self.basketball_command))
@@ -844,51 +838,8 @@ class GranTeseroCasinoBot:
         self.app.add_handler(CommandHandler("football", self.soccer_command))
         self.app.add_handler(CommandHandler("bowling", self.bowling_command))
         self.app.add_handler(CommandHandler("predict", self.predict_command))
-        self.app.add_handler(CommandHandler("slots", self.slots_command))
-        self.app.add_handler(CommandHandler("coinflip", self.coinflip_command))
-        self.app.add_handler(CommandHandler("flip", self.coinflip_command))
-        self.app.add_handler(CommandHandler("roulette", self.roulette_command))
-        self.app.add_handler(CommandHandler("blackjack", self.blackjack_command))
-        self.app.add_handler(CommandHandler("bj", self.blackjack_command))
-        self.app.add_handler(CommandHandler("mines", self.mines_command))
-        self.app.add_handler(CommandHandler("baccarat", self.baccarat_command))
-        self.app.add_handler(CommandHandler("bacc", self.baccarat_command))
-        self.app.add_handler(CommandHandler("keno", self.keno_command))
-        self.app.add_handler(CommandHandler("limbo", self.limbo_command))
-        self.app.add_handler(CommandHandler("hilo", self.hilo_command))
-        self.app.add_handler(CommandHandler("connect", self.connect_command))
-        self.app.add_handler(CommandHandler("tip", self.tip_command))
-        self.app.add_handler(CommandHandler("deposit", self.deposit_command))
-        self.app.add_handler(CommandHandler("withdraw", self.withdraw_command))
-        self.app.add_handler(CommandHandler("backup", self.backup_command))
-        self.app.add_handler(CommandHandler("savesticker", self.save_sticker_command))
-        self.app.add_handler(CommandHandler("stickers", self.list_stickers_command))
-        self.app.add_handler(CommandHandler("saveroulette", self.save_roulette_stickers_command))
         
-        # Admin commands
-        self.app.add_handler(CommandHandler("admin", self.admin_command))
-        self.app.add_handler(CommandHandler("userid", self.userid_command))
-        self.app.add_handler(CommandHandler("givebal", self.givebal_command))
-        self.app.add_handler(CommandHandler("setbal", self.setbal_command))
-        self.app.add_handler(CommandHandler("allusers", self.allusers_command))
-        self.app.add_handler(CommandHandler("allbalances", self.allbalances_command))
-        self.app.add_handler(CommandHandler("userinfo", self.userinfo_command))
-        self.app.add_handler(CommandHandler("addadmin", self.addadmin_command))
-        self.app.add_handler(CommandHandler("removeadmin", self.removeadmin_command))
-        self.app.add_handler(CommandHandler("listadmins", self.listadmins_command))
-        self.app.add_handler(CommandHandler("addapprover", self.addapprover_command))
-        self.app.add_handler(CommandHandler("removeapprover", self.removeapprover_command))
-        self.app.add_handler(CommandHandler("listapprovers", self.listapprovers_command))
-        self.app.add_handler(CommandHandler("sethousebal", self.sethousebal_command))
-        self.app.add_handler(CommandHandler("walletbal", self.walletbal_command))
-        self.app.add_handler(CommandHandler("pendingdeposits", self.pending_deposits_command))
-        self.app.add_handler(CommandHandler("pendingwithdraws", self.pending_withdraws_command))
-        self.app.add_handler(CommandHandler("biggestdeposits", self.biggestdeposits_command))
-        self.app.add_handler(CommandHandler("setltcrate", self.setltcrate_command))
-        self.app.add_handler(CommandHandler("ltcrate", self.ltcrate_command))
-        self.app.add_handler(CommandHandler("resetgame", self.resetgame_command))
-        
-        self.app.add_handler(MessageHandler(filters.Sticker.ALL, self.sticker_handler))
+        # Emoji response handler for game results
         self.app.add_handler(MessageHandler(filters.Dice.ALL, self.handle_emoji_response))
         self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_text_input))
         self.app.add_handler(CallbackQueryHandler(self.button_callback))
@@ -1302,20 +1253,12 @@ Good luck! 🍀"""
         await update.message.reply_text(admin_help_text, parse_mode="Markdown")
     
     async def balance_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Show balance with deposit/withdraw buttons only"""
+        """Show balance as text only"""
         user_data = self.ensure_user_registered(update)
-        user_id = update.effective_user.id
         
         balance_text = f"💰 Balance: **${user_data['balance']:.2f}**"
         
-        keyboard = [
-            [InlineKeyboardButton("💳 Deposit", callback_data="deposit_mock"),
-             InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        
-        sent_msg = await update.message.reply_text(balance_text, reply_markup=reply_markup, parse_mode="Markdown")
-        self.button_ownership[(sent_msg.chat_id, sent_msg.message_id)] = user_id
+        await update.message.reply_text(balance_text, parse_mode="Markdown")
     
     async def bonus_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Show bonus status with rakeback and level up options"""

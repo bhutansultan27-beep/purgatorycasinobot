@@ -4,6 +4,7 @@ import sys
 import json
 import hmac
 import hashlib
+import random
 from urllib.parse import parse_qsl
 
 try:
@@ -209,7 +210,11 @@ def baccarat():
 
 @app.route('/roulette')
 def roulette():
-    return render_template('coming_soon.html', game='Roulette')
+    return render_template('roulette.html')
+
+@app.route('/coinflip')
+def coinflip():
+    return render_template('coinflip.html')
 
 @app.route('/profile')
 def profile():
@@ -489,6 +494,140 @@ def admin_handle_withdrawal():
             db.reject_withdrawal(withdrawal_id)
         
         return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+RED_NUMBERS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
+BLACK_NUMBERS = [2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35]
+
+@app.route('/api/roulette/play', methods=['POST'])
+def play_roulette():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        user_id = user_info.get('id') if user_info else None
+        
+        if not user_id:
+            return jsonify({"success": False, "error": "Authentication required"})
+        
+        bet = float(data.get('bet', 0))
+        bet_type = data.get('betType', '')
+        
+        if bet <= 0:
+            return jsonify({"success": False, "error": "Invalid bet amount"})
+        
+        if not bet_type:
+            return jsonify({"success": False, "error": "Select a bet type"})
+        
+        user = db.get_user(user_id)
+        if not user or user.get('balance', 0) < bet:
+            return jsonify({"success": False, "error": "Insufficient balance"})
+        
+        result = random.randint(0, 37)
+        if result == 37:
+            result = 0
+        
+        color = 'green'
+        if result in RED_NUMBERS:
+            color = 'red'
+        elif result in BLACK_NUMBERS:
+            color = 'black'
+        
+        win = False
+        multiplier = 0
+        
+        if bet_type == 'red' and color == 'red':
+            win = True
+            multiplier = 2
+        elif bet_type == 'black' and color == 'black':
+            win = True
+            multiplier = 2
+        elif bet_type == 'green' and color == 'green':
+            win = True
+            multiplier = 14
+        elif bet_type == 'odd' and result > 0 and result % 2 == 1:
+            win = True
+            multiplier = 2
+        elif bet_type == 'even' and result > 0 and result % 2 == 0:
+            win = True
+            multiplier = 2
+        elif bet_type == 'low' and 1 <= result <= 18:
+            win = True
+            multiplier = 2
+        elif bet_type == 'high' and 19 <= result <= 36:
+            win = True
+            multiplier = 2
+        
+        payout = 0
+        if win:
+            payout = bet * multiplier
+            db.update_balance(user_id, payout - bet)
+        else:
+            db.update_balance(user_id, -bet)
+        
+        db.record_game(user_id, 'roulette', bet, payout - bet if win else -bet, win)
+        
+        new_balance = db.get_user(user_id).get('balance', 0)
+        
+        return jsonify({
+            "success": True,
+            "result": result,
+            "color": color,
+            "win": win,
+            "payout": payout,
+            "newBalance": new_balance
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/coinflip/play', methods=['POST'])
+def play_coinflip():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        user_id = user_info.get('id') if user_info else None
+        
+        if not user_id:
+            return jsonify({"success": False, "error": "Authentication required"})
+        
+        bet = float(data.get('bet', 0))
+        choice = data.get('choice', '')
+        
+        if bet <= 0:
+            return jsonify({"success": False, "error": "Invalid bet amount"})
+        
+        if choice not in ['heads', 'tails']:
+            return jsonify({"success": False, "error": "Select heads or tails"})
+        
+        user = db.get_user(user_id)
+        if not user or user.get('balance', 0) < bet:
+            return jsonify({"success": False, "error": "Insufficient balance"})
+        
+        result = random.choice(['heads', 'tails'])
+        win = result == choice
+        
+        multiplier = 1.98
+        payout = 0
+        
+        if win:
+            payout = bet * multiplier
+            db.update_balance(user_id, payout - bet)
+        else:
+            db.update_balance(user_id, -bet)
+        
+        db.record_game(user_id, 'coinflip', bet, payout - bet if win else -bet, win)
+        
+        new_balance = db.get_user(user_id).get('balance', 0)
+        
+        return jsonify({
+            "success": True,
+            "result": result,
+            "win": win,
+            "payout": payout,
+            "newBalance": new_balance
+        })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 

@@ -15,18 +15,34 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Blackjack Mini App"
+args = "Web Casino"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Telegram Bot"
 
 [[workflows.workflow]]
-name = "Blackjack Mini App"
+name = "Web Casino"
 author = "agent"
 
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd webapp && python app.py"
+waitForPort = 5000
+
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
+
+[[workflows.workflow]]
+name = "Telegram Bot"
+author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [userenv]
 
@@ -37,6 +53,7 @@ LTC_REQUIRED_CONFIRMATIONS = "1"
 LTC_MASTER_ADDRESS = "ltc1qjzwa9ywdl5e7kv5m23vn87m3uerpuf85r3r2cx"
 WITHDRAWAL_GROUP_ID = "-5089646716"
 BOT_USERNAME = "emojigamblebot"
+USE_POLLING = "true"
 
 [userenv.production]
 WEBHOOK_URL = "https://replit-casino-bot--stugbak2.replit.app"
@@ -48,7 +65,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 34181
+localPort = 37559
 externalPort = 3002
 
 [[ports]]
