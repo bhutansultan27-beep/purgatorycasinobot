@@ -5,3 +5,9 @@ python-dotenv>=1.0.0
 flask
 psycopg2-binary
 sqlalchemy
+APScheduler
+flask
+psycopg2-binary
+python-dotenv
+sqlalchemy
+telegram
