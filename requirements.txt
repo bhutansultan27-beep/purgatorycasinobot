@@ -10,3 +10,9 @@ flask
 python-dotenv
 requests
 telegram
+APScheduler
+flask
+psycopg2-binary
+python-dotenv
+requests
+sqlalchemy
