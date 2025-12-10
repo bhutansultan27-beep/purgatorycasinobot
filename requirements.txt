@@ -12,3 +12,8 @@ python-dotenv
 sqlalchemy
 telegram
 requests
+aiohttp
+flask
+python-dotenv
+python-telegram-bot
+requests
