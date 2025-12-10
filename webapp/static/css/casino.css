@@ -701,6 +701,8 @@ body {
     
     .content-area {
         padding: 15px;
+        overflow-x: hidden;
+        overflow-y: auto;
     }
     
     .promo-banner {
@@ -715,14 +717,27 @@ body {
         overflow-x: auto;
         flex-wrap: nowrap;
         padding-bottom: 10px;
+        -webkit-overflow-scrolling: touch;
     }
     
     .search-box {
         display: none;
     }
     
+    .games-section {
+        overflow: visible;
+    }
+    
+    .games-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 15px;
+    }
+    
     .game-card-new {
         width: 140px;
+        scroll-snap-align: start;
     }
     
     .game-thumb {
@@ -739,19 +754,59 @@ body {
         text-align: center;
     }
     
-    .wallet-btn-header span {
-        display: none;
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .balance-pill {
+        padding: 6px 12px;
+        font-size: 12px;
     }
     
     .wallet-btn-header {
-        padding: 10px;
-        border-radius: 50%;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .wallet-btn-header span {
+        display: inline;
+    }
+    
+    .user-avatar-header {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
     }
 }
 
 @media (max-width: 400px) {
+    .header-actions {
+        gap: 6px;
+    }
+    
+    .balance-pill {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+    
     .balance-pill span {
+        display: inline;
+    }
+    
+    .wallet-btn-header {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+    
+    .wallet-btn-header span {
         display: none;
+    }
+    
+    .user-avatar-header {
+        width: 28px;
+        height: 28px;
     }
     
     .game-card-new {

@@ -333,6 +333,21 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             checkAdminAccess();
+            
+            // Check for search parameter from User Management
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            if (searchQuery) {
+                document.getElementById('user-search').value = searchQuery;
+                // Wait for admin check then auto-search
+                setTimeout(function() {
+                    if (isAdmin) {
+                        searchUser();
+                        // Scroll to user search section
+                        document.getElementById('user-search').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 500);
+            }
         });
 
         function checkAdminAccess() {
