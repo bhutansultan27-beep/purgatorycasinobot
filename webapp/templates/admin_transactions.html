@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Transactions - Gild Tesoro</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <style>
+        .admin-header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .admin-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+        .admin-section {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 16px;
+            color: #d4af37;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+        .filter-tab {
+            padding: 10px 15px;
+            background: #2a2a3e;
+            border: 1px solid #3a3a4e;
+            border-radius: 8px;
+            color: #888;
+            cursor: pointer;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .filter-tab.active {
+            background: #d4af37;
+            color: #1a1a2e;
+            border-color: #d4af37;
+        }
+        .transaction-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #2a2a3e;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .transaction-info {
+            flex: 1;
+        }
+        .transaction-type {
+            font-weight: 600;
+            color: #fff;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .transaction-type .icon {
+            font-size: 16px;
+        }
+        .transaction-user {
+            color: #888;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .transaction-time {
+            color: #666;
+            font-size: 11px;
+        }
+        .transaction-amount {
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .transaction-amount.deposit {
+            color: #4ade80;
+        }
+        .transaction-amount.withdraw {
+            color: #ef4444;
+        }
+        .transaction-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 10px;
+        }
+        .status-pending {
+            background: rgba(234, 179, 8, 0.2);
+            color: #eab308;
+        }
+        .status-completed {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #888;
+        }
+        .access-denied {
+            text-align: center;
+            padding: 60px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/admin" class="back-button">← Admin Panel</a>
+        
+        <div id="admin-content" style="display: none;">
+            <div class="admin-header">
+                <div class="admin-title">Transactions</div>
+            </div>
+
+            <div class="admin-section">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="setFilter('all')">All</button>
+                    <button class="filter-tab" onclick="setFilter('deposit')">Deposits</button>
+                    <button class="filter-tab" onclick="setFilter('withdraw')">Withdrawals</button>
+                    <button class="filter-tab" onclick="setFilter('pending')">Pending</button>
+                </div>
+                
+                <div class="transaction-list" id="transaction-list">
+                    <div class="empty-state">Loading transactions...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="access-denied" style="display: none;">
+            <div class="access-denied">
+                <div style="font-size: 64px; margin-bottom: 20px;">🔒</div>
+                <div style="font-size: 24px; color: #ef4444; margin-bottom: 10px;">Access Denied</div>
+                <div style="color: #888;">You don't have permission to access this page.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let allTransactions = [];
+        let currentFilter = 'all';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminAccess();
+        });
+
+        function checkAdminAccess() {
+            const initData = tg.initData || '';
+            fetch('/api/admin/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.is_admin) {
+                    document.getElementById('admin-content').style.display = 'block';
+                    loadTransactions();
+                } else {
+                    document.getElementById('access-denied').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('access-denied').style.display = 'block';
+            });
+        }
+
+        function loadTransactions() {
+            const initData = tg.initData || '';
+            fetch('/api/admin/transactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.transactions) {
+                    allTransactions = data.transactions;
+                    renderTransactions();
+                } else {
+                    document.getElementById('transaction-list').innerHTML = '<div class="empty-state">No transactions found</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('transaction-list').innerHTML = '<div class="empty-state">Failed to load transactions</div>';
+            });
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            renderTransactions();
+        }
+
+        function renderTransactions() {
+            const container = document.getElementById('transaction-list');
+            let filtered = allTransactions;
+
+            if (currentFilter === 'deposit') {
+                filtered = allTransactions.filter(t => t.type === 'deposit');
+            } else if (currentFilter === 'withdraw') {
+                filtered = allTransactions.filter(t => t.type === 'withdraw');
+            } else if (currentFilter === 'pending') {
+                filtered = allTransactions.filter(t => t.status === 'pending');
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state">No transactions found</div>';
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(t => {
+                const icon = t.type === 'deposit' ? '📥' : '📤';
+                const amountClass = t.type === 'deposit' ? 'deposit' : 'withdraw';
+                const statusClass = 'status-' + (t.status || 'completed');
+                
+                html += `
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <div class="transaction-type">
+                                <span class="icon">${icon}</span>
+                                ${t.type === 'deposit' ? 'Deposit' : 'Withdrawal'}
+                                <span class="transaction-status ${statusClass}">${t.status || 'completed'}</span>
+                            </div>
+                            <div class="transaction-user">@${t.username || t.user_id} ${t.crypto ? '(' + t.crypto + ')' : ''}</div>
+                            <div class="transaction-time">${t.time_ago || t.created_at || 'Recently'}</div>
+                        </div>
+                        <div class="transaction-amount ${amountClass}">
+                            ${t.type === 'deposit' ? '+' : '-'}$${formatNumber(t.amount)}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '0.00';
+            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    </script>
+</body>
+</html>

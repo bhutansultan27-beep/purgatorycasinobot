@@ -732,6 +732,63 @@ class SQLDatabaseManager:
         finally:
             session.close()
     
+    def get_all_users(self) -> List[Dict[str, Any]]:
+        session = self.get_session()
+        try:
+            users = session.query(User).order_by(User.balance.desc()).all()
+            result = []
+            for user in users:
+                result.append({
+                    "user_id": user.user_id,
+                    "username": user.username,
+                    "balance": user.balance,
+                    "total_wagered": user.total_wagered,
+                    "games_played": user.games_played,
+                    "games_won": user.games_won,
+                    "join_date": user.join_date.isoformat() if user.join_date else None
+                })
+            return result
+        finally:
+            session.close()
+    
+    def get_all_transactions(self) -> List[Dict[str, Any]]:
+        session = self.get_session()
+        try:
+            from sqlalchemy import desc
+            pending = session.query(PendingWithdrawal).order_by(desc(PendingWithdrawal.created_at)).limit(100).all()
+            deposits = session.query(DepositRecord).order_by(desc(DepositRecord.timestamp)).limit(100).all()
+            
+            transactions = []
+            
+            for p in pending:
+                user = session.query(User).filter_by(user_id=p.user_id).first()
+                transactions.append({
+                    "id": p.id,
+                    "user_id": p.user_id,
+                    "username": user.username if user else None,
+                    "type": "withdraw",
+                    "amount": p.amount,
+                    "crypto": p.crypto,
+                    "status": p.status,
+                    "created_at": p.created_at.isoformat() if p.created_at else None
+                })
+            
+            for d in deposits:
+                transactions.append({
+                    "id": d.id,
+                    "user_id": d.user_id,
+                    "username": d.username,
+                    "type": "deposit",
+                    "amount": d.amount,
+                    "status": "completed",
+                    "created_at": d.timestamp.isoformat() if d.timestamp else None
+                })
+            
+            transactions.sort(key=lambda x: x.get("created_at") or "", reverse=True)
+            return transactions[:100]
+        finally:
+            session.close()
+    
     def save_data(self):
         pass
 

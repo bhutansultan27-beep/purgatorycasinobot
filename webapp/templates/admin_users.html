@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>User Management - Gild Tesoro</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <style>
+        .admin-header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .admin-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+        .admin-section {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 16px;
+            color: #d4af37;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .user-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .user-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #2a2a3e;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .user-name {
+            font-weight: 600;
+            color: #fff;
+            font-size: 14px;
+        }
+        .user-balance {
+            color: #4ade80;
+            font-size: 13px;
+        }
+        .user-stats {
+            color: #888;
+            font-size: 11px;
+        }
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .action-btn.edit {
+            background: #3b82f6;
+            color: #fff;
+        }
+        .action-btn.ban {
+            background: #ef4444;
+            color: #fff;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #2a2a3e;
+            border: 2px solid #3a3a4e;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #888;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .page-btn {
+            padding: 10px 15px;
+            background: #2a2a3e;
+            border: 1px solid #3a3a4e;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+        }
+        .page-btn:hover {
+            border-color: #d4af37;
+        }
+        .page-btn.active {
+            background: #d4af37;
+            color: #1a1a2e;
+        }
+        .access-denied {
+            text-align: center;
+            padding: 60px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/admin" class="back-button">← Admin Panel</a>
+        
+        <div id="admin-content" style="display: none;">
+            <div class="admin-header">
+                <div class="admin-title">User Management</div>
+            </div>
+
+            <div class="admin-section">
+                <input type="text" class="search-input" id="user-search" placeholder="Search by username or ID..." oninput="filterUsers()">
+                
+                <div class="user-list" id="user-list">
+                    <div class="empty-state">Loading users...</div>
+                </div>
+                
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </div>
+
+        <div id="access-denied" style="display: none;">
+            <div class="access-denied">
+                <div style="font-size: 64px; margin-bottom: 20px;">🔒</div>
+                <div style="font-size: 24px; color: #ef4444; margin-bottom: 10px;">Access Denied</div>
+                <div style="color: #888;">You don't have permission to access this page.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let allUsers = [];
+        let filteredUsers = [];
+        let currentPage = 1;
+        const usersPerPage = 20;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminAccess();
+        });
+
+        function checkAdminAccess() {
+            const initData = tg.initData || '';
+            fetch('/api/admin/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.is_admin) {
+                    document.getElementById('admin-content').style.display = 'block';
+                    loadUsers();
+                } else {
+                    document.getElementById('access-denied').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('access-denied').style.display = 'block';
+            });
+        }
+
+        function loadUsers() {
+            const initData = tg.initData || '';
+            fetch('/api/admin/all-users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.users) {
+                    allUsers = data.users;
+                    filteredUsers = allUsers;
+                    renderUsers();
+                } else {
+                    document.getElementById('user-list').innerHTML = '<div class="empty-state">No users found</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('user-list').innerHTML = '<div class="empty-state">Failed to load users</div>';
+            });
+        }
+
+        function filterUsers() {
+            const query = document.getElementById('user-search').value.toLowerCase();
+            filteredUsers = allUsers.filter(user => 
+                (user.username && user.username.toLowerCase().includes(query)) ||
+                user.user_id.toString().includes(query)
+            );
+            currentPage = 1;
+            renderUsers();
+        }
+
+        function renderUsers() {
+            const container = document.getElementById('user-list');
+            const start = (currentPage - 1) * usersPerPage;
+            const end = start + usersPerPage;
+            const pageUsers = filteredUsers.slice(start, end);
+
+            if (pageUsers.length === 0) {
+                container.innerHTML = '<div class="empty-state">No users found</div>';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            pageUsers.forEach(user => {
+                html += `
+                    <div class="user-item">
+                        <div class="user-info">
+                            <div class="user-name">@${user.username || 'Unknown'}</div>
+                            <div class="user-balance">$${formatNumber(user.balance)}</div>
+                            <div class="user-stats">ID: ${user.user_id} | Wagered: $${formatNumber(user.total_wagered || 0)}</div>
+                        </div>
+                        <div class="user-actions">
+                            <button class="action-btn edit" onclick="editUser(${user.user_id})">Edit</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+            const container = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            if (currentPage > 1) {
+                html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})">Prev</button>`;
+            }
+            html += `<span style="color: #888; padding: 10px;">${currentPage} / ${totalPages}</span>`;
+            if (currentPage < totalPages) {
+                html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})">Next</button>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderUsers();
+        }
+
+        function editUser(userId) {
+            window.location.href = '/admin?search=' + userId;
+        }
+
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '0.00';
+            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    </script>
+</body>
+</html>

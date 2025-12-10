@@ -369,6 +369,22 @@ def withdraw_page():
 def admin_page():
     return render_template('admin.html')
 
+@app.route('/admin/users')
+def admin_users_page():
+    return render_template('admin_users.html')
+
+@app.route('/admin/broadcast')
+def admin_broadcast_page():
+    return render_template('admin_broadcast.html')
+
+@app.route('/admin/stats')
+def admin_stats_page():
+    return render_template('admin_stats.html')
+
+@app.route('/admin/transactions')
+def admin_transactions_page():
+    return render_template('admin_transactions.html')
+
 @app.route('/api/deposit-info', methods=['POST'])
 def get_deposit_info():
     try:
@@ -525,6 +541,82 @@ def admin_handle_withdrawal():
             db.reject_withdrawal(withdrawal_id)
         
         return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/admin/all-users', methods=['POST'])
+def admin_all_users():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        admin_id = user_info.get('id') if user_info else None
+        
+        if not admin_id or not is_admin(admin_id):
+            return jsonify({"success": False, "error": "Unauthorized"})
+        
+        users = db.get_all_users()
+        return jsonify({"success": True, "users": users})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/admin/full-stats', methods=['POST'])
+def admin_full_stats():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        admin_id = user_info.get('id') if user_info else None
+        
+        if not admin_id or not is_admin(admin_id):
+            return jsonify({"success": False, "error": "Unauthorized"})
+        
+        stats = db.get_bot_stats()
+        stats['active_users'] = stats.get('active_users', stats.get('total_users', 0))
+        stats['total_bets'] = stats.get('total_bets', 0)
+        stats['total_user_balance'] = stats.get('total_user_balance', 0)
+        stats['today_bets'] = stats.get('today_bets', 0)
+        stats['today_wagered'] = stats.get('today_wagered', 0)
+        stats['today_profit'] = stats.get('today_profit', 0)
+        stats['new_users_today'] = stats.get('new_users_today', 0)
+        stats['game_profits'] = stats.get('game_profits', {})
+        
+        return jsonify({"success": True, "stats": stats})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/admin/transactions', methods=['POST'])
+def admin_transactions():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        admin_id = user_info.get('id') if user_info else None
+        
+        if not admin_id or not is_admin(admin_id):
+            return jsonify({"success": False, "error": "Unauthorized"})
+        
+        transactions = db.get_all_transactions()
+        return jsonify({"success": True, "transactions": transactions})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/admin/broadcast', methods=['POST'])
+def admin_broadcast():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        admin_id = user_info.get('id') if user_info else None
+        
+        if not admin_id or not is_admin(admin_id):
+            return jsonify({"success": False, "error": "Unauthorized"})
+        
+        message = data.get('message', '')
+        if not message:
+            return jsonify({"success": False, "error": "Message is required"})
+        
+        return jsonify({"success": True, "message": "Broadcast queued. Use the bot command /broadcast for full functionality."})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 

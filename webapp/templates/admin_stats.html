@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Full Stats - Gild Tesoro</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <style>
+        .admin-header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .admin-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-card.full-width {
+            grid-column: span 2;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ade80;
+            margin-bottom: 5px;
+        }
+        .stat-value.negative {
+            color: #ef4444;
+        }
+        .stat-value.neutral {
+            color: #d4af37;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        .admin-section {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 16px;
+            color: #d4af37;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .game-stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #3a3a4e;
+        }
+        .game-stat-row:last-child {
+            border-bottom: none;
+        }
+        .game-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+        }
+        .game-icon {
+            font-size: 20px;
+        }
+        .game-profit {
+            font-weight: 600;
+        }
+        .game-profit.positive {
+            color: #4ade80;
+        }
+        .game-profit.negative {
+            color: #ef4444;
+        }
+        .access-denied {
+            text-align: center;
+            padding: 60px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/admin" class="back-button">← Admin Panel</a>
+        
+        <div id="admin-content" style="display: none;">
+            <div class="admin-header">
+                <div class="admin-title">Full Statistics</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-users">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value neutral" id="active-users">0</div>
+                    <div class="stat-label">Active (7d)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-wagered">$0</div>
+                    <div class="stat-label">Total Wagered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-bets">0</div>
+                    <div class="stat-label">Total Bets</div>
+                </div>
+                <div class="stat-card full-width">
+                    <div class="stat-value" id="house-profit">$0</div>
+                    <div class="stat-label">House Profit (All Time)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="house-balance">$0</div>
+                    <div class="stat-label">House Balance</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="user-balance">$0</div>
+                    <div class="stat-label">User Balances</div>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <div class="section-title">Profit by Game</div>
+                <div id="game-stats">
+                    <div class="game-stat-row">
+                        <span class="game-name"><span class="game-icon">💣</span> Mines</span>
+                        <span class="game-profit positive" id="mines-profit">$0.00</span>
+                    </div>
+                    <div class="game-stat-row">
+                        <span class="game-name"><span class="game-icon">🃏</span> Blackjack</span>
+                        <span class="game-profit positive" id="blackjack-profit">$0.00</span>
+                    </div>
+                    <div class="game-stat-row">
+                        <span class="game-name"><span class="game-icon">🎰</span> Slots</span>
+                        <span class="game-profit positive" id="slots-profit">$0.00</span>
+                    </div>
+                    <div class="game-stat-row">
+                        <span class="game-name"><span class="game-icon">🎡</span> Roulette</span>
+                        <span class="game-profit positive" id="roulette-profit">$0.00</span>
+                    </div>
+                    <div class="game-stat-row">
+                        <span class="game-name"><span class="game-icon">🪙</span> Coinflip</span>
+                        <span class="game-profit positive" id="coinflip-profit">$0.00</span>
+                    </div>
+                    <div class="game-stat-row">
+                        <span class="game-name"><span class="game-icon">🎱</span> Keno</span>
+                        <span class="game-profit positive" id="keno-profit">$0.00</span>
+                    </div>
+                    <div class="game-stat-row">
+                        <span class="game-name"><span class="game-icon">⬆️</span> Hi-Lo</span>
+                        <span class="game-profit positive" id="hilo-profit">$0.00</span>
+                    </div>
+                    <div class="game-stat-row">
+                        <span class="game-name"><span class="game-icon">📈</span> Limbo</span>
+                        <span class="game-profit positive" id="limbo-profit">$0.00</span>
+                    </div>
+                    <div class="game-stat-row">
+                        <span class="game-name"><span class="game-icon">👔</span> Baccarat</span>
+                        <span class="game-profit positive" id="baccarat-profit">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <div class="section-title">Today's Stats</div>
+                <div class="stats-grid" style="margin-bottom: 0;">
+                    <div class="stat-card">
+                        <div class="stat-value" id="today-bets">0</div>
+                        <div class="stat-label">Bets Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="today-wagered">$0</div>
+                        <div class="stat-label">Wagered Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="today-profit">$0</div>
+                        <div class="stat-label">Profit Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="new-users">0</div>
+                        <div class="stat-label">New Users</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="access-denied" style="display: none;">
+            <div class="access-denied">
+                <div style="font-size: 64px; margin-bottom: 20px;">🔒</div>
+                <div style="font-size: 24px; color: #ef4444; margin-bottom: 10px;">Access Denied</div>
+                <div style="color: #888;">You don't have permission to access this page.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminAccess();
+        });
+
+        function checkAdminAccess() {
+            const initData = tg.initData || '';
+            fetch('/api/admin/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.is_admin) {
+                    document.getElementById('admin-content').style.display = 'block';
+                    loadStats();
+                } else {
+                    document.getElementById('access-denied').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('access-denied').style.display = 'block';
+            });
+        }
+
+        function loadStats() {
+            const initData = tg.initData || '';
+            fetch('/api/admin/full-stats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const s = data.stats;
+                    document.getElementById('total-users').textContent = s.total_users || 0;
+                    document.getElementById('active-users').textContent = s.active_users || 0;
+                    document.getElementById('total-wagered').textContent = '$' + formatNumber(s.total_wagered);
+                    document.getElementById('total-bets').textContent = s.total_bets || 0;
+                    document.getElementById('house-profit').textContent = '$' + formatNumber(s.house_profit);
+                    document.getElementById('house-balance').textContent = '$' + formatNumber(s.house_balance);
+                    document.getElementById('user-balance').textContent = '$' + formatNumber(s.total_user_balance);
+                    
+                    document.getElementById('today-bets').textContent = s.today_bets || 0;
+                    document.getElementById('today-wagered').textContent = '$' + formatNumber(s.today_wagered);
+                    document.getElementById('today-profit').textContent = '$' + formatNumber(s.today_profit);
+                    document.getElementById('new-users').textContent = s.new_users_today || 0;
+
+                    if (s.game_profits) {
+                        Object.keys(s.game_profits).forEach(game => {
+                            const el = document.getElementById(game.toLowerCase() + '-profit');
+                            if (el) {
+                                const profit = s.game_profits[game];
+                                el.textContent = '$' + formatNumber(profit);
+                                el.className = 'game-profit ' + (profit >= 0 ? 'positive' : 'negative');
+                            }
+                        });
+                    }
+
+                    const profitEl = document.getElementById('house-profit');
+                    if (s.house_profit < 0) {
+                        profitEl.className = 'stat-value negative';
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '0.00';
+            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    </script>
+</body>
+</html>
