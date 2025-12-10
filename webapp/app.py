@@ -662,5 +662,25 @@ def play_coinflip():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
+@app.route('/api/live-bets')
+def get_live_bets():
+    try:
+        limit = request.args.get('limit', 20, type=int)
+        after_id = request.args.get('after_id', None, type=int)
+        bets = db.get_live_bets(limit=limit, after_id=after_id)
+        return jsonify({"success": True, "bets": bets})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/bet/<int:bet_id>')
+def get_bet_details(bet_id):
+    try:
+        bet = db.get_bet_details(bet_id)
+        if not bet:
+            return jsonify({"success": False, "error": "Bet not found"})
+        return jsonify({"success": True, "bet": bet})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

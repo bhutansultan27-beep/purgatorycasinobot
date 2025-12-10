@@ -51,11 +51,14 @@ class Game(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(BigInteger, nullable=False, index=True)
+    username = Column(String(255), nullable=True)
     game_type = Column(String(50), nullable=False)
     wager = Column(Float, default=0.0)
     payout = Column(Float, default=0.0)
     result = Column(String(20))
+    multiplier = Column(Float, default=0.0)
     details = Column(JSON, nullable=True)
+    game_snapshot = Column(JSON, nullable=True)
     timestamp = Column(DateTime, default=datetime.now)
 
 class Transaction(Base):
@@ -191,13 +194,16 @@ class CompatibilityDataProxy:
         try:
             games = session.query(Game).order_by(Game.timestamp.desc()).limit(500).all()
             return [{
+                "id": g.id,
                 "user_id": g.user_id,
+                "username": g.username,
                 "game_type": g.game_type,
                 "game": g.game_type,
                 "wager": g.wager,
                 "bet": g.wager,
                 "payout": g.payout,
                 "result": g.result,
+                "multiplier": g.multiplier or 0.0,
                 "timestamp": g.timestamp.isoformat() if g.timestamp else None,
                 **(g.details or {})
             } for g in games]
@@ -295,17 +301,71 @@ class SQLDatabaseManager:
     def record_game(self, game_data: Dict[str, Any]):
         session = self.get_session()
         try:
+            wager = game_data.get("wager", game_data.get("bet", 0))
+            payout = game_data.get("payout", 0)
+            multiplier = (payout / wager) if wager > 0 else 0.0
+            
             game = Game(
                 user_id=game_data.get("user_id"),
+                username=game_data.get("username"),
                 game_type=game_data.get("game_type", game_data.get("game", "unknown")),
-                wager=game_data.get("wager", game_data.get("bet", 0)),
-                payout=game_data.get("payout", 0),
+                wager=wager,
+                payout=payout,
                 result=game_data.get("result", ""),
+                multiplier=multiplier,
                 details=game_data,
+                game_snapshot=game_data.get("game_snapshot"),
                 timestamp=datetime.now()
             )
             session.add(game)
             session.commit()
+            return game.id
+        finally:
+            session.close()
+    
+    def get_live_bets(self, limit: int = 20, after_id: int = None) -> List[Dict[str, Any]]:
+        session = self.get_session()
+        try:
+            query = session.query(Game).order_by(Game.id.desc())
+            if after_id:
+                query = query.filter(Game.id > after_id)
+            games = query.limit(limit).all()
+            return [
+                {
+                    "id": g.id,
+                    "user_id": g.user_id,
+                    "username": g.username or f"User{str(g.user_id)[-4:]}",
+                    "game_type": g.game_type,
+                    "wager": g.wager,
+                    "payout": g.payout,
+                    "result": g.result,
+                    "multiplier": g.multiplier or 0.0,
+                    "timestamp": g.timestamp.isoformat() if g.timestamp else None,
+                }
+                for g in games
+            ]
+        finally:
+            session.close()
+    
+    def get_bet_details(self, bet_id: int) -> Optional[Dict[str, Any]]:
+        session = self.get_session()
+        try:
+            game = session.query(Game).filter_by(id=bet_id).first()
+            if not game:
+                return None
+            return {
+                "id": game.id,
+                "user_id": game.user_id,
+                "username": game.username or f"User{str(game.user_id)[-4:]}",
+                "game_type": game.game_type,
+                "wager": game.wager,
+                "payout": game.payout,
+                "result": game.result,
+                "multiplier": game.multiplier or 0.0,
+                "details": game.details or {},
+                "game_snapshot": game.game_snapshot,
+                "timestamp": game.timestamp.isoformat() if game.timestamp else None,
+            }
         finally:
             session.close()
     

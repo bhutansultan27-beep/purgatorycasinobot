@@ -214,6 +214,28 @@
                     </div>
                 </section>
 
+                <section class="live-bets-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-bolt"></i> Live Bets</h2>
+                        <div class="live-indicator">
+                            <span class="live-dot"></span>
+                            <span>LIVE</span>
+                        </div>
+                    </div>
+                    <div class="live-bets-container">
+                        <div class="live-bets-header">
+                            <span class="col-user">User</span>
+                            <span class="col-game">Game</span>
+                            <span class="col-bet">Bet Amount</span>
+                            <span class="col-multi">Multiplier</span>
+                            <span class="col-payout">Payout</span>
+                        </div>
+                        <div class="live-bets-list" id="live-bets-list">
+                            <div class="loading-bets">Loading live bets...</div>
+                        </div>
+                    </div>
+                </section>
+
                 <section class="stats-section">
                     <div class="section-header">
                         <h2><i class="fas fa-chart-bar"></i> Your Stats</h2>
@@ -267,6 +289,18 @@
     </div>
 
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="bet-modal-overlay" id="bet-modal-overlay">
+        <div class="bet-modal" id="bet-modal">
+            <div class="bet-modal-header">
+                <h3>Bet Details</h3>
+                <button class="modal-close" onclick="closeBetModal()">&times;</button>
+            </div>
+            <div class="bet-modal-content" id="bet-modal-content">
+                <div class="loading-bets">Loading...</div>
+            </div>
+        </div>
+    </div>
 
     <script src="/static/js/casino.js"></script>
 </body>
