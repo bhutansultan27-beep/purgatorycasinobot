@@ -357,6 +357,10 @@ def get_user():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
+@app.route('/wallet')
+def wallet_page():
+    return render_template('wallet.html')
+
 @app.route('/deposit')
 def deposit_page():
     return render_template('deposit.html')

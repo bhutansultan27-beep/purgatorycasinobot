@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wallet - Gild Tesoro</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <style>
+        .wallet-header {
+            text-align: center;
+            padding: 30px 20px;
+            margin-bottom: 20px;
+        }
+        .wallet-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+        .wallet-subtitle {
+            color: #888;
+            font-size: 14px;
+        }
+        .balance-display {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 30px;
+            border: 1px solid #d4af37;
+        }
+        .balance-label {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .balance-amount {
+            font-size: 42px;
+            font-weight: bold;
+            color: #4ade80;
+        }
+        .wallet-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 0 10px;
+        }
+        .wallet-option-btn {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px 25px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .wallet-option-btn:hover {
+            border-color: #d4af37;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.2);
+        }
+        .wallet-option-btn.deposit {
+            border-color: #4ade80;
+        }
+        .wallet-option-btn.deposit:hover {
+            border-color: #4ade80;
+            box-shadow: 0 8px 25px rgba(74, 222, 128, 0.2);
+        }
+        .wallet-option-btn.withdraw {
+            border-color: #ef4444;
+        }
+        .wallet-option-btn.withdraw:hover {
+            border-color: #ef4444;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.2);
+        }
+        .option-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .option-icon.deposit-icon {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+        .option-icon.withdraw-icon {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        .option-info {
+            flex: 1;
+        }
+        .option-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .option-desc {
+            font-size: 13px;
+            color: #888;
+        }
+        .option-arrow {
+            font-size: 20px;
+            color: #666;
+        }
+        .transaction-history-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .transaction-history-link a {
+            color: #d4af37;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .transaction-history-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Menu</a>
+        
+        <div class="wallet-header">
+            <div class="wallet-title">Wallet Center</div>
+            <div class="wallet-subtitle">Manage your funds</div>
+        </div>
+
+        <div class="balance-display">
+            <div class="balance-label">Current Balance</div>
+            <div class="balance-amount" id="current-balance">$0.00</div>
+        </div>
+
+        <div class="wallet-options">
+            <a href="/deposit" class="wallet-option-btn deposit">
+                <div class="option-icon deposit-icon">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="option-info">
+                    <div class="option-title">Deposit</div>
+                    <div class="option-desc">Add funds to your account</div>
+                </div>
+                <div class="option-arrow">→</div>
+            </a>
+
+            <a href="/withdraw" class="wallet-option-btn withdraw">
+                <div class="option-icon withdraw-icon">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+                <div class="option-info">
+                    <div class="option-title">Withdraw</div>
+                    <div class="option-desc">Cash out your winnings</div>
+                </div>
+                <div class="option-arrow">→</div>
+            </a>
+        </div>
+
+        <div class="transaction-history-link">
+            <a href="/history">View Transaction History</a>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+        });
+
+        function loadUserData() {
+            const initData = tg.initData || '';
+            fetch('/api/user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.user) {
+                    document.getElementById('current-balance').textContent = '$' + formatNumber(data.user.balance);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '0.00';
+            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    </script>
+</body>
+</html>
