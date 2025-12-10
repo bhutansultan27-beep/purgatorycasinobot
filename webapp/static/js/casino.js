@@ -239,10 +239,16 @@ function loadLiveBets() {
         .then(data => {
             if (data.success && data.bets) {
                 updateLiveBetsList(data.bets);
+            } else {
+                updateLiveBetsList([]);
             }
         })
         .catch(error => {
             console.log('Error loading live bets:', error);
+            const container = document.getElementById('live-bets-list');
+            if (container) {
+                container.innerHTML = '<div class="loading-bets">No bets yet. Be the first to play!</div>';
+            }
         });
 }
 
