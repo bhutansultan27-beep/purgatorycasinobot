@@ -75,7 +75,7 @@ function updateUI() {
 }
 
 function showDemoData() {
-    document.getElementById('balance').textContent = '$1,000.00';
+    document.getElementById('balance').textContent = '$0.00';
     document.getElementById('user-name').textContent = 'Demo Player';
     document.getElementById('total-wagered').textContent = '$0';
     document.getElementById('total-won').textContent = '$0';

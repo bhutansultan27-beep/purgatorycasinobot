@@ -69,7 +69,7 @@
             </div>
             <div class="balance-display">
                 <span class="balance-icon">💰</span>
-                <span class="balance-amount" id="balance">$1,000.00</span>
+                <span class="balance-amount" id="balance">$0.00</span>
             </div>
         </header>
 
@@ -107,7 +107,26 @@
         tg.ready();
         tg.expand();
 
-        let balance = 1000;
+        let balance = 0;
+        
+        document.addEventListener('DOMContentLoaded', loadUserBalance);
+        
+        function loadUserBalance() {
+            const initData = tg.initData || '';
+            fetch('/api/user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData: initData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.user) {
+                    balance = data.user.balance || 0;
+                    updateBalance();
+                }
+            })
+            .catch(error => console.error('Error loading balance:', error));
+        }
         let selected = [];
         let gameActive = false;
 

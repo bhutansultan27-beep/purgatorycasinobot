@@ -5,7 +5,7 @@ class BlackjackGame {
         this.currentHandIndex = 0;
         this.handBets = [];
         this.dealerHand = [];
-        this.balance = 1000;
+        this.balance = 0;
         this.currentBet = 0;
         this.gameInProgress = false;
         this.isResolving = false;
@@ -18,6 +18,24 @@ class BlackjackGame {
         this.initElements();
         this.initEventListeners();
         this.initTelegram();
+        this.loadUserBalance();
+    }
+    
+    loadUserBalance() {
+        const initData = this.tg?.initData || '';
+        fetch('/api/user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ initData: initData })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.user) {
+                this.balance = data.user.balance || 0;
+                this.updateBalance();
+            }
+        })
+        .catch(error => console.error('Error loading balance:', error));
     }
 
     get playerHand() {

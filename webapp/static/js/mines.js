@@ -2,7 +2,26 @@ let tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-let balance = 1000;
+let balance = 0;
+
+document.addEventListener('DOMContentLoaded', loadUserBalance);
+
+function loadUserBalance() {
+    const initData = tg.initData || '';
+    fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: initData })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.user) {
+            balance = data.user.balance || 0;
+            updateBalance();
+        }
+    })
+    .catch(error => console.error('Error loading balance:', error));
+}
 let currentBet = 10;
 let minesCount = 3;
 let gameActive = false;
