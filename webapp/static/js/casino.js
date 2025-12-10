@@ -205,7 +205,27 @@ const gameIcons = {
     'coinflip': '🪙',
     'slots': '🎰',
     'dice': '🎲',
-    'connect4': '🔴'
+    'connect4': '🔴',
+    'crash': '📈',
+    'plinko': '🔵',
+    'wheel': '🎡'
+};
+
+const gameImages = {
+    'mines': '/static/images/mines_casino_game_card.png',
+    'blackjack': '/static/images/blackjack_casino_game_card.png',
+    'baccarat': '/static/images/baccarat_casino_game_card.png',
+    'keno': '/static/images/keno_casino_game_card.png',
+    'limbo': '/static/images/limbo_casino_game_card.png',
+    'hilo': '/static/images/hilo_casino_game_card.png',
+    'roulette': '/static/images/roulette_casino_game_card.png',
+    'coinflip': '/static/images/coinflip_casino_game_card.png',
+    'slots': '/static/images/slots_casino_game_card.png',
+    'dice': '/static/images/dice_casino_game_card.png',
+    'connect4': '/static/images/connect4_casino_game_card.png',
+    'crash': '/static/images/crash_casino_game_card.png',
+    'plinko': '/static/images/plinko_casino_game_card.png',
+    'wheel': '/static/images/wheel_casino_game_card.png'
 };
 
 function initLiveBets() {
@@ -299,64 +319,309 @@ function openBetModal(betId) {
 function renderBetDetails(bet) {
     const content = document.getElementById('bet-modal-content');
     const isWin = bet.payout > 0;
-    const gameIcon = gameIcons[bet.game_type.toLowerCase()] || '🎮';
+    const gameType = bet.game_type.toLowerCase();
+    const gameIcon = gameIcons[gameType] || '🎮';
+    const gameImage = gameImages[gameType] || '/static/images/logo.png';
     const payout = isWin ? bet.payout : -bet.wager;
     const timestamp = bet.timestamp ? new Date(bet.timestamp).toLocaleString() : 'Unknown';
+    const username = bet.username || 'Anonymous';
+    const initial = username.charAt(0).toUpperCase();
     
-    let snapshotHtml = '';
-    
-    if (bet.game_snapshot) {
-        snapshotHtml = renderGameSnapshot(bet.game_type, bet.game_snapshot);
-    } else if (bet.details) {
-        snapshotHtml = renderDetailsSnapshot(bet.game_type, bet.details);
-    }
+    let resultVisualHtml = renderResultVisual(bet);
     
     content.innerHTML = `
-        <div class="bet-detail-section">
-            <h4>Bet Information</h4>
-            <div class="bet-detail-grid">
-                <div class="bet-detail-item">
-                    <div class="bet-detail-label">Bet ID</div>
-                    <div class="bet-detail-value">#${bet.id}</div>
-                </div>
-                <div class="bet-detail-item">
-                    <div class="bet-detail-label">Game</div>
-                    <div class="bet-detail-value">${gameIcon} ${capitalizeFirst(bet.game_type)}</div>
-                </div>
-                <div class="bet-detail-item">
-                    <div class="bet-detail-label">Player</div>
-                    <div class="bet-detail-value">${escapeHtml(bet.username || 'Anonymous')}</div>
-                </div>
-                <div class="bet-detail-item">
-                    <div class="bet-detail-label">Time</div>
-                    <div class="bet-detail-value" style="font-size: 13px;">${timestamp}</div>
-                </div>
+        <div class="bet-game-header">
+            <img src="${gameImage}" alt="${capitalizeFirst(bet.game_type)}" class="bet-game-image">
+            <div class="bet-game-name">${gameIcon} ${capitalizeFirst(bet.game_type)}</div>
+            <div class="bet-id-display">ID #${bet.id}</div>
+            <div class="bet-player-info">
+                <div class="bet-player-avatar">${initial}</div>
+                <span>Placed by <strong>${escapeHtml(username)}</strong></span>
+            </div>
+            <div class="bet-player-info" style="margin-top: 4px; font-size: 12px;">
+                on ${timestamp}
             </div>
         </div>
         
-        <div class="bet-detail-section">
-            <h4>Results</h4>
-            <div class="bet-detail-grid">
-                <div class="bet-detail-item">
-                    <div class="bet-detail-label">Bet Amount</div>
-                    <div class="bet-detail-value">$${formatNumber(bet.wager)}</div>
-                </div>
-                <div class="bet-detail-item">
-                    <div class="bet-detail-label">Multiplier</div>
-                    <div class="bet-detail-value">${bet.multiplier.toFixed(2)}x</div>
-                </div>
-                <div class="bet-detail-item">
-                    <div class="bet-detail-label">Result</div>
-                    <div class="bet-detail-value ${isWin ? 'win' : 'loss'}">${isWin ? 'WIN' : 'LOSS'}</div>
-                </div>
-                <div class="bet-detail-item">
-                    <div class="bet-detail-label">Payout</div>
-                    <div class="bet-detail-value ${isWin ? 'win' : 'loss'}">${isWin ? '+' : ''}$${formatNumber(Math.abs(payout))}</div>
-                </div>
+        <div class="bet-stats-row">
+            <div class="bet-stat-item">
+                <div class="bet-stat-label">Bet</div>
+                <div class="bet-stat-value">$${formatNumber(bet.wager)}</div>
+            </div>
+            <div class="bet-stat-item">
+                <div class="bet-stat-label">Multiplier</div>
+                <div class="bet-stat-value">${bet.multiplier.toFixed(2)}x</div>
+            </div>
+            <div class="bet-stat-item">
+                <div class="bet-stat-label">Payout</div>
+                <div class="bet-stat-value ${isWin ? 'win' : 'loss'}">${isWin ? '+' : ''}$${formatNumber(Math.abs(payout))}</div>
             </div>
         </div>
         
-        ${snapshotHtml}
+        ${resultVisualHtml}
+        
+        <div class="bet-actions">
+            <a href="/${gameType}" class="play-game-btn">
+                <i class="fas fa-play"></i>
+                Play ${capitalizeFirst(bet.game_type)}
+            </a>
+        </div>
+    `;
+}
+
+function renderResultVisual(bet) {
+    const gameType = bet.game_type.toLowerCase();
+    const details = bet.details || {};
+    const snapshot = bet.game_snapshot || {};
+    
+    if (gameType === 'limbo') {
+        const target = details.target_multiplier || 2;
+        const result = details.result_multiplier || details.rolled_multiplier || 1;
+        const position = Math.min(Math.max((result / 100) * 100, 0), 100);
+        return `
+            <div class="bet-result-visual">
+                <div class="result-bar-container">
+                    <div class="result-bar-labels">
+                        <span>0</span>
+                        <span>25</span>
+                        <span>50</span>
+                        <span>75</span>
+                        <span>100</span>
+                    </div>
+                    <div class="result-bar" style="background: linear-gradient(90deg, var(--accent-green) 0%, var(--accent-green) ${target}%, var(--accent-red) ${target}%, var(--accent-red) 100%);">
+                        <div class="result-marker" style="left: ${position}%;">${result.toFixed(2)}x</div>
+                    </div>
+                </div>
+                <div class="result-details-grid">
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Target</div>
+                        <div class="result-detail-value">${target}x</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Roll Result</div>
+                        <div class="result-detail-value">${result.toFixed(2)}x</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Win Chance</div>
+                        <div class="result-detail-value">${((1/target) * 100).toFixed(2)}%</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (gameType === 'coinflip') {
+        const choice = details.choice || '?';
+        const result = details.result || '?';
+        return `
+            <div class="bet-result-visual">
+                <div class="result-details-grid">
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Choice</div>
+                        <div class="result-detail-value">${choice}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Result</div>
+                        <div class="result-detail-value">${result}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Win Chance</div>
+                        <div class="result-detail-value">50%</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (gameType === 'mines') {
+        const gems = details.gems_found || snapshot.gems_found || 0;
+        const mines = details.mine_count || details.mines || snapshot.mine_count || 3;
+        return `
+            <div class="bet-result-visual">
+                <div class="result-details-grid">
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Gems Found</div>
+                        <div class="result-detail-value">${gems} 💎</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Mines</div>
+                        <div class="result-detail-value">${mines} 💣</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Safe Tiles</div>
+                        <div class="result-detail-value">${25 - mines}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (gameType === 'blackjack') {
+        const playerHand = details.player_hand || snapshot.player_value || '?';
+        const dealerHand = details.dealer_hand || snapshot.dealer_value || '?';
+        return `
+            <div class="bet-result-visual">
+                <div class="result-details-grid">
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Player</div>
+                        <div class="result-detail-value">${playerHand}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Dealer</div>
+                        <div class="result-detail-value">${dealerHand}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Type</div>
+                        <div class="result-detail-value">${details.outcome || 'Standard'}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (gameType === 'keno') {
+        const hits = details.hits || snapshot.hits || 0;
+        const selected = details.numbers_selected || (snapshot.selected ? snapshot.selected.length : 0);
+        return `
+            <div class="bet-result-visual">
+                <div class="result-details-grid">
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Selected</div>
+                        <div class="result-detail-value">${selected}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Hits</div>
+                        <div class="result-detail-value">${hits}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Hit Rate</div>
+                        <div class="result-detail-value">${selected > 0 ? ((hits/selected)*100).toFixed(0) : 0}%</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (gameType === 'roulette') {
+        const result = details.result !== undefined ? details.result : '?';
+        const color = details.color || '';
+        const betType = details.bet_type || '?';
+        return `
+            <div class="bet-result-visual">
+                <div class="result-details-grid">
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Result</div>
+                        <div class="result-detail-value">${result} ${color}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Bet Type</div>
+                        <div class="result-detail-value">${betType}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Color</div>
+                        <div class="result-detail-value">${color || 'N/A'}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (gameType === 'hilo') {
+        const rounds = details.rounds_won || details.streak || 0;
+        return `
+            <div class="bet-result-visual">
+                <div class="result-details-grid">
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Rounds Won</div>
+                        <div class="result-detail-value">${rounds}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Last Card</div>
+                        <div class="result-detail-value">${details.last_card || '?'}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Streak</div>
+                        <div class="result-detail-value">${rounds}x</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (gameType === 'crash') {
+        const crashPoint = details.crash_point || details.multiplier || 1;
+        const cashoutAt = details.cashout_at || details.cashout || 0;
+        return `
+            <div class="bet-result-visual">
+                <div class="result-details-grid">
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Crash Point</div>
+                        <div class="result-detail-value">${crashPoint.toFixed(2)}x</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Cashout At</div>
+                        <div class="result-detail-value">${cashoutAt > 0 ? cashoutAt.toFixed(2) + 'x' : 'N/A'}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Result</div>
+                        <div class="result-detail-value">${cashoutAt > 0 && cashoutAt < crashPoint ? 'Cashed Out' : 'Crashed'}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (gameType === 'baccarat') {
+        const playerScore = details.player_score || details.player || '?';
+        const bankerScore = details.banker_score || details.banker || '?';
+        const winner = details.winner || details.result || '?';
+        return `
+            <div class="bet-result-visual">
+                <div class="result-details-grid">
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Player</div>
+                        <div class="result-detail-value">${playerScore}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Banker</div>
+                        <div class="result-detail-value">${bankerScore}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Winner</div>
+                        <div class="result-detail-value">${winner}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (gameType === 'slots') {
+        const symbols = details.symbols || details.result || '?';
+        return `
+            <div class="bet-result-visual">
+                <div class="result-details-grid">
+                    <div class="result-detail-box" style="grid-column: span 3;">
+                        <div class="result-detail-label">Spin Result</div>
+                        <div class="result-detail-value" style="font-size: 24px;">${symbols}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (gameType === 'dice') {
+        const roll = details.roll || details.result || '?';
+        const target = details.target || '?';
+        const condition = details.condition || 'over';
+        return `
+            <div class="bet-result-visual">
+                <div class="result-details-grid">
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Roll</div>
+                        <div class="result-detail-value">${roll}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Target</div>
+                        <div class="result-detail-value">${condition} ${target}</div>
+                    </div>
+                    <div class="result-detail-box">
+                        <div class="result-detail-label">Win Chance</div>
+                        <div class="result-detail-value">${details.win_chance || '?'}%</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    return `
+        <div class="bet-result-visual">
+            <div class="result-details-grid">
+                <div class="result-detail-box" style="grid-column: span 3;">
+                    <div class="result-detail-label">Game Result</div>
+                    <div class="result-detail-value">Game completed</div>
+                </div>
+            </div>
+        </div>
     `;
 }
 
