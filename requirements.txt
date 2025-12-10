@@ -6,3 +6,7 @@ flask
 psycopg2-binary
 sqlalchemy
 requests
+flask
+python-dotenv
+requests
+telegram
