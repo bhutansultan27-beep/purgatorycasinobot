@@ -8,6 +8,9 @@ let userData = null;
 document.addEventListener('DOMContentLoaded', function() {
     initTelegram();
     loadUserData();
+    initSidebar();
+    initCategoryTabs();
+    initSearch();
 });
 
 function initTelegram() {
@@ -15,17 +18,36 @@ function initTelegram() {
         const user = tg.initDataUnsafe.user;
         document.getElementById('user-name').textContent = user.first_name + (user.last_name ? ' ' + user.last_name : '');
         
+        const initial = user.first_name.charAt(0).toUpperCase();
+        document.getElementById('avatar-initial').textContent = initial;
+        
         if (user.photo_url) {
-            document.getElementById('user-avatar').style.backgroundImage = `url(${user.photo_url})`;
-            document.getElementById('user-avatar').style.backgroundSize = 'cover';
-            document.getElementById('user-avatar').textContent = '';
-        } else {
-            document.getElementById('user-avatar').textContent = user.first_name.charAt(0).toUpperCase();
+            setAvatarPhoto(user.photo_url);
         }
     }
     
-    tg.setHeaderColor('#0a0a0a');
-    tg.setBackgroundColor('#0a0a0a');
+    tg.setHeaderColor('#0d0d0f');
+    tg.setBackgroundColor('#0d0d0f');
+}
+
+function setAvatarPhoto(url) {
+    const headerAvatar = document.getElementById('user-avatar');
+    const largeAvatar = document.getElementById('user-avatar-large');
+    
+    if (headerAvatar) {
+        headerAvatar.style.backgroundImage = `url(${url})`;
+        headerAvatar.style.backgroundSize = 'cover';
+        headerAvatar.style.backgroundPosition = 'center';
+        const initial = headerAvatar.querySelector('#avatar-initial');
+        if (initial) initial.style.display = 'none';
+    }
+    
+    if (largeAvatar) {
+        largeAvatar.style.backgroundImage = `url(${url})`;
+        largeAvatar.style.backgroundSize = 'cover';
+        largeAvatar.style.backgroundPosition = 'center';
+        largeAvatar.textContent = '';
+    }
 }
 
 function loadUserData() {
@@ -66,17 +88,13 @@ function updateUI() {
         document.getElementById('win-rate').textContent = (userData.win_rate || 0) + '%';
         
         if (userData.photo_url) {
-            const avatarEl = document.getElementById('user-avatar');
-            avatarEl.style.backgroundImage = `url(${userData.photo_url})`;
-            avatarEl.style.backgroundSize = 'cover';
-            avatarEl.style.backgroundPosition = 'center';
-            avatarEl.textContent = '';
+            setAvatarPhoto(userData.photo_url);
         }
         
         if (userData.is_admin) {
-            const adminSection = document.getElementById('admin-section');
-            if (adminSection) {
-                adminSection.style.display = 'block';
+            const adminNav = document.getElementById('admin-nav');
+            if (adminNav) {
+                adminNav.style.display = 'block';
             }
         }
     }
@@ -106,12 +124,92 @@ function setBotUsername(username) {
 function openBotCommand(command) {
     const cleanCommand = command.startsWith('/') ? command.substring(1) : command;
     
-    // Show user the command they need to use, then close the mini app
     tg.showConfirm(`Close and use /${cleanCommand} in the bot chat?`, function(confirmed) {
         if (confirmed) {
             tg.close();
         }
     });
+}
+
+function initSidebar() {
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    if (menuToggle) {
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        });
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+        });
+    }
+}
+
+function initCategoryTabs() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const sections = document.querySelectorAll('.games-section');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            const category = this.dataset.tab;
+            const gamesSection = document.getElementById('games-section');
+            const tableSection = document.getElementById('table-section');
+            const slotsSection = document.getElementById('slots-section');
+            
+            if (category === 'all') {
+                if (gamesSection) gamesSection.style.display = 'block';
+                if (tableSection) tableSection.style.display = 'block';
+                if (slotsSection) slotsSection.style.display = 'block';
+            } else if (category === 'originals') {
+                if (gamesSection) gamesSection.style.display = 'block';
+                if (tableSection) tableSection.style.display = 'none';
+                if (slotsSection) slotsSection.style.display = 'none';
+            } else if (category === 'table') {
+                if (gamesSection) gamesSection.style.display = 'none';
+                if (tableSection) tableSection.style.display = 'block';
+                if (slotsSection) slotsSection.style.display = 'none';
+            }
+        });
+    });
+}
+
+function initSearch() {
+    const searchInput = document.getElementById('game-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            const gameCards = document.querySelectorAll('.game-card-new');
+            
+            gameCards.forEach(card => {
+                const gameName = card.querySelector('h3').textContent.toLowerCase();
+                if (gameName.includes(query)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = query ? 'none' : 'block';
+                }
+            });
+        });
+    }
+}
+
+function scrollGames(section, direction) {
+    const scrollContainer = document.getElementById(section + '-scroll');
+    if (scrollContainer) {
+        const scrollAmount = 200;
+        scrollContainer.scrollBy({
+            left: scrollAmount * direction,
+            behavior: 'smooth'
+        });
+    }
 }
 
 function showDeposit() {
@@ -131,23 +229,5 @@ function selectCrypto(crypto) {
 }
 
 function showProfile() {
-    openBotCommand('/profile');
+    window.location.href = '/profile';
 }
-
-function showLeaderboard() {
-    openBotCommand('/leaderboard');
-}
-
-function showHistory() {
-    openBotCommand('/history');
-}
-
-function showSupport() {
-    openBotCommand('/support');
-}
-
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal')) {
-        e.target.classList.remove('active');
-    }
-});

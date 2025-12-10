@@ -6,177 +6,267 @@
     <title>Gild Tesoro Casino</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="/static/css/casino.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <div class="logo">
-                <img src="/static/images/logo.png" alt="Gild Tesoro" class="logo-image">
-                <span class="logo-text">GILD TESORO</span>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="/static/images/logo.png" alt="Gild Tesoro" class="sidebar-logo">
+                <span class="sidebar-brand">GILD TESORO</span>
             </div>
-            <div class="balance-display">
-                <span class="balance-amount" id="balance">$0.00</span>
-            </div>
-        </header>
-
-        <div class="user-info" id="user-info">
-            <div class="user-avatar" id="user-avatar">👤</div>
-            <div class="user-details">
-                <div class="user-name" id="user-name">Loading...</div>
-                <div class="user-level" id="user-level">
-                    <span class="level-badge">⚪ Unranked</span>
+            
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="/profile" class="nav-item">
+                    <i class="fas fa-star"></i>
+                    <span>Favourites</span>
+                </a>
+                <a href="/history" class="nav-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Recently Played</span>
+                </a>
+                <a href="/leaderboard" class="nav-item">
+                    <i class="fas fa-trophy"></i>
+                    <span>Leaderboard</span>
+                </a>
+                
+                <div class="nav-divider"></div>
+                
+                <a href="#games-section" class="nav-item">
+                    <i class="fas fa-dice"></i>
+                    <span>Originals</span>
+                </a>
+                <a href="#slots-section" class="nav-item">
+                    <i class="fas fa-slot-machine"></i>
+                    <span>Slots</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="nav-item admin-nav" id="admin-nav" style="display: none;">
+                    <a href="/admin">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Admin</span>
+                    </a>
                 </div>
             </div>
-        </div>
+        </aside>
 
-        <div class="menu-section">
-            <h2 class="section-title">🎰 Casino Games</h2>
-            <div class="games-grid">
-                <a href="/blackjack" class="game-card">
-                    <div class="game-icon">🃏</div>
-                    <div class="game-name">Blackjack</div>
-                    <div class="game-desc">Beat the dealer to 21</div>
-                </a>
-                <a href="/slots" class="game-card">
-                    <div class="game-icon">🎰</div>
-                    <div class="game-name">Slots</div>
-                    <div class="game-desc">Spin to win big</div>
-                </a>
-                <a href="/mines" class="game-card">
-                    <div class="game-icon">💣</div>
-                    <div class="game-name">Mines</div>
-                    <div class="game-desc">Avoid the bombs</div>
-                </a>
-                <a href="/limbo" class="game-card">
-                    <div class="game-icon">🚀</div>
-                    <div class="game-name">Limbo</div>
-                    <div class="game-desc">Pick your multiplier</div>
-                </a>
-                <a href="/keno" class="game-card">
-                    <div class="game-icon">🎱</div>
-                    <div class="game-name">Keno</div>
-                    <div class="game-desc">Pick your lucky numbers</div>
-                </a>
-                <a href="/hilo" class="game-card">
-                    <div class="game-icon">⬆️⬇️</div>
-                    <div class="game-name">Hi-Lo</div>
-                    <div class="game-desc">Higher or lower?</div>
-                </a>
-                <a href="/baccarat" class="game-card">
-                    <div class="game-icon">👔</div>
-                    <div class="game-name">Baccarat</div>
-                    <div class="game-desc">Player vs Banker</div>
-                </a>
-                <a href="/roulette" class="game-card">
-                    <div class="game-icon">🎡</div>
-                    <div class="game-name">Roulette</div>
-                    <div class="game-desc">Spin the wheel</div>
-                </a>
-                <a href="/coinflip" class="game-card">
-                    <div class="game-icon">🪙</div>
-                    <div class="game-name">Coinflip</div>
-                    <div class="game-desc">Heads or tails</div>
-                </a>
-            </div>
-        </div>
-
-        <div class="menu-section">
-            <h2 class="section-title">💰 Wallet</h2>
-            <div class="wallet-buttons">
-                <a href="/deposit" class="wallet-btn deposit-btn">
-                    <span class="btn-icon">📥</span>
-                    <span>Deposit</span>
-                </a>
-                <a href="/withdraw" class="wallet-btn withdraw-btn">
-                    <span class="btn-icon">📤</span>
-                    <span>Withdraw</span>
-                </a>
-            </div>
-        </div>
-
-        <div class="menu-section">
-            <h2 class="section-title">📊 Quick Stats</h2>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="total-wagered">$0</div>
-                    <div class="stat-label">Total Wagered</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="total-won">$0</div>
-                    <div class="stat-label">Total Won</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="games-played">0</div>
-                    <div class="stat-label">Games Played</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="win-rate">0%</div>
-                    <div class="stat-label">Win Rate</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-section">
-            <h2 class="section-title">🔗 Quick Links</h2>
-            <div class="links-grid">
-                <a href="/profile" class="link-btn">
-                    <span>👤</span> Profile
-                </a>
-                <a href="/leaderboard" class="link-btn">
-                    <span>🏆</span> Leaderboard
-                </a>
-                <a href="/history" class="link-btn">
-                    <span>📜</span> History
-                </a>
-                <button class="link-btn" onclick="openBotCommand('/menu')">
-                    <span>💬</span> Menu
+        <main class="main-content">
+            <header class="top-header">
+                <button class="menu-toggle" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
                 </button>
-            </div>
-        </div>
-
-        <div class="menu-section admin-section" id="admin-section" style="display: none;">
-            <h2 class="section-title">🛡️ Admin Panel</h2>
-            <div class="links-grid">
-                <a href="/admin" class="link-btn admin-btn">
-                    <span>⚙️</span> Admin Dashboard
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal" id="deposit-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>💰 Deposit</h3>
-                <button class="modal-close" onclick="closeModal('deposit-modal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Select cryptocurrency to deposit:</p>
-                <div class="crypto-options">
-                    <button class="crypto-btn" onclick="selectCrypto('SOL')">
-                        <img src="https://cryptologos.cc/logos/solana-sol-logo.svg" alt="SOL" style="width:20px;height:20px;vertical-align:middle;"> SOL
-                    </button>
-                    <button class="crypto-btn" onclick="selectCrypto('LTC')">
-                        <img src="https://cryptologos.cc/logos/litecoin-ltc-logo.svg" alt="LTC" style="width:20px;height:20px;vertical-align:middle;"> LTC
-                    </button>
+                
+                <div class="header-logo">
+                    <img src="/static/images/logo.png" alt="Gild Tesoro" class="header-logo-img">
+                    <span class="header-brand">GILD TESORO</span>
                 </div>
-                <p class="modal-note">Use /deposit in the bot for full deposit options</p>
+                
+                <div class="header-actions">
+                    <div class="balance-pill">
+                        <i class="fas fa-coins"></i>
+                        <span id="balance">$0.00</span>
+                    </div>
+                    <a href="/deposit" class="wallet-btn-header">
+                        <i class="fas fa-wallet"></i>
+                        <span>Wallet</span>
+                    </a>
+                    <div class="user-avatar-header" id="user-avatar">
+                        <span id="avatar-initial">?</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="promo-banner">
+                    <div class="promo-slide active">
+                        <div class="promo-content">
+                            <span class="promo-tag">Hot</span>
+                            <h2>BOOST YOUR LEVEL UP!</h2>
+                            <p>Earn more rewards now when ranking up!</p>
+                        </div>
+                        <div class="promo-decoration"></div>
+                    </div>
+                </div>
+
+                <div class="category-tabs">
+                    <button class="tab-btn active" data-tab="all">
+                        <i class="fas fa-th-large"></i> Lobby
+                    </button>
+                    <button class="tab-btn" data-tab="originals">
+                        <i class="fas fa-dice"></i> Originals
+                    </button>
+                    <button class="tab-btn" data-tab="table">
+                        <i class="fas fa-cards"></i> Table Games
+                    </button>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search" id="game-search">
+                    </div>
+                </div>
+
+                <section class="games-section" id="games-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-dice"></i> Original Games</h2>
+                        <div class="section-nav">
+                            <span>View all</span>
+                            <button class="nav-arrow" onclick="scrollGames('originals', -1)"><i class="fas fa-chevron-left"></i></button>
+                            <button class="nav-arrow" onclick="scrollGames('originals', 1)"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="games-scroll" id="originals-scroll">
+                        <a href="/mines" class="game-card-new" data-category="originals">
+                            <div class="game-thumb mines-thumb">
+                                <span class="game-badge">GILD</span>
+                                <div class="game-visual">💣</div>
+                                <h3>MINES</h3>
+                            </div>
+                        </a>
+                        <a href="/limbo" class="game-card-new" data-category="originals">
+                            <div class="game-thumb limbo-thumb">
+                                <span class="game-badge">GILD</span>
+                                <div class="game-visual">
+                                    <span class="multiplier">1000x</span>
+                                </div>
+                                <h3>LIMBO</h3>
+                            </div>
+                        </a>
+                        <a href="/keno" class="game-card-new" data-category="originals">
+                            <div class="game-thumb keno-thumb">
+                                <span class="game-badge">GILD</span>
+                                <div class="game-visual">🎱</div>
+                                <h3>KENO</h3>
+                            </div>
+                        </a>
+                        <a href="/hilo" class="game-card-new" data-category="originals">
+                            <div class="game-thumb hilo-thumb">
+                                <span class="game-badge">GILD</span>
+                                <div class="game-visual">⬆️⬇️</div>
+                                <h3>HI-LO</h3>
+                            </div>
+                        </a>
+                        <a href="/coinflip" class="game-card-new" data-category="originals">
+                            <div class="game-thumb coinflip-thumb">
+                                <span class="game-badge">GILD</span>
+                                <div class="game-visual">🪙</div>
+                                <h3>COINFLIP</h3>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <section class="games-section" id="table-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-cards"></i> Table Games</h2>
+                        <div class="section-nav">
+                            <span>View all</span>
+                            <button class="nav-arrow" onclick="scrollGames('table', -1)"><i class="fas fa-chevron-left"></i></button>
+                            <button class="nav-arrow" onclick="scrollGames('table', 1)"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="games-scroll" id="table-scroll">
+                        <a href="/blackjack" class="game-card-new" data-category="table">
+                            <div class="game-thumb blackjack-thumb">
+                                <span class="game-badge">GILD</span>
+                                <div class="game-visual">🃏</div>
+                                <h3>BLACKJACK</h3>
+                            </div>
+                        </a>
+                        <a href="/baccarat" class="game-card-new" data-category="table">
+                            <div class="game-thumb baccarat-thumb">
+                                <span class="game-badge">GILD</span>
+                                <div class="game-visual">👔</div>
+                                <h3>BACCARAT</h3>
+                            </div>
+                        </a>
+                        <a href="/roulette" class="game-card-new" data-category="table">
+                            <div class="game-thumb roulette-thumb">
+                                <span class="game-badge">GILD</span>
+                                <div class="game-visual">🎡</div>
+                                <h3>ROULETTE</h3>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <section class="games-section" id="slots-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-slot-machine"></i> Slots</h2>
+                        <div class="section-nav">
+                            <span>View all</span>
+                            <button class="nav-arrow" onclick="scrollGames('slots', -1)"><i class="fas fa-chevron-left"></i></button>
+                            <button class="nav-arrow" onclick="scrollGames('slots', 1)"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="games-scroll" id="slots-scroll">
+                        <a href="/slots" class="game-card-new" data-category="slots">
+                            <div class="game-thumb slots-thumb">
+                                <span class="game-badge">GILD</span>
+                                <div class="game-visual">🎰</div>
+                                <h3>SLOTS</h3>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <section class="stats-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-bar"></i> Your Stats</h2>
+                    </div>
+                    <div class="stats-grid-new">
+                        <div class="stat-card-new">
+                            <div class="stat-icon"><i class="fas fa-coins"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="total-wagered">$0</span>
+                                <span class="stat-label">Total Wagered</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-new">
+                            <div class="stat-icon win"><i class="fas fa-trophy"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="total-won">$0</span>
+                                <span class="stat-label">Total Won</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-new">
+                            <div class="stat-icon"><i class="fas fa-gamepad"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="games-played">0</span>
+                                <span class="stat-label">Games Played</span>
+                            </div>
+                        </div>
+                        <div class="stat-card-new">
+                            <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="win-rate">0%</span>
+                                <span class="stat-label">Win Rate</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="user-section">
+                    <div class="user-card-large">
+                        <div class="user-avatar-large" id="user-avatar-large"></div>
+                        <div class="user-info-large">
+                            <h3 id="user-name">Loading...</h3>
+                            <div class="user-level-badge" id="user-level">
+                                <span class="level-badge">⚪ Unranked</span>
+                            </div>
+                        </div>
+                        <a href="/profile" class="view-profile-btn">View Profile</a>
+                    </div>
+                </section>
             </div>
-        </div>
+        </main>
     </div>
 
-    <div class="modal" id="withdraw-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>📤 Withdraw</h3>
-                <button class="modal-close" onclick="closeModal('withdraw-modal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Use /withdraw in the bot to withdraw your funds.</p>
-                <p class="modal-note">Minimum withdrawal: $2.00</p>
-            </div>
-        </div>
-    </div>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <script src="/static/js/casino.js"></script>
 </body>
