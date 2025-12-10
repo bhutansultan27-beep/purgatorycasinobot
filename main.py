@@ -4251,7 +4251,7 @@ Total Won: ${total_won:,.2f}"""
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(
-            f"💰 **Deposit**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
+            f"Your balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
             parse_mode="Markdown",
             reply_markup=reply_markup
         )
@@ -4298,37 +4298,49 @@ Total Won: ${total_won:,.2f}"""
         
         fee_percent = crypto_info.get('fee_percent', 0.02) * 100
         
+        # Calculate expiry time (1 hour from now)
+        from datetime import datetime, timedelta
+        expiry_time = datetime.now() + timedelta(hours=1)
+        expiry_timestamp = int(expiry_time.timestamp())
+        
+        # Store deposit request info for tracking
+        deposit_request_key = f'{currency.lower()}_pending_deposit'
+        user_data[deposit_request_key] = {
+            'created_at': datetime.now().isoformat(),
+            'expires_at': expiry_time.isoformat(),
+            'tx_id': None
+        }
+        self.db.update_user(user_id, user_data)
+        self.db.save_data()
+        
+        # Get the actual wallet address (not invoice URL)
         if is_invoice_url:
-            # Show button to open Plisio payment page
+            # For invoice URLs, we still show the payment page button but with better text
             keyboard = [
                 [InlineKeyboardButton(f"💳 Open {currency} Payment Page", url=user_deposit_address)],
                 [InlineKeyboardButton("⬅️ Back", callback_data="deposit_back")]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
-            deposit_text = f"""{crypto_info['emoji']} **{crypto_info['name']} Deposit**
+            deposit_text = f"""Your unique {currency} wallet address will be shown on the payment page.
 
-Click the button below to open your payment page.
+Click the button below to view your deposit address.
 
-You'll see your unique {currency} wallet address on the payment page.
+⏱️ **Time Remaining:** 1 hour
 
-Note: The invoice shows $0.01 but you can deposit any amount you want.
-
-Your balance will be credited automatically after confirmations."""
+TX ID: _waiting for deposit..._"""
         else:
             # Show direct wallet address
             keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="deposit_back")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
-            deposit_text = f"""{crypto_info['emoji']} **{crypto_info['name']} Deposit**
-
-Your unique {currency} deposit address:
+            deposit_text = f"""Your unique {currency} deposit address:
 
 `{user_deposit_address}`
 
-Click the text above to automatically copy the address.
+⏱️ **Time Remaining:** 1 hour
 
-Your balance will be credited automatically after confirmations."""
+TX ID: _waiting for deposit..._"""
         
         await query.edit_message_text(deposit_text, parse_mode="Markdown", reply_markup=reply_markup)
 
@@ -4357,7 +4369,7 @@ Your balance will be credited automatically after confirmations."""
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(
-            f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
+            f"Your balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
             parse_mode="Markdown",
             reply_markup=reply_markup
         )
@@ -4452,7 +4464,7 @@ Your balance will be credited automatically after confirmations."""
             reply_markup = InlineKeyboardMarkup(keyboard)
             
             sent_msg = await update.message.reply_text(
-                f"💸 **Withdraw ${amount:.2f} {crypto_info['name']}**\n\nFee: {fee_percent:.1f}%\n\nEnter your {currency} wallet address:",
+                f"Withdraw ${amount:.2f} {crypto_info['name']}\n\nFee: {fee_percent:.1f}%\n\nEnter your {currency} wallet address:",
                 parse_mode="Markdown",
                 reply_markup=reply_markup
             )
@@ -7077,7 +7089,7 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
                 keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_main_menu")])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
-                    f"💰 **Deposit**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
+                    f"Your balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
@@ -7099,16 +7111,15 @@ Best Win Streak: {target_user.get('best_win_streak', 0)}
                     self.db.update_user(user_id, user_data)
                     self.db.save_data()
                     
-                    deposit_text = f"""💰 **LTC Deposit**
+                    deposit_text = f"""Your NEW deposit address:
 
-Your NEW deposit address:
 `{user_deposit_address}`
 
 Send any amount of LTC - you will be credited the exact USD value.
 
-Your balance will be credited automatically after confirmations.
+⏱️ **Time Remaining:** 1 hour
 
-⚠️ Only send LTC to this address!"""
+TX ID: _waiting for deposit..._"""
                     
                     keyboard = [[InlineKeyboardButton("Generate New Address", callback_data="new_deposit_address")]]
                     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -7910,7 +7921,7 @@ Total Won: ${total_won:,.2f}"""
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
                 await query.edit_message_text(
-                    f"💰 **Deposit**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
+                    f"Your balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
@@ -7931,7 +7942,7 @@ Total Won: ${total_won:,.2f}"""
                     keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
                     reply_markup = InlineKeyboardMarkup(keyboard)
                     await query.edit_message_text(
-                        f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
+                        f"Your balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
                         parse_mode="Markdown",
                         reply_markup=reply_markup
                     )
@@ -7956,7 +7967,7 @@ Total Won: ${total_won:,.2f}"""
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
                 await query.edit_message_text(
-                    f"💸 **Withdraw {crypto_info['name']}**\n\nYour balance: **${balance:.2f}**\nFee: **{fee_percent:.1f}%**\nMinimum: **${min_withdraw:.2f}**\n\nEnter the amount you want to withdraw:",
+                    f"Your balance: **${balance:.2f}**\nFee: **{fee_percent:.1f}%**\nMinimum: **${min_withdraw:.2f}**\n\nEnter the amount you want to withdraw:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
@@ -7983,7 +7994,7 @@ Total Won: ${total_won:,.2f}"""
                 keyboard.append([InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu")])
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(
-                    f"💸 **Withdraw**\n\nYour balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
+                    f"Your balance: **${user_data['balance']:.2f}**\n\nSelect a cryptocurrency:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
@@ -8005,7 +8016,7 @@ Total Won: ${total_won:,.2f}"""
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 
                 await query.edit_message_text(
-                    f"💸 **Withdraw {crypto_info['name']}**\n\nYour balance: **${balance:.2f}**\nFee: **{fee_percent:.1f}%**\nMinimum: **${min_withdraw:.2f}**\n\nEnter the amount you want to withdraw:",
+                    f"Your balance: **${balance:.2f}**\nFee: **{fee_percent:.1f}%**\nMinimum: **${min_withdraw:.2f}**\n\nEnter the amount you want to withdraw:",
                     parse_mode="Markdown",
                     reply_markup=reply_markup
                 )
