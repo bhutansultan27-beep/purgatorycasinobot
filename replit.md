@@ -8,6 +8,13 @@ The Gran Tesero Casino Bot is a Telegram bot offering casino games using Telegra
 
 The user prefers that all game results are displayed in a simplified, clean format without excessive score details. Communication should be streamlined, and redundant information removed. The user values engaging, interactive gameplay experiences.
 
+**IMPORTANT: Mobile-First Design**
+- ALL UI/UX design must prioritize phone/mobile viewing
+- The webapp runs inside Telegram Mini App which has a constrained mobile viewport
+- Always test layouts for small screens first
+- Keep headers compact, elements touch-friendly, and content scrollable
+- Avoid desktop-only features like hover states for critical functionality
+
 **Important: The bot runs on Webdock (external VPS), NOT on Replit. Replit is used only for code editing and development.**
 
 ### Replit Workflow Configuration

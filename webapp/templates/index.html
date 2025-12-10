@@ -113,11 +113,6 @@
                 <section class="games-section" id="games-section">
                     <div class="section-header">
                         <h2><i class="fas fa-dice"></i> Original Games</h2>
-                        <div class="section-nav">
-                            <span>View all</span>
-                            <button class="nav-arrow" onclick="scrollGames('originals', -1)"><i class="fas fa-chevron-left"></i></button>
-                            <button class="nav-arrow" onclick="scrollGames('originals', 1)"><i class="fas fa-chevron-right"></i></button>
-                        </div>
                     </div>
                     <div class="games-scroll" id="originals-scroll">
                         <a href="/mines" class="game-card-new" data-category="originals">
@@ -163,11 +158,6 @@
                 <section class="games-section" id="table-section">
                     <div class="section-header">
                         <h2><i class="fas fa-cards"></i> Table Games</h2>
-                        <div class="section-nav">
-                            <span>View all</span>
-                            <button class="nav-arrow" onclick="scrollGames('table', -1)"><i class="fas fa-chevron-left"></i></button>
-                            <button class="nav-arrow" onclick="scrollGames('table', 1)"><i class="fas fa-chevron-right"></i></button>
-                        </div>
                     </div>
                     <div class="games-scroll" id="table-scroll">
                         <a href="/blackjack" class="game-card-new" data-category="table">
@@ -197,11 +187,6 @@
                 <section class="games-section" id="slots-section">
                     <div class="section-header">
                         <h2><i class="fas fa-slot-machine"></i> Slots</h2>
-                        <div class="section-nav">
-                            <span>View all</span>
-                            <button class="nav-arrow" onclick="scrollGames('slots', -1)"><i class="fas fa-chevron-left"></i></button>
-                            <button class="nav-arrow" onclick="scrollGames('slots', 1)"><i class="fas fa-chevron-right"></i></button>
-                        </div>
                     </div>
                     <div class="games-scroll" id="slots-scroll">
                         <a href="/slots" class="game-card-new" data-category="slots">
@@ -236,45 +221,15 @@
                     </div>
                 </section>
 
-                <section class="stats-section">
-                    <div class="section-header">
-                        <h2><i class="fas fa-chart-bar"></i> Your Stats</h2>
-                    </div>
-                    <div class="stats-grid-new">
-                        <div class="stat-card-new">
-                            <div class="stat-icon"><i class="fas fa-coins"></i></div>
-                            <div class="stat-info">
-                                <span class="stat-value" id="total-wagered">$0</span>
-                                <span class="stat-label">Total Wagered</span>
-                            </div>
-                        </div>
-                        <div class="stat-card-new">
-                            <div class="stat-icon win"><i class="fas fa-trophy"></i></div>
-                            <div class="stat-info">
-                                <span class="stat-value" id="total-won">$0</span>
-                                <span class="stat-label">Total Won</span>
-                            </div>
-                        </div>
-                        <div class="stat-card-new">
-                            <div class="stat-icon"><i class="fas fa-gamepad"></i></div>
-                            <div class="stat-info">
-                                <span class="stat-value" id="games-played">0</span>
-                                <span class="stat-label">Games Played</span>
-                            </div>
-                        </div>
-                        <div class="stat-card-new">
-                            <div class="stat-icon"><i class="fas fa-percentage"></i></div>
-                            <div class="stat-info">
-                                <span class="stat-value" id="win-rate">0%</span>
-                                <span class="stat-label">Win Rate</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
                 <section class="user-section">
                     <div class="user-card-large">
-                        <div class="user-avatar-large" id="user-avatar-large"></div>
+                        <div class="user-avatar-wrapper">
+                            <div class="user-avatar-large" id="user-avatar-large"></div>
+                            <label class="avatar-edit-btn" for="avatar-upload">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="uploadProfilePicture(this)">
+                        </div>
                         <div class="user-info-large">
                             <h3 id="user-name">Loading...</h3>
                             <div class="user-level-badge" id="user-level">
