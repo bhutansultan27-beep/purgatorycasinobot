@@ -14,40 +14,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initTelegram() {
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        const user = tg.initDataUnsafe.user;
-        document.getElementById('user-name').textContent = user.first_name + (user.last_name ? ' ' + user.last_name : '');
-        
-        const initial = user.first_name.charAt(0).toUpperCase();
-        document.getElementById('avatar-initial').textContent = initial;
-        
-        if (user.photo_url) {
-            setAvatarPhoto(user.photo_url);
-        }
-    }
-    
     tg.setHeaderColor('#0d0d0f');
     tg.setBackgroundColor('#0d0d0f');
 }
 
 function setAvatarPhoto(url) {
-    const headerAvatar = document.getElementById('user-avatar');
-    const largeAvatar = document.getElementById('user-avatar-large');
-    
-    if (headerAvatar) {
-        headerAvatar.style.backgroundImage = `url(${url})`;
-        headerAvatar.style.backgroundSize = 'cover';
-        headerAvatar.style.backgroundPosition = 'center';
-        const initial = headerAvatar.querySelector('#avatar-initial');
-        if (initial) initial.style.display = 'none';
-    }
-    
-    if (largeAvatar) {
-        largeAvatar.style.backgroundImage = `url(${url})`;
-        largeAvatar.style.backgroundSize = 'cover';
-        largeAvatar.style.backgroundPosition = 'center';
-        largeAvatar.textContent = '';
-    }
 }
 
 function loadUserData() {
@@ -81,10 +52,6 @@ function loadUserData() {
 function updateUI() {
     if (userData) {
         document.getElementById('balance').textContent = '$' + formatNumber(userData.balance);
-        
-        if (userData.photo_url) {
-            setAvatarPhoto(userData.photo_url);
-        }
         
         if (userData.is_admin) {
             const adminNav = document.getElementById('admin-nav');
