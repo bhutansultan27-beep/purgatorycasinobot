@@ -298,23 +298,50 @@ class SQLDatabaseManager:
         finally:
             session.close()
     
-    def record_game(self, game_data: Dict[str, Any]):
+    def record_game(self, user_id_or_data, game_type: str = None, wager: float = None, profit: float = None, win: bool = None, username: str = None, game_snapshot: dict = None):
         session = self.get_session()
         try:
-            wager = game_data.get("wager", game_data.get("bet", 0))
-            payout = game_data.get("payout", 0)
+            if isinstance(user_id_or_data, dict):
+                game_data = user_id_or_data
+                user_id = game_data.get("user_id")
+                username = game_data.get("username", username)
+                game_type = game_data.get("game_type", game_data.get("game", "unknown"))
+                wager = game_data.get("wager", game_data.get("bet", 0))
+                payout = game_data.get("payout", 0)
+                result = game_data.get("result", "")
+                game_snapshot = game_data.get("game_snapshot", game_snapshot)
+                details = game_data
+            else:
+                user_id = user_id_or_data
+                payout = wager + profit if profit and profit > 0 else 0
+                result = "win" if win else "loss"
+                details = {
+                    "user_id": user_id,
+                    "game_type": game_type,
+                    "wager": wager,
+                    "profit": profit,
+                    "win": win
+                }
+            
+            if wager is None:
+                wager = 0
             multiplier = (payout / wager) if wager > 0 else 0.0
             
+            if not username and user_id:
+                user = session.query(User).filter_by(user_id=user_id).first()
+                if user:
+                    username = user.username
+            
             game = Game(
-                user_id=game_data.get("user_id"),
-                username=game_data.get("username"),
-                game_type=game_data.get("game_type", game_data.get("game", "unknown")),
+                user_id=user_id,
+                username=username,
+                game_type=game_type or "unknown",
                 wager=wager,
                 payout=payout,
-                result=game_data.get("result", ""),
+                result=result,
                 multiplier=multiplier,
-                details=game_data,
-                game_snapshot=game_data.get("game_snapshot"),
+                details=details,
+                game_snapshot=game_snapshot,
                 timestamp=datetime.now()
             )
             session.add(game)
