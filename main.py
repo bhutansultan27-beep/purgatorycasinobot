@@ -4939,13 +4939,7 @@ You are a **{admin_type}**
 Choose an option:"""
             
             keyboard = [
-                [InlineKeyboardButton("💰 Balance Management", callback_data="admin_balance_mgmt")],
-                [InlineKeyboardButton("👥 User Management", callback_data="admin_user_mgmt")],
-                [InlineKeyboardButton("💸 Withdrawals", callback_data="admin_withdrawals"),
-                 InlineKeyboardButton("💳 Deposits", callback_data="admin_deposits")],
-                [InlineKeyboardButton("👑 Admin Management", callback_data="admin_admin_mgmt")],
-                [InlineKeyboardButton("🛠️ System", callback_data="admin_system")],
-                [InlineKeyboardButton("📋 All Commands", callback_data="admin_all_commands")]
+                [InlineKeyboardButton("📋 Admin Commands", callback_data="admin_all_commands")]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             
@@ -7523,13 +7517,7 @@ You are a **{admin_type}**
 Choose an option:"""
                 
                 keyboard = [
-                    [InlineKeyboardButton("💰 Balance Management", callback_data="admin_balance_mgmt")],
-                    [InlineKeyboardButton("👥 User Management", callback_data="admin_user_mgmt")],
-                    [InlineKeyboardButton("💸 Withdrawals", callback_data="admin_withdrawals"),
-                     InlineKeyboardButton("💳 Deposits", callback_data="admin_deposits")],
-                    [InlineKeyboardButton("👑 Admin Management", callback_data="admin_admin_mgmt")],
-                    [InlineKeyboardButton("🛠️ System", callback_data="admin_system")],
-                    [InlineKeyboardButton("📋 All Commands", callback_data="admin_all_commands")]
+                    [InlineKeyboardButton("📋 Admin Commands", callback_data="admin_all_commands")]
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 await query.edit_message_text(admin_text, reply_markup=reply_markup, parse_mode="Markdown")
