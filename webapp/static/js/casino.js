@@ -65,6 +65,14 @@ function updateUI() {
         document.getElementById('games-played').textContent = userData.games_played || 0;
         document.getElementById('win-rate').textContent = (userData.win_rate || 0) + '%';
         
+        if (userData.photo_url) {
+            const avatarEl = document.getElementById('user-avatar');
+            avatarEl.style.backgroundImage = `url(${userData.photo_url})`;
+            avatarEl.style.backgroundSize = 'cover';
+            avatarEl.style.backgroundPosition = 'center';
+            avatarEl.textContent = '';
+        }
+        
         if (userData.is_admin) {
             const adminSection = document.getElementById('admin-section');
             if (adminSection) {

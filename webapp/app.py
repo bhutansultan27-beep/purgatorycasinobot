@@ -5,6 +5,7 @@ import json
 import hmac
 import hashlib
 import random
+import requests
 from urllib.parse import parse_qsl
 
 try:
@@ -39,6 +40,33 @@ def load_dynamic_admins():
 def is_admin(user_id):
     dynamic_admins = load_dynamic_admins()
     return user_id in ADMIN_IDS or user_id in dynamic_admins
+
+def get_user_profile_photo_url(user_id):
+    if not BOT_TOKEN or not user_id:
+        return None
+    try:
+        photos_response = requests.get(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/getUserProfilePhotos",
+            params={"user_id": user_id, "limit": 1},
+            timeout=5
+        )
+        photos_data = photos_response.json()
+        if photos_data.get("ok") and photos_data.get("result", {}).get("total_count", 0) > 0:
+            photos = photos_data["result"]["photos"]
+            if photos and len(photos) > 0 and len(photos[0]) > 0:
+                file_id = photos[0][-1]["file_id"]
+                file_response = requests.get(
+                    f"https://api.telegram.org/bot{BOT_TOKEN}/getFile",
+                    params={"file_id": file_id},
+                    timeout=5
+                )
+                file_data = file_response.json()
+                if file_data.get("ok"):
+                    file_path = file_data["result"]["file_path"]
+                    return f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+    except Exception as e:
+        print(f"Error fetching profile photo: {e}")
+    return None
 
 def validate_init_data(init_data):
     if not init_data or not BOT_TOKEN:
@@ -298,10 +326,12 @@ def get_user():
         
         user_data = None
         admin_status = False
+        photo_url = None
         
         if user_id:
             user_data = get_user_from_db(user_id)
             admin_status = is_admin(user_id)
+            photo_url = get_user_profile_photo_url(user_id)
         
         if not user_data:
             user_data = {
@@ -315,6 +345,7 @@ def get_user():
             }
         
         user_data["is_admin"] = admin_status
+        user_data["photo_url"] = photo_url
         
         bot_username = os.getenv("BOT_USERNAME", "GildTesoroCasinoBot")
         
