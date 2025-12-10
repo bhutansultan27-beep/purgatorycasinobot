@@ -94,18 +94,41 @@ function initSidebar() {
     const overlay = document.getElementById('sidebar-overlay');
     
     if (menuToggle) {
-        menuToggle.addEventListener('click', function() {
+        menuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             sidebar.classList.toggle('open');
             overlay.classList.toggle('open');
         });
     }
     
     if (overlay) {
-        overlay.addEventListener('click', function() {
+        overlay.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             sidebar.classList.remove('open');
             overlay.classList.remove('open');
         });
     }
+    
+    const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href && href.startsWith('#')) {
+                e.preventDefault();
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else if (href) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            }
+        });
+    });
 }
 
 function initCategoryTabs() {
