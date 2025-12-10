@@ -102,6 +102,8 @@ body {
     margin-bottom: 4px;
     transition: all 0.2s ease;
     font-size: 14px;
+    cursor: pointer;
+    pointer-events: auto;
 }
 
 .nav-item:hover {
