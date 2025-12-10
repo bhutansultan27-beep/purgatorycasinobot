@@ -6,6 +6,28 @@ expertMode = true
 channel = "stable-25_05"
 
 [workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Web App"
+
+[[workflows.workflow]]
+name = "Web App"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd webapp && gunicorn --bind 0.0.0.0:5000 app:app --reload"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [userenv]
 
@@ -28,7 +50,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 39553
+localPort = 36469
 externalPort = 3002
 
 [[ports]]

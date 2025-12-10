@@ -17,3 +17,5 @@ python-dotenv
 requests
 sqlalchemy
 gunicorn
+flask
+gunicorn

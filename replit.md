@@ -1,19 +1,28 @@
-# Telegram Casino Bot Project
+# Gild Tesoro Casino - Telegram Web App
 
 ## Overview
-This project was set up for a Telegram Casino Bot with a web application component. The packages `aiohttp` and `python-telegram-bot` are installed and ready to use.
+This is a Telegram Casino Web App with multiple games including Mines, Limbo, Keno, Hi-Lo, Crash, Coinflip, Blackjack, Baccarat, Roulette, and Slots.
 
 ## Project Status
-- Python environment configured with required packages
-- Ready for development
+- Web app is running on port 5000
+- All packages installed and configured
 
 ## Recent Changes
-- December 10, 2025: Initial import completed, cleaned up broken workflow configurations
+- December 10, 2025: Fixed mobile sidebar navigation - removed conflicting touchend event handlers that were blocking clicks on mobile devices. Improved CSS z-index and pointer-events for better mobile touch response.
 
 ## Architecture
 - **Language**: Python 3
-- **Dependencies**: aiohttp, python-telegram-bot
-- **Assets**: Various casino game images and reference screenshots in `attached_assets/`
+- **Framework**: Flask with Gunicorn
+- **Frontend**: HTML/CSS/JS with Telegram WebApp integration
+- **Dependencies**: flask, gunicorn, aiohttp, python-telegram-bot, sqlalchemy, psycopg2-binary, requests
+
+## File Structure
+- `webapp/` - Main web application
+  - `app.py` - Flask application
+  - `templates/` - HTML templates for all pages
+  - `static/css/` - CSS stylesheets
+  - `static/js/` - JavaScript files
+  - `static/images/` - Game card images and logo
 
 ## User Preferences
 (To be documented as the user works on the project)
