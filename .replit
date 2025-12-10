@@ -17,6 +17,10 @@ author = "agent"
 task = "workflow.run"
 args = "Telegram Bot"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Web App"
+
 [[workflows.workflow]]
 name = "Telegram Bot"
 author = "agent"
@@ -27,6 +31,18 @@ args = "python main.py"
 
 [workflows.workflow.metadata]
 outputType = "console"
+
+[[workflows.workflow]]
+name = "Web App"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd webapp && gunicorn --bind 0.0.0.0:5000 app:app --reload"
+waitForPort = 5000
 
 [userenv]
 
@@ -47,14 +63,6 @@ WEBHOOK_URL = "https://replit-casino-bot--stugbak2.replit.app"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 35351
-externalPort = 6000
-
-[[ports]]
-localPort = 38649
-externalPort = 5000
 
 [[ports]]
 localPort = 39553
