@@ -289,6 +289,359 @@ body {
     transform: scale(1.08);
 }
 
+/* Right Panel Styles */
+.right-panel-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.right-panel-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.right-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 400px;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    z-index: 201;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    max-width: 100%;
+}
+
+.right-panel.active {
+    transform: translateX(0);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.panel-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.panel-close {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.panel-close:hover {
+    color: var(--accent-purple);
+}
+
+.panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+.empty-state span {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+/* VIP Panel */
+.vip-card {
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.vip-progress {
+    display: flex;
+    gap: 16px;
+}
+
+.vip-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.progress-info h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: white;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--accent-green);
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+
+.vip-section {
+    margin-bottom: 20px;
+}
+
+.vip-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.reward-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.reward-item i {
+    font-size: 24px;
+    color: var(--accent-yellow);
+}
+
+.reward-item p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.reward-item span {
+    display: block;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* Chat Panel */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.chat-message {
+    padding: 12px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.chat-message strong {
+    color: var(--accent-purple);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.chat-message p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 8px;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 10px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: var(--accent-purple);
+}
+
+.chat-send {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.chat-send:hover {
+    transform: scale(1.05);
+}
+
+/* Profile Panel */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.profile-info h4 {
+    margin: 0;
+    font-size: 16px;
+    color: white;
+    font-weight: 600;
+}
+
+.profile-info p {
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.profile-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.profile-menu-item:hover {
+    background: var(--bg-hover);
+    transform: translateX(4px);
+}
+
+.profile-menu-item i {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+    color: var(--accent-purple);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+    transform: scale(1.02);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .right-panel {
+        width: 100%;
+    }
+}
+
 .balance-pill {
     display: flex;
     align-items: center;

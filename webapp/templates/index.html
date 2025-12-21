@@ -256,6 +256,182 @@
         </div>
     </div>
 
+    <!-- Right Side Panels -->
+    <div class="right-panel-overlay" id="right-panel-overlay"></div>
+
+    <!-- Bet Slip Panel -->
+    <div class="right-panel" id="bet-slip-panel">
+        <div class="panel-header">
+            <h3>Bet Slip</h3>
+            <button class="panel-close" data-panel="bet-slip-panel">&times;</button>
+        </div>
+        <div class="panel-content">
+            <div class="empty-state">
+                <i class="fas fa-clipboard"></i>
+                <p>Your Bet Slip is empty</p>
+                <span>Check out today's action to make a bet</span>
+            </div>
+            <button class="btn-primary" style="margin-top: 20px;">View Popular Sports</button>
+        </div>
+    </div>
+
+    <!-- VIP Panel -->
+    <div class="right-panel" id="vip-panel">
+        <div class="panel-header">
+            <h3>VIP</h3>
+            <button class="panel-close" data-panel="vip-panel">&times;</button>
+        </div>
+        <div class="panel-content">
+            <div class="vip-card">
+                <div class="vip-progress">
+                    <img src="/static/images/logo.png" alt="VIP" class="vip-image">
+                    <div class="progress-info">
+                        <h4>Your VIP Progress</h4>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%;"></div>
+                        </div>
+                        <p class="progress-text">45% to next level</p>
+                    </div>
+                </div>
+            </div>
+            <div class="vip-section">
+                <h4>Your Rewards</h4>
+                <div class="reward-item">
+                    <i class="fas fa-gift"></i>
+                    <div>
+                        <p>Daily Bonus</p>
+                        <span>Claim Soon!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Chat Panel -->
+    <div class="right-panel" id="chat-panel">
+        <div class="panel-header">
+            <h3>Global Chat</h3>
+            <button class="panel-close" data-panel="chat-panel">&times;</button>
+        </div>
+        <div class="panel-content">
+            <div class="chat-container">
+                <div class="chat-messages">
+                    <div class="chat-message">
+                        <strong>User123:</strong>
+                        <p>Just won big on Mines!</p>
+                    </div>
+                    <div class="chat-message">
+                        <strong>Player456:</strong>
+                        <p>Nice! Keep the wins coming</p>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" placeholder="Type a message..." class="chat-input">
+                    <button class="chat-send"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Panel -->
+    <div class="right-panel" id="profile-panel">
+        <div class="panel-header">
+            <h3>Profile</h3>
+            <button class="panel-close" data-panel="profile-panel">&times;</button>
+        </div>
+        <div class="panel-content">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-info">
+                    <h4>Player123</h4>
+                    <p>Level 5</p>
+                </div>
+            </div>
+            <div class="profile-menu">
+                <a href="/profile" class="profile-menu-item">
+                    <i class="fas fa-user"></i>
+                    <span>My Profile</span>
+                </a>
+                <a href="/wallet" class="profile-menu-item">
+                    <i class="fas fa-wallet"></i>
+                    <span>Wallet</span>
+                </a>
+                <a href="#" class="profile-menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="profile-menu-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
     <script src="/static/js/casino.js"></script>
+    <script>
+        // Panel management
+        function openPanel(panelId) {
+            const panel = document.getElementById(panelId);
+            const overlay = document.getElementById('right-panel-overlay');
+            if (panel) {
+                panel.classList.add('active');
+                overlay.classList.add('active');
+            }
+        }
+
+        function closePanel(panelId) {
+            const panel = document.getElementById(panelId);
+            const overlay = document.getElementById('right-panel-overlay');
+            if (panel) {
+                panel.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        }
+
+        // Event listeners for header buttons
+        document.querySelectorAll('.header-icon-btn').forEach((btn, index) => {
+            btn.addEventListener('click', function() {
+                const panels = ['bet-slip-panel', 'vip-panel', 'chat-panel', 'profile-panel'];
+                closeAllPanels();
+                if (index < panels.length) {
+                    openPanel(panels[index]);
+                }
+            });
+        });
+
+        // Sports/Casino toggle
+        document.querySelectorAll('.sidebar-category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.sidebar-category-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                closeAllPanels();
+            });
+        });
+
+        // Close panel buttons
+        document.querySelectorAll('.panel-close').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const panelId = this.getAttribute('data-panel');
+                closePanel(panelId);
+            });
+        });
+
+        // Close on overlay click
+        const overlay = document.getElementById('right-panel-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', closeAllPanels);
+        }
+
+        function closeAllPanels() {
+            document.querySelectorAll('.right-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            const overlay = document.getElementById('right-panel-overlay');
+            if (overlay) overlay.classList.remove('active');
+        }
+    </script>
 </body>
 </html>
