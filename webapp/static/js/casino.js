@@ -51,7 +51,12 @@ function loadUserData() {
 
 function updateUI() {
     if (userData) {
-        document.getElementById('balance').textContent = '$' + formatNumber(userData.balance);
+        const balanceText = '$' + formatNumber(userData.balance);
+        document.getElementById('balance').textContent = balanceText;
+        const balanceBarAmount = document.getElementById('balance-bar-amount');
+        if (balanceBarAmount) {
+            balanceBarAmount.textContent = balanceText;
+        }
         
         if (userData.is_admin) {
             const adminNav = document.getElementById('admin-nav');
@@ -64,6 +69,10 @@ function updateUI() {
 
 function showDemoData() {
     document.getElementById('balance').textContent = '$0.00';
+    const balanceBarAmount = document.getElementById('balance-bar-amount');
+    if (balanceBarAmount) {
+        balanceBarAmount.textContent = '$0.00';
+    }
 }
 
 function formatNumber(num) {
