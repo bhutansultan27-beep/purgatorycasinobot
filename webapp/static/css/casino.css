@@ -140,6 +140,19 @@ body {
     }
 }
 
+@media (max-width: 768px) {
+    .menu-toggle-sidebar {
+        display: none;
+    }
+}
+
+/* Hide Bets nav item on mobile */
+@media (max-width: 768px) {
+    .bottom-nav-item:nth-child(3) {
+        display: none;
+    }
+}
+
 .menu-toggle-sidebar {
     display: flex;
     background: none;
