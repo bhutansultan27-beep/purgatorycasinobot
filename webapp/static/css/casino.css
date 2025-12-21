@@ -191,7 +191,7 @@ body {
     flex: 1;
     margin-left: var(--sidebar-width);
     min-height: 100vh;
-    margin-top: 80px;
+    margin-top: 240px;
 }
 
 .top-header {
@@ -203,13 +203,13 @@ body {
     border-bottom: 1px solid var(--border-color);
     padding: 8px 15px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 8px;
     z-index: 50;
     white-space: nowrap;
     min-width: 0;
-    height: 80px;
+    height: auto;
     position: relative;
 }
 
@@ -258,6 +258,10 @@ body {
     .header-logo-img {
         width: 200px;
         height: 200px;
+    }
+    
+    .main-content {
+        margin-top: 216px;
     }
 }
 
