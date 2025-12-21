@@ -7,3 +7,12 @@ sqlalchemy
 requests
 gunicorn
 pymysql
+APScheduler
+flask
+gunicorn
+pymysql
+python-dotenv
+requests
+sqlalchemy
+telegram
+psycopg2-binary
