@@ -862,13 +862,13 @@ body {
 
 .promo-slide {
     flex: 0 0 320px;
-    height: 250px;
+    height: 200px;
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
     border-radius: 12px;
     transition: transform 0.3s ease;
-    box-shadow: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .category-tabs {
