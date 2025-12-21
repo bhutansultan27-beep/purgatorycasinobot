@@ -836,7 +836,7 @@ body {
     overflow-x: auto;
     overflow-y: hidden;
     box-shadow: none;
-    height: 160px;
+    height: 280px;
     cursor: grab;
     scroll-behavior: smooth;
     background: transparent;
