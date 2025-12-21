@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#0d0d0f">
+    <meta name="theme-color" content="#0a0e27">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="rakebet">
@@ -13,230 +13,315 @@
     <title>Deposit - rakebet</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="/static/css/casino.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .deposit-header {
-            text-align: center;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .deposit-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #4ade80;
-            margin-bottom: 10px;
-        }
-        .deposit-subtitle {
-            color: #888;
-            font-size: 14px;
-        }
-        .balance-display {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .balance-label {
-            color: #888;
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-        .balance-amount {
-            font-size: 36px;
-            font-weight: bold;
-            color: #4ade80;
-        }
-        .crypto-section {
-            background: #1a1a2e;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .section-title {
-            font-size: 16px;
-            color: #d4af37;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .crypto-options {
+        .wallet-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            align-items: flex-start;
+            justify-content: center;
+            z-index: 1000;
+            padding-top: 40px;
+            overflow-y: auto;
         }
-        .crypto-btn {
+
+        .wallet-modal {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            padding: 30px 25px;
+            position: relative;
+        }
+
+        .wallet-modal-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 15px;
-            padding: 16px 20px;
-            background: #2a2a3e;
-            border: 2px solid transparent;
-            border-radius: 12px;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            margin-bottom: 30px;
         }
-        .crypto-btn:hover {
-            border-color: #d4af37;
-            background: #3a3a4e;
+
+        .wallet-modal-tabs {
+            display: flex;
+            gap: 30px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            position: relative;
         }
-        .crypto-btn.selected {
-            border-color: #4ade80;
-            background: rgba(74, 222, 128, 0.1);
-        }
-        .crypto-icon {
-            font-size: 32px;
-        }
-        .crypto-info {
-            flex: 1;
-            text-align: left;
-        }
-        .crypto-name {
-            font-size: 18px;
+
+        .wallet-modal-tab {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 14px;
             font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            padding-bottom: 5px;
+            position: relative;
         }
-        .crypto-network {
-            font-size: 12px;
-            color: #888;
+
+        .wallet-modal-tab:hover {
+            color: var(--text-primary);
         }
-        .deposit-address-section {
-            background: #1a1a2e;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            display: none;
+
+        .wallet-modal-tab.active {
+            color: var(--accent-purple);
         }
-        .deposit-address-section.active {
-            display: block;
+
+        .wallet-modal-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-purple);
         }
-        .qr-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .qr-placeholder {
-            width: 180px;
-            height: 180px;
-            background: #fff;
-            border-radius: 12px;
-            margin: 0 auto;
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #1a1a2e;
+            transition: transform 0.2s ease;
+        }
+
+        .close-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: capitalize;
+        }
+
+        .form-control {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 14px;
+            color: var(--text-primary);
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
-        .address-box {
-            background: #2a2a3e;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
+
+        .form-control:hover {
+            border-color: var(--accent-purple);
         }
-        .address-label {
+
+        .form-control-icon {
+            font-size: 16px;
+            color: var(--accent-purple);
+        }
+
+        .form-control-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dropdown-arrow {
+            color: var(--text-secondary);
             font-size: 12px;
-            color: #888;
-            margin-bottom: 8px;
         }
-        .address-value {
-            font-family: monospace;
+
+        .address-field {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            color: var(--text-secondary);
+            font-family: 'Courier New', monospace;
             font-size: 12px;
-            color: #fff;
             word-break: break-all;
+            line-height: 1.6;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .copy-icon {
+            cursor: pointer;
+            color: var(--accent-purple);
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .copy-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .warning-message {
+            background: rgba(255, 107, 107, 0.1);
+            border-left: 3px solid var(--accent-red);
+            border-radius: 4px;
+            padding: 12px 14px;
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .warning-icon {
+            color: var(--accent-red);
+            font-size: 14px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .warning-text {
+            color: var(--accent-red);
+            font-size: 12px;
             line-height: 1.5;
         }
-        .copy-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #d4af37, #f4d03f);
-            border: none;
-            border-radius: 10px;
-            color: #1a1a2e;
-            font-size: 16px;
-            font-weight: 600;
+
+        .qr-section {
+            text-align: center;
+            margin: 25px 0;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 8px;
+        }
+
+        .qr-code {
+            width: 180px;
+            height: 180px;
+            background: white;
+            margin: 0 auto;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .deposit-history-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .deposit-history-link a {
+            color: var(--accent-purple);
+            text-decoration: underline;
+            font-size: 12px;
             cursor: pointer;
         }
-        .deposit-info {
-            background: rgba(74, 222, 128, 0.1);
-            border: 1px solid #4ade80;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
+
+        .deposit-history-link a:hover {
+            opacity: 0.8;
         }
-        .deposit-info p {
-            color: #4ade80;
-            font-size: 13px;
-            margin: 5px 0;
+
+        .tab-content {
+            display: none;
         }
-        .warning-box {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid #ef4444;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-        .warning-box p {
-            color: #ef4444;
-            font-size: 13px;
-            margin: 5px 0;
+
+        .tab-content.active {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="/" class="back-button">← Menu</a>
-        
-        <div class="deposit-header">
-        </div>
+    <div class="wallet-modal-overlay">
+        <div class="wallet-modal">
+            <div class="wallet-modal-header">
+                <h1 style="margin: 0; font-size: 18px;"></h1>
+                <button class="close-btn" onclick="goBack()">✕</button>
+            </div>
 
-        <div class="balance-display">
-            <div class="balance-label">Current Balance</div>
-            <div class="balance-amount" id="current-balance">$0.00</div>
-        </div>
+            <div class="wallet-modal-tabs">
+                <button class="wallet-modal-tab active" onclick="switchTab('deposit')">Deposit</button>
+                <button class="wallet-modal-tab" onclick="switchTab('withdraw')">Withdraw</button>
+                <button class="wallet-modal-tab" onclick="switchTab('buy-crypto')">Buy Crypto</button>
+                <button class="wallet-modal-tab" onclick="switchTab('tip')">Tip</button>
+            </div>
 
-        <div class="crypto-section">
-            <div class="section-title">Select Cryptocurrency</div>
-            <div class="crypto-options">
-                <button class="crypto-btn" onclick="selectCrypto('LTC')" id="btn-ltc">
-                    <img src="https://cryptologos.cc/logos/litecoin-ltc-logo.svg" alt="LTC" class="crypto-icon" style="width:32px;height:32px;">
-                    <div class="crypto-info">
-                        <div class="crypto-name">Litecoin</div>
+            <div id="deposit" class="tab-content active">
+                <div class="form-section">
+                    <label class="form-label">Currency</label>
+                    <div class="form-control" onclick="toggleDropdown('currency')">
+                        <span class="form-control-icon">
+                            <i class="fab fa-ethereum"></i>
+                        </span>
+                        <div class="form-control-content">
+                            <span>Ethereum (ETH)</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </div>
                     </div>
-                </button>
-                <button class="crypto-btn" onclick="selectCrypto('SOL')" id="btn-sol">
-                    <img src="https://cryptologos.cc/logos/solana-sol-logo.svg" alt="SOL" class="crypto-icon" style="width:32px;height:32px;">
-                    <div class="crypto-info">
-                        <div class="crypto-name">Solana</div>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-label">Network</label>
+                    <div class="form-control" onclick="toggleDropdown('network')">
+                        <div class="form-control-content">
+                            <span>ERC20</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </div>
                     </div>
-                </button>
-            </div>
-        </div>
+                </div>
 
-        <div class="deposit-address-section" id="ltc-section">
-            <div class="section-title">LTC Deposit Address</div>
-            <div class="address-box">
-                <div class="address-label">Send LTC to this address:</div>
-                <div class="address-value" id="ltc-address">Loading...</div>
-            </div>
-            <button class="copy-btn" onclick="copyAddress('ltc')">Copy Address</button>
-            <div class="deposit-info">
-                <p>59:59</p>
-                <p>TX ID: waiting for deposit...</p>
-            </div>
-            <div class="warning-box">
-                <p>Only send LTC to this address!</p>
-                <p>Sending other tokens will result in loss of funds.</p>
-            </div>
-        </div>
+                <div class="form-section">
+                    <label class="form-label">Ethereum (ERC20) Address</label>
+                    <div class="address-field">
+                        <span id="deposit-address">0xeD4557e212b9DFdA036E875D0537D7681a3899d</span>
+                        <span class="copy-icon" onclick="copyAddress()" title="Copy address">
+                            <i class="fas fa-copy"></i>
+                        </span>
+                    </div>
 
-        <div class="deposit-address-section" id="sol-section">
-            <div class="section-title">SOL Deposit Address</div>
-            <div class="address-box">
-                <div class="address-label">Send SOL to this address:</div>
-                <div class="address-value" id="sol-address">Coming Soon</div>
+                    <div class="warning-message">
+                        <span class="warning-icon">⚠</span>
+                        <span class="warning-text">Your deposit must be sent on the Ethereum (ERC20) network to be processed.</span>
+                    </div>
+                </div>
+
+                <div class="qr-section">
+                    <div class="qr-code" id="qr-code">
+                        <img src="https://via.placeholder.com/180x180?text=QR+Code" alt="QR Code" style="width: 100%; height: 100%; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <div class="deposit-history-link">
+                    <a href="/history">Deposit history</a>
+                </div>
             </div>
-            <button class="copy-btn" onclick="copyAddress('sol')">Copy Address</button>
-            <div class="deposit-info">
-                <p>59:59</p>
-                <p>TX ID: waiting for deposit...</p>
+
+            <div id="withdraw" class="tab-content">
+                <p style="color: var(--text-secondary); text-align: center;">Withdraw page coming soon...</p>
+            </div>
+
+            <div id="buy-crypto" class="tab-content">
+                <p style="color: var(--text-secondary); text-align: center;">Buy Crypto page coming soon...</p>
+            </div>
+
+            <div id="tip" class="tab-content">
+                <p style="color: var(--text-secondary); text-align: center;">Tip page coming soon...</p>
             </div>
         </div>
     </div>
@@ -246,73 +331,36 @@
         tg.ready();
         tg.expand();
 
-        let selectedCrypto = null;
-        let depositAddresses = {};
+        function switchTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
 
-        document.addEventListener('DOMContentLoaded', function() {
-            loadUserData();
-            loadDepositInfo();
-        });
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.wallet-modal-tab');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
 
-        function loadUserData() {
-            const initData = tg.initData || '';
-            fetch('/api/user', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ initData: initData })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.user) {
-                    document.getElementById('current-balance').textContent = '$' + formatNumber(data.user.balance);
-                }
-            })
-            .catch(error => console.error('Error:', error));
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
         }
 
-        function loadDepositInfo() {
-            const initData = tg.initData || '';
-            fetch('/api/deposit-info', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ initData: initData })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    depositAddresses = data.addresses || {};
-                    if (depositAddresses.ltc) {
-                        document.getElementById('ltc-address').textContent = depositAddresses.ltc;
-                    }
-                    if (depositAddresses.sol) {
-                        document.getElementById('sol-address').textContent = depositAddresses.sol;
-                    }
-                }
-            })
-            .catch(error => console.error('Error:', error));
+        function toggleDropdown(type) {
+            // Placeholder for dropdown functionality
+            console.log('Toggle dropdown:', type);
         }
 
-        function selectCrypto(crypto) {
-            document.querySelectorAll('.crypto-btn').forEach(btn => btn.classList.remove('selected'));
-            document.querySelectorAll('.deposit-address-section').forEach(sec => sec.classList.remove('active'));
-            
-            document.getElementById('btn-' + crypto.toLowerCase()).classList.add('selected');
-            document.getElementById(crypto.toLowerCase() + '-section').classList.add('active');
-            selectedCrypto = crypto;
-        }
-
-        function copyAddress(crypto) {
-            const address = document.getElementById(crypto + '-address').textContent;
+        function copyAddress() {
+            const address = document.getElementById('deposit-address').textContent;
             navigator.clipboard.writeText(address).then(() => {
-                tg.showAlert('Address copied to clipboard!');
-            }).catch(() => {
-                tg.showAlert('Failed to copy address');
+                alert('Address copied to clipboard!');
             });
         }
 
-        function formatNumber(num) {
-            if (num === undefined || num === null) return '0.00';
-            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        function goBack() {
+            window.location.href = '/wallet';
         }
     </script>
 </body>
