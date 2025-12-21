@@ -830,15 +830,16 @@ body {
 }
 
 .promo-banner {
-    border-radius: 12px;
+    border-radius: 0;
     margin-bottom: 25px;
     position: relative;
     overflow-x: auto;
     overflow-y: hidden;
-    box-shadow: 0 8px 32px rgba(168, 85, 247, 0.3);
+    box-shadow: none;
     height: 160px;
     cursor: grab;
     scroll-behavior: smooth;
+    background: transparent;
 }
 
 .promo-banner::-webkit-scrollbar {
@@ -854,9 +855,9 @@ body {
     display: flex;
     width: max-content;
     height: 100%;
-    gap: 0;
-    padding: 0;
-    align-items: stretch;
+    gap: 12px;
+    padding: 0 16px;
+    align-items: center;
 }
 
 .promo-slide {
@@ -865,9 +866,9 @@ body {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    border-radius: 0;
+    border-radius: 12px;
     transition: transform 0.3s ease;
-    box-shadow: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .category-tabs {
