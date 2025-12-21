@@ -63,15 +63,15 @@ body {
 }
 
 .sidebar-header {
-    padding: 12px;
+    padding: 8px;
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 10px;
+    gap: 6px;
     border-bottom: 1px solid var(--border-color);
     text-decoration: none;
     cursor: pointer;
-    height: 70px;
+    height: 50px;
 }
 
 .menu-toggle-sidebar {
@@ -79,9 +79,9 @@ body {
     background: none;
     border: none;
     color: var(--text-primary);
-    font-size: 20px;
+    font-size: 16px;
     cursor: pointer;
-    padding: 6px;
+    padding: 4px;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
@@ -99,14 +99,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 12px 20px;
+    gap: 4px;
+    padding: 8px 14px;
     border: none;
     background: var(--bg-card);
     color: var(--text-secondary);
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     transition: all 0.3s ease;
     white-space: nowrap;
