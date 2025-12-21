@@ -5,21 +5,21 @@
 }
 
 :root {
-    --bg-primary: #0a0e27;
-    --bg-secondary: #0f1535;
-    --bg-card: #151d42;
-    --bg-hover: #1a2454;
-    --accent-purple: #a855f7;
-    --accent-pink: #ec4899;
-    --accent-blue: #3b82f6;
-    --accent-green: #22c55e;
-    --accent-yellow: #eab308;
-    --accent-orange: #f97316;
-    --accent-red: #ef4444;
+    --bg-primary: #37335E;
+    --bg-secondary: #063A72;
+    --bg-card: #10216E;
+    --bg-hover: #1a3d8f;
+    --accent-purple: #BA0963;
+    --accent-pink: #DC9CC4;
+    --accent-blue: #11A9EF;
+    --accent-green: #4C9305;
+    --accent-yellow: #AEF964;
+    --accent-orange: #BA0963;
+    --accent-red: #AD5272;
     --text-primary: #ffffff;
-    --text-secondary: #9ca3af;
-    --text-muted: #6b7280;
-    --border-color: #1e2d5f;
+    --text-secondary: #A2A8CC;
+    --text-muted: #8A8FB0;
+    --border-color: #1a3d8f;
     --sidebar-width: 240px;
 }
 
@@ -661,29 +661,51 @@ body {
 .wallet-btn-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+    gap: 10px;
+    background: linear-gradient(135deg, #BA0963, #DC9CC4);
     border: none;
-    border-radius: 25px;
-    padding: 8px 20px;
+    border-radius: 12px;
+    padding: 11px 22px;
     color: white;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 700;
     cursor: pointer;
     text-decoration: none;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(186, 9, 99, 0.35);
+    position: relative;
+    overflow: hidden;
+}
+
+.wallet-btn-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.15);
+    transition: left 0.3s ease;
 }
 
 .wallet-btn-header:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(186, 9, 99, 0.4);
+}
+
+.wallet-btn-header:hover::before {
+    left: 100%;
+}
+
+.wallet-btn-header i {
+    font-size: 16px;
 }
 
 .user-avatar-header {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+    background: linear-gradient(135deg, #BA0963, #DC9CC4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -691,6 +713,13 @@ body {
     cursor: pointer;
     background-size: cover;
     background-position: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 8px rgba(186, 9, 99, 0.2);
+}
+
+.user-avatar-header:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(186, 9, 99, 0.3);
 }
 
 .content-area {
