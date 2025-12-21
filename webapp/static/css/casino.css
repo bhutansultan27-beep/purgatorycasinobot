@@ -247,15 +247,27 @@ body {
     flex-shrink: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .header-logo-img {
-        width: 150px;
-        height: 150px;
+        width: 180px;
+        height: 180px;
     }
     
     .top-header {
         height: auto;
-        min-height: 120px;
+        min-height: 130px;
+    }
+}
+
+@media (max-width: 600px) {
+    .header-logo-img {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .top-header {
+        height: auto;
+        min-height: 150px;
     }
 }
 
