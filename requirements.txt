@@ -16,3 +16,7 @@ requests
 sqlalchemy
 telegram
 psycopg2-binary
+flask
+gunicorn
+python-dotenv
+requests
