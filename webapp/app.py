@@ -741,6 +741,45 @@ def get_sports_odds():
                             'under_odds': round((under_obj.get('price', 1) - 1) * 100) if under_obj.get('price', 0) > 0 else -110
                         }
                     
+                    # Determine actual status based on commence_time
+                    from datetime import datetime
+                    commence_time_str = event.get('commence_time', '')
+                    actual_status = 'scheduled'
+                    
+                    try:
+                        if commence_time_str:
+                            # Parse ISO format datetime
+                            if 'T' in commence_time_str:
+                                if commence_time_str.endswith('Z'):
+                                    commence_dt = datetime.fromisoformat(commence_time_str.replace('Z', '+00:00'))
+                                else:
+                                    commence_dt = datetime.fromisoformat(commence_time_str)
+                            else:
+                                # Fallback for non-ISO format
+                                from dateutil import parser
+                                commence_dt = parser.parse(commence_time_str)
+                            
+                            # Only show games that are upcoming (not in the past)
+                            # Skip games that have already started
+                            from datetime import datetime, timezone
+                            now = datetime.now(timezone.utc) if commence_dt.tzinfo else datetime.now()
+                            
+                            # Only include games that start in the future or very recently (within 3 hours)
+                            time_diff = (commence_dt - now).total_seconds()
+                            if time_diff < -10800:  # -3 hours in seconds
+                                continue  # Skip games that started more than 3 hours ago
+                            elif time_diff < 0:
+                                actual_status = 'live'
+                            else:
+                                actual_status = 'scheduled'
+                    except:
+                        # If we can't parse the time, check the API status
+                        api_status = event.get('status', 'scheduled')
+                        if api_status in ['live', 'in_play']:
+                            actual_status = 'live'
+                        else:
+                            actual_status = 'scheduled'
+                    
                     event_data = {
                         'id': event.get('id'),
                         'home_team': event.get('home_team'),
@@ -748,7 +787,7 @@ def get_sports_odds():
                         'home_odds': home_odds_american,
                         'away_odds': away_odds_american,
                         'commence_time': event.get('commence_time'),
-                        'status': event.get('status', 'scheduled')
+                        'status': actual_status
                     }
                     
                     if spreads_info:
