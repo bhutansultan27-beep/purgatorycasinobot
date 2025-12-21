@@ -651,19 +651,19 @@ def get_sports_odds():
         elif league == 'nfl':
             sport_key = 'americanfootball_nfl'
         
-        # Use correct /odds endpoint instead of /events
+        # Use correct /odds endpoint with multiple markets
         url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds"
+        # Try to fetch multiple market types: h2h (moneyline), spreads, totals
         params = {
             'apiKey': api_key,
             'regions': 'us',
-            'markets': 'h2h',
+            'markets': 'h2h,spreads,totals',
             'orderBy': 'commence_time'
         }
         
         print(f"Fetching odds from: {url}")
         response = requests.get(url, params=params, timeout=10)
         print(f"Response status: {response.status_code}")
-        print(f"Response text: {response.text[:500]}")
         
         if response.status_code != 200:
             print(f"API error: {response.status_code}. Response: {response.text}")
@@ -687,33 +687,76 @@ def get_sports_odds():
             
             bookmakers = event.get('bookmakers', [])
             if bookmakers:
-                markets = bookmakers[0].get('markets', [])
-                if markets:
-                    h2h = markets[0].get('outcomes', [])
-                    if len(h2h) >= 2:
-                        home_odds = h2h[0].get('price', 0)
-                        away_odds = h2h[1].get('price', 0)
+                # Extract all market types
+                event_markets = bookmakers[0].get('markets', [])
+                h2h_data = None
+                spreads_data = None
+                totals_data = None
+                
+                for market in event_markets:
+                    market_key = market.get('key', '')
+                    if market_key == 'h2h':
+                        h2h_data = market.get('outcomes', [])
+                    elif market_key == 'spreads':
+                        spreads_data = market.get('outcomes', [])
+                    elif market_key == 'totals':
+                        totals_data = market.get('outcomes', [])
+                
+                # Process h2h (moneyline) if available
+                if h2h_data and len(h2h_data) >= 2:
+                    home_odds = h2h_data[0].get('price', 0)
+                    away_odds = h2h_data[1].get('price', 0)
+                    
+                    # Convert decimal odds to American format
+                    if home_odds > 0:
+                        home_odds_american = round((home_odds - 1) * 100) if home_odds >= 2 else round(-100 / (home_odds - 1))
+                    else:
+                        home_odds_american = -110
                         
-                        # Convert decimal odds to American format
-                        if home_odds > 0:
-                            home_odds_american = round((home_odds - 1) * 100) if home_odds >= 2 else round(-100 / (home_odds - 1))
-                        else:
-                            home_odds_american = -110
-                            
-                        if away_odds > 0:
-                            away_odds_american = round((away_odds - 1) * 100) if away_odds >= 2 else round(-100 / (away_odds - 1))
-                        else:
-                            away_odds_american = -110
-                        
-                        formatted_events.append({
-                            'id': event.get('id'),
-                            'home_team': event.get('home_team'),
-                            'away_team': event.get('away_team'),
-                            'home_odds': home_odds_american,
-                            'away_odds': away_odds_american,
-                            'commence_time': event.get('commence_time'),
-                            'status': event.get('status', 'scheduled')
-                        })
+                    if away_odds > 0:
+                        away_odds_american = round((away_odds - 1) * 100) if away_odds >= 2 else round(-100 / (away_odds - 1))
+                    else:
+                        away_odds_american = -110
+                    
+                    # Process spreads if available
+                    spreads_info = None
+                    if spreads_data and len(spreads_data) >= 2:
+                        home_spread_obj = spreads_data[0]
+                        away_spread_obj = spreads_data[1]
+                        spreads_info = {
+                            'home_spread': home_spread_obj.get('point', 0),
+                            'home_spread_odds': round((home_spread_obj.get('price', 1) - 1) * 100) if home_spread_obj.get('price', 0) > 0 else -110,
+                            'away_spread': away_spread_obj.get('point', 0),
+                            'away_spread_odds': round((away_spread_obj.get('price', 1) - 1) * 100) if away_spread_obj.get('price', 0) > 0 else -110
+                        }
+                    
+                    # Process totals if available
+                    totals_info = None
+                    if totals_data and len(totals_data) >= 2:
+                        over_obj = totals_data[0]
+                        under_obj = totals_data[1]
+                        totals_info = {
+                            'total': over_obj.get('point', 0),
+                            'over_odds': round((over_obj.get('price', 1) - 1) * 100) if over_obj.get('price', 0) > 0 else -110,
+                            'under_odds': round((under_obj.get('price', 1) - 1) * 100) if under_obj.get('price', 0) > 0 else -110
+                        }
+                    
+                    event_data = {
+                        'id': event.get('id'),
+                        'home_team': event.get('home_team'),
+                        'away_team': event.get('away_team'),
+                        'home_odds': home_odds_american,
+                        'away_odds': away_odds_american,
+                        'commence_time': event.get('commence_time'),
+                        'status': event.get('status', 'scheduled')
+                    }
+                    
+                    if spreads_info:
+                        event_data['spreads'] = spreads_info
+                    if totals_info:
+                        event_data['totals'] = totals_info
+                    
+                    formatted_events.append(event_data)
         
         if len(formatted_events) == 0:
             print("No events formatted, using mock data")
@@ -737,6 +780,17 @@ def get_mock_odds():
             'away_team': 'Golden State Warriors',
             'home_odds': -110,
             'away_odds': -110,
+            'spreads': {
+                'home_spread': -4.5,
+                'home_spread_odds': -110,
+                'away_spread': 4.5,
+                'away_spread_odds': -110
+            },
+            'totals': {
+                'total': 215.5,
+                'over_odds': -110,
+                'under_odds': -110
+            },
             'commence_time': (now + timedelta(hours=2)).isoformat(),
             'status': 'scheduled'
         },
@@ -746,6 +800,17 @@ def get_mock_odds():
             'away_team': 'Boston Celtics',
             'home_odds': -120,
             'away_odds': 100,
+            'spreads': {
+                'home_spread': -2.5,
+                'home_spread_odds': -110,
+                'away_spread': 2.5,
+                'away_spread_odds': -110
+            },
+            'totals': {
+                'total': 218,
+                'over_odds': -110,
+                'under_odds': -110
+            },
             'commence_time': (now + timedelta(hours=4)).isoformat(),
             'status': 'scheduled'
         },
@@ -755,6 +820,17 @@ def get_mock_odds():
             'away_team': 'Dallas Mavericks',
             'home_odds': 110,
             'away_odds': -130,
+            'spreads': {
+                'home_spread': 3.5,
+                'home_spread_odds': -110,
+                'away_spread': -3.5,
+                'away_spread_odds': -110
+            },
+            'totals': {
+                'total': 210,
+                'over_odds': -110,
+                'under_odds': -110
+            },
             'commence_time': (now + timedelta(hours=6)).isoformat(),
             'status': 'scheduled'
         },
@@ -764,6 +840,17 @@ def get_mock_odds():
             'away_team': 'New York Knicks',
             'home_odds': -150,
             'away_odds': 120,
+            'spreads': {
+                'home_spread': -5.5,
+                'home_spread_odds': -110,
+                'away_spread': 5.5,
+                'away_spread_odds': -110
+            },
+            'totals': {
+                'total': 222,
+                'over_odds': -110,
+                'under_odds': -110
+            },
             'commence_time': (now + timedelta(hours=3)).isoformat(),
             'status': 'scheduled'
         },
@@ -773,6 +860,17 @@ def get_mock_odds():
             'away_team': 'Liverpool',
             'home_odds': -110,
             'away_odds': -110,
+            'spreads': {
+                'home_spread': -0.5,
+                'home_spread_odds': -110,
+                'away_spread': 0.5,
+                'away_spread_odds': -110
+            },
+            'totals': {
+                'total': 2.5,
+                'over_odds': -110,
+                'under_odds': -110
+            },
             'commence_time': (now + timedelta(hours=5)).isoformat(),
             'status': 'scheduled'
         }

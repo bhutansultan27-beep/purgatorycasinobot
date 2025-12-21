@@ -1,11 +1,21 @@
 let sportsUserData = null;
 let currentSportFilter = '';
+let oddsRefreshInterval = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     loadSportsUserData();
     initSidebar();
     loadSportsOdds();
     initSportsFilters();
+    
+    // Auto-refresh odds every 15 seconds for live updates
+    oddsRefreshInterval = setInterval(loadSportsOdds, 15000);
+});
+
+window.addEventListener('beforeunload', function() {
+    if (oddsRefreshInterval) {
+        clearInterval(oddsRefreshInterval);
+    }
 });
 
 function initSportsFilters() {
@@ -145,6 +155,47 @@ function displayAllGames(odds) {
         const timeStr = eventTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const isLive = event.status === 'live';
         
+        // Build spreads and totals section
+        let spreadsHTML = '';
+        if (event.spreads) {
+            spreadsHTML = `
+                <div class="props-section">
+                    <div class="prop-row">
+                        <span class="prop-label">SPREAD</span>
+                        <span class="prop-odds" onclick="openSportsBetModal('${event.id}', '${event.home_team}', '${event.home_team} ${event.spreads.home_spread > 0 ? '+' : ''}${event.spreads.home_spread}', ${event.spreads.home_spread_odds})" style="cursor: pointer;">
+                            ${event.home_team.split(' ').pop()} ${event.spreads.home_spread > 0 ? '+' : ''}${event.spreads.home_spread} (${event.spreads.home_spread_odds > 0 ? '+' : ''}${event.spreads.home_spread_odds})
+                        </span>
+                    </div>
+                    <div class="prop-row">
+                        <span class="prop-label"></span>
+                        <span class="prop-odds" onclick="openSportsBetModal('${event.id}', '${event.away_team}', '${event.away_team} ${event.spreads.away_spread > 0 ? '+' : ''}${event.spreads.away_spread}', ${event.spreads.away_spread_odds})" style="cursor: pointer;">
+                            ${event.away_team.split(' ').pop()} ${event.spreads.away_spread > 0 ? '+' : ''}${event.spreads.away_spread} (${event.spreads.away_spread_odds > 0 ? '+' : ''}${event.spreads.away_spread_odds})
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        let totalsHTML = '';
+        if (event.totals) {
+            totalsHTML = `
+                <div class="props-section">
+                    <div class="prop-row">
+                        <span class="prop-label">TOTAL O/U</span>
+                        <span class="prop-odds" onclick="openSportsBetModal('${event.id}', 'OVER', 'Over ${event.totals.total}', ${event.totals.over_odds})" style="cursor: pointer;">
+                            O ${event.totals.total} (${event.totals.over_odds > 0 ? '+' : ''}${event.totals.over_odds})
+                        </span>
+                    </div>
+                    <div class="prop-row">
+                        <span class="prop-label"></span>
+                        <span class="prop-odds" onclick="openSportsBetModal('${event.id}', 'UNDER', 'Under ${event.totals.total}', ${event.totals.under_odds})" style="cursor: pointer;">
+                            U ${event.totals.total} (${event.totals.under_odds > 0 ? '+' : ''}${event.totals.under_odds})
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+        
         eventEl.innerHTML = `
             <div class="game-header">
                 <span class="game-league">${event.sport_key || 'SPORTS'}</span>
@@ -172,6 +223,8 @@ function displayAllGames(odds) {
                     </span>
                 </div>
             </div>
+            ${spreadsHTML}
+            ${totalsHTML}
         `;
         
         container.appendChild(eventEl);
