@@ -5,21 +5,21 @@
 }
 
 :root {
-    --bg-primary: #0D1729;
-    --bg-secondary: #172846;
-    --bg-card: #1F3354;
-    --bg-hover: #254869;
-    --accent-purple: #4BA3D0;
-    --accent-pink: #5FD068;
-    --accent-blue: #4BA3D0;
-    --accent-green: #5FD068;
-    --accent-yellow: #5FD068;
-    --accent-orange: #4BA3D0;
+    --bg-primary: #0F1419;
+    --bg-secondary: #1C2127;
+    --bg-card: #262D35;
+    --bg-hover: #3A4149;
+    --accent-purple: #3FAEE8;
+    --accent-pink: #3FAEE8;
+    --accent-blue: #3FAEE8;
+    --accent-green: #26C485;
+    --accent-yellow: #F4A460;
+    --accent-orange: #3FAEE8;
     --accent-red: #FF6B6B;
-    --text-primary: #ffffff;
-    --text-secondary: #B0B8D4;
-    --text-muted: #7A8399;
-    --border-color: #254869;
+    --text-primary: #FFFFFF;
+    --text-secondary: #9BA5B0;
+    --text-muted: #6B7480;
+    --border-color: #3A4149;
     --sidebar-width: 240px;
 }
 
@@ -28,6 +28,7 @@ html, body {
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    padding-top: max(12px, env(safe-area-inset-top));
 }
 
 body {
@@ -201,7 +202,7 @@ body {
     right: 0;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
-    padding: 0px 15px;
+    padding: max(12px, env(safe-area-inset-top)) 15px 0px 15px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -211,6 +212,7 @@ body {
     min-width: 0;
     height: 80px;
     margin: 0;
+    min-height: calc(80px + env(safe-area-inset-top));
 }
 
 .menu-toggle {
