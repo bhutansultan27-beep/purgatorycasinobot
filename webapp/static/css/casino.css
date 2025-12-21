@@ -1027,10 +1027,6 @@ body {
     justify-content: center;
     overflow: hidden;
     transition: box-shadow 0.3s ease;
-    border: none;
-    box-shadow: 
-        0 0 0 12px rgba(200, 220, 255, 0.5),
-        0 0 0 14px rgba(255, 255, 255, 0.8);
 }
 
 .game-card-img {
