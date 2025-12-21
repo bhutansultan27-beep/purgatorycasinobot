@@ -839,8 +839,16 @@ body {
     }
     
     .app-container {
-        margin-top: 32px;
         margin-bottom: 80px;
+    }
+    
+    .top-header {
+        top: 32px;
+        position: fixed;
+    }
+    
+    .main-content {
+        margin-top: calc(32px + 64px);
     }
 }
 
