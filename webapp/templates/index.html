@@ -245,8 +245,6 @@
         </main>
     </div>
 
-    <!-- Snow Container for Christmas Effect -->
-    <div class="snow-container" id="snow-container"></div>
 
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
@@ -378,89 +376,7 @@
 
     <script src="/static/js/casino.js"></script>
     <script>
-        // Christmas Snow Effect
-        function initSnowEffect() {
-            const snowContainer = document.getElementById('snow-container');
-            if (!snowContainer) return;
-
-            // Create falling snowflakes
-            function createSnowflake() {
-                const snowflake = document.createElement('div');
-                snowflake.classList.add('snowflake');
-                snowflake.textContent = '❄';
-                
-                const left = Math.random() * window.innerWidth;
-                const duration = 8 + Math.random() * 4;
-                const delay = Math.random() * 2;
-                const speed = ['falling', 'falling-slow', 'falling-fast'][Math.floor(Math.random() * 3)];
-                
-                snowflake.style.left = left + 'px';
-                snowflake.style.animationDuration = duration + 's';
-                snowflake.style.animationDelay = delay + 's';
-                snowflake.classList.add(speed);
-                
-                snowContainer.appendChild(snowflake);
-                
-                setTimeout(() => snowflake.remove(), (duration + delay) * 1000);
-            }
-
-            // Create snowflakes continuously
-            setInterval(createSnowflake, 300);
-
-            // Add snow burst effect to wallet button on click
-            const walletBtn = document.querySelector('.wallet-btn-header');
-            if (walletBtn) {
-                walletBtn.addEventListener('click', function(e) {
-                    createSnowBurst(e.clientX, e.clientY);
-                });
-                walletBtn.addEventListener('mouseenter', function(e) {
-                    // Random chance to burst on hover
-                    if (Math.random() > 0.7) {
-                        createSnowBurst(e.clientX, e.clientY);
-                    }
-                });
-            }
-
-            // Create balance pill snow effect
-            const balancePill = document.querySelector('.balance-pill');
-            if (balancePill) {
-                balancePill.addEventListener('mouseenter', function(e) {
-                    if (Math.random() > 0.6) {
-                        createSnowBurst(e.clientX, e.clientY);
-                    }
-                });
-            }
-
-            function createSnowBurst(x, y) {
-                const burstCount = 8 + Math.floor(Math.random() * 4);
-                
-                for (let i = 0; i < burstCount; i++) {
-                    const particle = document.createElement('div');
-                    particle.classList.add('snow-burst', 'burst-particle');
-                    particle.textContent = '❄';
-                    
-                    const angle = (i / burstCount) * Math.PI * 2;
-                    const distance = 60 + Math.random() * 40;
-                    const tx = Math.cos(angle) * distance;
-                    const ty = Math.sin(angle) * distance - 20;
-                    
-                    particle.style.left = x + 'px';
-                    particle.style.top = y + 'px';
-                    particle.style.setProperty('--tx', tx + 'px');
-                    particle.style.setProperty('--ty', ty + 'px');
-                    
-                    snowContainer.appendChild(particle);
-                    setTimeout(() => particle.remove(), 1000);
-                }
-            }
-        }
-
-        // Initialize snow effect when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initSnowEffect);
-        } else {
-            initSnowEffect();
-        }
+        // Snow effect disabled
 
         // Panel management
         function openPanel(panelId) {

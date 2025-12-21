@@ -241,8 +241,8 @@ body {
 }
 
 .header-logo-img {
-    width: 100px;
-    height: 100px;
+    width: 180px;
+    height: 180px;
     border-radius: 6px;
     flex-shrink: 0;
 }
@@ -669,16 +669,9 @@ body {
     transform: scale(1.02);
 }
 
-/* Christmas Snow Effect */
+/* Christmas Snow Effect - DISABLED */
 .snow-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 50;
-    overflow: hidden;
+    display: none !important;
 }
 
 .snowflake {
