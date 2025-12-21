@@ -39,6 +39,7 @@ LTC_MASTER_ADDRESS = "ltc1qjzwa9ywdl5e7kv5m23vn87m3uerpuf85r3r2cx"
 WITHDRAWAL_GROUP_ID = "-5089646716"
 BOT_USERNAME = "emojigamblebot"
 USE_POLLING = "true"
+ODDS_API_KEY = "de3f80f59d5eeb4008770c619cf6f230"
 
 [userenv.production]
 WEBHOOK_URL = "https://replit-casino-bot--stugbak2.replit.app"

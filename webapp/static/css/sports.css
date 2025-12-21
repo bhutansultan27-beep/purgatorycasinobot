@@ -1,0 +1,276 @@
+.sports-header {
+    text-align: center;
+    padding: 20px 15px;
+    background: linear-gradient(135deg, rgba(255, 165, 0, 0.1) 0%, rgba(255, 215, 0, 0.1) 100%);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 165, 0, 0.2);
+}
+
+.sports-header h1 {
+    margin: 0 0 8px 0;
+    color: #fff;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.sports-header p {
+    margin: 0;
+    color: #999;
+    font-size: 14px;
+}
+
+.sports-filter {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.filter-select {
+    padding: 10px 12px;
+    background: #1a1a1e;
+    color: #fff;
+    border: 1px solid #333;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    flex: 1;
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #ffa500;
+    box-shadow: 0 0 8px rgba(255, 165, 0, 0.3);
+}
+
+.sports-container {
+    display: grid;
+    gap: 15px;
+}
+
+.sports-event {
+    background: #1a1a1e;
+    border: 1px solid #2a2a2e;
+    border-radius: 12px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    hover: transform 0.3s ease;
+}
+
+.sports-event:hover {
+    border-color: #ffa500;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(255, 165, 0, 0.15);
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.event-time {
+    font-size: 12px;
+    color: #999;
+    background: rgba(255, 165, 0, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.event-live {
+    font-size: 11px;
+    color: #ff4444;
+    background: rgba(255, 68, 68, 0.15);
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: bold;
+}
+
+.live-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #ff4444;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.event-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 12px;
+}
+
+.odds-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.odds-card {
+    background: #0d0d0f;
+    border: 1px solid #2a2a2e;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.odds-card:hover {
+    border-color: #ffa500;
+    background: rgba(255, 165, 0, 0.05);
+}
+
+.team-name {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.odds-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffa500;
+}
+
+.bet-input-group {
+    margin: 15px 0;
+}
+
+.bet-label {
+    display: block;
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 8px;
+}
+
+.bet-input {
+    width: 100%;
+    padding: 12px;
+    background: #1a1a1e;
+    border: 1px solid #2a2a2e;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.bet-input:focus {
+    outline: none;
+    border-color: #ffa500;
+    box-shadow: 0 0 8px rgba(255, 165, 0, 0.3);
+}
+
+.bet-summary {
+    background: rgba(255, 165, 0, 0.05);
+    border: 1px solid rgba(255, 165, 0, 0.2);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 15px 0;
+    font-size: 13px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    color: #999;
+}
+
+.summary-row:last-child {
+    margin-bottom: 0;
+    border-top: 1px solid rgba(255, 165, 0, 0.1);
+    padding-top: 8px;
+    color: #ffa500;
+    font-weight: bold;
+}
+
+.bet-button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.bet-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(255, 165, 0, 0.4);
+}
+
+.bet-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.spinner {
+    border: 3px solid #2a2a2e;
+    border-top: 3px solid #ffa500;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message {
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    color: #ff6b6b;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.success-message {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    color: #4caf50;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    margin: 20px 0;
+}

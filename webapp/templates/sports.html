@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sports Betting - Gild Tesoro</title>
+    
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#0d0d0f">
+    <link rel="apple-touch-icon" href="/static/images/logo.png">
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/css/casino.css">
+    <link rel="stylesheet" href="/static/css/sports.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <a href="/" class="sidebar-header">
+                <img src="/static/images/logo.png" alt="Gild Tesoro" class="sidebar-logo">
+                <span class="sidebar-brand">GILD TESORO</span>
+            </a>
+            
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="/profile" class="nav-item">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="/history" class="nav-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Recently Played</span>
+                </a>
+                <a href="/leaderboard" class="nav-item">
+                    <i class="fas fa-trophy"></i>
+                    <span>Leaderboard</span>
+                </a>
+                
+                <div class="nav-divider"></div>
+                
+                <a href="/sports" class="nav-item active">
+                    <i class="fas fa-football-ball"></i>
+                    <span>Sports Betting</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <button class="menu-toggle" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="header-logo">
+                    <img src="/static/images/logo.png" alt="Gild Tesoro" class="header-logo-img">
+                    <span class="header-brand">SPORTS</span>
+                </div>
+                
+                <div class="header-actions">
+                    <div class="balance-pill">
+                        <span id="balance">$0.00</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="sports-header">
+                    <h1><i class="fas fa-football-ball"></i> Live Sports Odds</h1>
+                    <p>Place your bets on live sports events</p>
+                </div>
+
+                <div class="sports-filter">
+                    <select id="sports-league" class="filter-select">
+                        <option value="">All Sports</option>
+                        <option value="nfl">NFL</option>
+                        <option value="nba">NBA</option>
+                        <option value="nhl">NHL</option>
+                        <option value="mlb">MLB</option>
+                        <option value="soccer">Soccer</option>
+                    </select>
+                </div>
+
+                <div class="sports-container" id="sports-container">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Loading live odds...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="bet-modal-overlay" id="bet-modal-overlay">
+        <div class="bet-modal" id="bet-modal">
+            <div class="bet-modal-header">
+                <h3>Place Your Bet</h3>
+                <button class="modal-close" onclick="closeSportsBetModal()">&times;</button>
+            </div>
+            <div class="bet-modal-content" id="sports-bet-modal-content">
+                <div class="loading-bets">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/casino.js"></script>
+    <script src="/static/js/sports.js"></script>
+</body>
+</html>

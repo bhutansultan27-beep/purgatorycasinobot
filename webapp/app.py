@@ -244,6 +244,10 @@ def roulette():
 def coinflip():
     return render_template('coinflip.html')
 
+@app.route('/sports')
+def sports():
+    return render_template('sports.html')
+
 @app.route('/profile')
 def profile():
     return render_template('profile.html')
@@ -621,6 +625,118 @@ def admin_broadcast():
             return jsonify({"success": False, "error": "Message is required"})
         
         return jsonify({"success": True, "message": "Broadcast queued. Use the bot command /broadcast for full functionality."})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/sports/odds', methods=['POST'])
+def get_sports_odds():
+    try:
+        data = request.get_json()
+        league = data.get('league', '')
+        
+        api_key = os.getenv("ODDS_API_KEY", "")
+        if not api_key:
+            return jsonify({"success": False, "error": "API key not configured"})
+        
+        sport_key = 'americanfootball_nfl'
+        if league == 'nba':
+            sport_key = 'basketball_nba'
+        elif league == 'nhl':
+            sport_key = 'icehockey_nhl'
+        elif league == 'mlb':
+            sport_key = 'baseball_mlb'
+        elif league == 'soccer':
+            sport_key = 'soccer_epl'
+        elif league == 'nfl':
+            sport_key = 'americanfootball_nfl'
+        
+        url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/events"
+        params = {
+            'apiKey': api_key,
+            'regions': 'us',
+            'markets': 'h2h'
+        }
+        
+        response = requests.get(url, params=params, timeout=10)
+        odds_data = response.json()
+        
+        if response.status_code != 200:
+            return jsonify({"success": False, "error": "Failed to fetch odds"})
+        
+        events = odds_data.get('data', [])
+        formatted_events = []
+        
+        for event in events[:10]:
+            bookmakers = event.get('bookmakers', [])
+            if bookmakers:
+                markets = bookmakers[0].get('markets', [])
+                if markets:
+                    h2h = markets[0].get('outcomes', [])
+                    if len(h2h) >= 2:
+                        home_odds = h2h[0].get('price', 0)
+                        away_odds = h2h[1].get('price', 0)
+                        
+                        home_odds_american = round((home_odds - 1) * 100) if home_odds < 2 else round((home_odds - 1) * 100)
+                        away_odds_american = round((away_odds - 1) * 100) if away_odds < 2 else round((away_odds - 1) * 100)
+                        
+                        formatted_events.append({
+                            'id': event.get('id'),
+                            'home_team': event.get('home_team'),
+                            'away_team': event.get('away_team'),
+                            'home_odds': home_odds_american,
+                            'away_odds': away_odds_american,
+                            'commence_time': event.get('commence_time'),
+                            'status': event.get('status', 'scheduled')
+                        })
+        
+        return jsonify({"success": True, "odds": formatted_events})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/sports/place-bet', methods=['POST'])
+def place_sports_bet():
+    try:
+        data = request.get_json()
+        init_data = data.get('initData', '')
+        user_info = validate_init_data(init_data)
+        user_id = user_info.get('id') if user_info else None
+        
+        if not user_id:
+            return jsonify({"success": False, "error": "Authentication required"})
+        
+        bet_amount = float(data.get('betAmount', 0))
+        odds = float(data.get('odds', 0))
+        team = data.get('team', '')
+        
+        if bet_amount <= 0:
+            return jsonify({"success": False, "error": "Invalid bet amount"})
+        
+        user = db.get_user(user_id)
+        if not user or user.get('balance', 0) < bet_amount:
+            return jsonify({"success": False, "error": "Insufficient balance"})
+        
+        win = random.random() < 0.5
+        
+        payout = 0
+        if win:
+            if odds > 0:
+                payout = bet_amount * (1 + odds / 100)
+            else:
+                payout = bet_amount * (1 + 100 / abs(odds))
+            db.update_balance(user_id, payout - bet_amount)
+        else:
+            db.update_balance(user_id, -bet_amount)
+        
+        db.record_game(user_id, 'sports_betting', bet_amount, payout - bet_amount if win else -bet_amount, win)
+        
+        new_balance = db.get_user(user_id).get('balance', 0)
+        
+        return jsonify({
+            "success": True,
+            "win": win,
+            "payout": payout,
+            "newBalance": new_balance
+        })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
