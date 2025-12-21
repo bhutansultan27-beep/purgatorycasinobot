@@ -122,14 +122,13 @@ body {
 .sidebar-header {
     padding: 12px 8px;
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: center;
+    align-items: center;
+    justify-content: flex-start;
     gap: 6px;
     border-bottom: 1px solid var(--border-color);
     text-decoration: none;
     cursor: pointer;
-    height: 80px;
+    height: 64px;
 }
 
 .menu-toggle-sidebar {
@@ -150,9 +149,7 @@ body {
     flex-direction: row;
     gap: 8px;
     width: 100%;
-    flex: 0;
-    min-width: 0;
-    height: 44px;
+    flex: 1;
 }
 
 .sidebar-category-btn {
@@ -389,6 +386,10 @@ body {
     flex-shrink: 0;
 }
 
+.header-icon-btn:not(.profile-btn) {
+    display: none;
+}
+
 .header-icon-btn:hover {
     background: var(--bg-hover);
     color: var(--text-primary);
@@ -399,6 +400,10 @@ body {
     background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
     border: none;
     color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
 }
 
 .header-icon-btn.profile-btn:hover {
