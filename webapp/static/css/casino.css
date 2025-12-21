@@ -865,7 +865,7 @@ body {
     height: 160px;
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: center;
+    background-position: center top;
     border-radius: 12px;
     transition: transform 0.3s ease;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
