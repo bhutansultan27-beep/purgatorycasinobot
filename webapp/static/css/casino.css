@@ -39,10 +39,10 @@ body {
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 80px;
 }
 
 .status-bar {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -53,6 +53,7 @@ body {
 }
 
 .bottom-nav {
+    display: none;
     position: fixed;
     bottom: 0;
     left: 0;
@@ -60,7 +61,6 @@ body {
     height: 80px;
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
-    display: flex;
     justify-content: space-around;
     align-items: center;
     z-index: 100;
@@ -103,7 +103,6 @@ body {
     min-height: 100vh;
     min-height: 100dvh;
     overflow-y: auto;
-    margin-top: 32px;
 }
 
 .sidebar {
@@ -829,6 +828,22 @@ body {
 @media (max-width: 768px) {
     .right-panel {
         width: 100%;
+    }
+    
+    .status-bar {
+        display: block;
+    }
+    
+    .bottom-nav {
+        display: flex;
+    }
+    
+    body {
+        padding-bottom: 80px;
+    }
+    
+    .app-container {
+        margin-top: 32px;
     }
 }
 
