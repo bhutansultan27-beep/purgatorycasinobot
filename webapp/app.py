@@ -667,12 +667,21 @@ def get_sports_odds():
             return jsonify({"success": True, "odds": get_mock_odds()})
         
         odds_data = response.json()
-        events = odds_data.get('data', [])
+        
+        # Handle both list and dict responses from API
+        if isinstance(odds_data, list):
+            events = odds_data
+        else:
+            events = odds_data.get('data', [])
+        
         print(f"Received {len(events)} events from API")
         
         formatted_events = []
         
         for event in events[:10]:
+            if not isinstance(event, dict):
+                continue
+            
             bookmakers = event.get('bookmakers', [])
             if bookmakers:
                 markets = bookmakers[0].get('markets', [])

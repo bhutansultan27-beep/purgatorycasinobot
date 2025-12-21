@@ -62,32 +62,102 @@
                 
                 <div class="header-actions">
                     <div class="balance-pill">
+                        <i class="fas fa-wallet"></i>
                         <span id="balance">$0.00</span>
                     </div>
                 </div>
             </header>
 
-            <div class="content-area">
-                <div class="sports-header">
-                    <h1><i class="fas fa-football-ball"></i> Live Sports Odds</h1>
-                    <p>Place your bets on live sports events</p>
+            <div class="content-area sports-content">
+                <!-- Hero Banner -->
+                <div class="sports-hero">
+                    <div class="hero-content">
+                        <h1><i class="fas fa-trophy"></i> Live Sports Betting</h1>
+                        <p>Bet on the biggest sports events worldwide</p>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-value" id="stat-events">0</span>
+                            <span class="stat-label">Live Events</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">24/7</span>
+                            <span class="stat-label">Available</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="sports-filter">
-                    <select id="sports-league" class="filter-select">
-                        <option value="">All Sports</option>
-                        <option value="nfl">NFL</option>
-                        <option value="nba">NBA</option>
-                        <option value="nhl">NHL</option>
-                        <option value="mlb">MLB</option>
-                        <option value="soccer">Soccer</option>
-                    </select>
+                <!-- Sports Filter -->
+                <div class="sports-controls">
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-sport="">
+                            <i class="fas fa-th-large"></i> All
+                        </button>
+                        <button class="filter-btn" data-sport="nfl">
+                            <i class="fas fa-football-ball"></i> NFL
+                        </button>
+                        <button class="filter-btn" data-sport="nba">
+                            <i class="fas fa-basketball-ball"></i> NBA
+                        </button>
+                        <button class="filter-btn" data-sport="mlb">
+                            <i class="fas fa-baseball-ball"></i> MLB
+                        </button>
+                        <button class="filter-btn" data-sport="nhl">
+                            <i class="fas fa-hockey-puck"></i> NHL
+                        </button>
+                        <button class="filter-btn" data-sport="soccer">
+                            <i class="fas fa-futbol"></i> Soccer
+                        </button>
+                    </div>
                 </div>
 
-                <div class="sports-container" id="sports-container">
-                    <div class="loading-spinner">
-                        <div class="spinner"></div>
-                        <p>Loading live odds...</p>
+                <!-- Featured Games Section -->
+                <div class="featured-section">
+                    <div class="section-title">
+                        <h2>Featured Matchups</h2>
+                        <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
+                    </div>
+                    <div class="featured-games" id="featured-games">
+                        <div class="featured-loading">
+                            <div class="spinner-small"></div>
+                            <p>Loading featured games...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- All Games Section -->
+                <div class="all-games-section">
+                    <div class="section-title">
+                        <h2>All Available Games</h2>
+                    </div>
+                    <div class="games-list" id="games-list">
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-alt"></i>
+                            <h3>No games available right now</h3>
+                            <p>Check back later for upcoming matches</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Promotions Section -->
+                <div class="promos-section">
+                    <h2>Special Offers</h2>
+                    <div class="promo-cards">
+                        <div class="promo-card">
+                            <div class="promo-icon">🎁</div>
+                            <h3>Welcome Bonus</h3>
+                            <p>50% Match on Your First Bet</p>
+                        </div>
+                        <div class="promo-card">
+                            <div class="promo-icon">⚡</div>
+                            <h3>Daily Specials</h3>
+                            <p>Enhanced Odds Every Day</p>
+                        </div>
+                        <div class="promo-card">
+                            <div class="promo-icon">🏆</div>
+                            <h3>Loyalty Rewards</h3>
+                            <p>Earn Points on Every Bet</p>
+                        </div>
                     </div>
                 </div>
             </div>
