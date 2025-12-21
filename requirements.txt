@@ -36,3 +36,12 @@ flask
 gunicorn
 python-dotenv
 requests
+apscheduler
+flask
+gunicorn
+pillow
+psycopg2-binary
+pymysql
+python-dotenv
+requests
+sqlalchemy
