@@ -838,12 +838,9 @@ body {
         display: flex;
     }
     
-    body {
-        padding-bottom: 80px;
-    }
-    
     .app-container {
         margin-top: 32px;
+        margin-bottom: 80px;
     }
 }
 
