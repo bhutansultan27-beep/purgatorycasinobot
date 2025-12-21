@@ -209,6 +209,7 @@ body {
     z-index: 50;
     white-space: nowrap;
     min-width: 0;
+    height: 80px;
 }
 
 .menu-toggle {
