@@ -201,7 +201,7 @@ body {
     right: 0;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
-    padding: 8px 15px;
+    padding: 0px 15px;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -210,7 +210,7 @@ body {
     white-space: nowrap;
     min-width: 0;
     height: auto;
-    position: relative;
+    margin: 0;
 }
 
 .menu-toggle {
