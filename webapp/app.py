@@ -650,14 +650,18 @@ def get_sports_odds():
             sport_key = 'soccer_epl'
         elif league == 'nfl':
             sport_key = 'americanfootball_nfl'
+        elif league == 'cfb':
+            sport_key = 'americanfootball_ncaaf'
+        elif league == 'cbb':
+            sport_key = 'basketball_ncaab'
         
         # Use correct /odds endpoint with multiple markets
         url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds"
-        # Try to fetch multiple market types: h2h (moneyline), spreads, totals
+        # Fetch multiple market types: h2h (moneyline), spreads, totals, and player props
         params = {
             'apiKey': api_key,
             'regions': 'us',
-            'markets': 'h2h,spreads,totals',
+            'markets': 'h2h,spreads,totals,player_props',
             'orderBy': 'commence_time'
         }
         
@@ -692,6 +696,7 @@ def get_sports_odds():
                 h2h_data = None
                 spreads_data = None
                 totals_data = None
+                player_props_data = []
                 
                 for market in event_markets:
                     market_key = market.get('key', '')
@@ -701,6 +706,16 @@ def get_sports_odds():
                         spreads_data = market.get('outcomes', [])
                     elif market_key == 'totals':
                         totals_data = market.get('outcomes', [])
+                    elif market_key == 'player_props':
+                        # Collect all player prop outcomes
+                        outcomes = market.get('outcomes', [])
+                        for outcome in outcomes:
+                            player_props_data.append({
+                                'player_name': outcome.get('description', ''),
+                                'prop_type': outcome.get('name', ''),
+                                'line': outcome.get('point', None),
+                                'odds': outcome.get('price', 0)
+                            })
                 
                 # Process h2h (moneyline) if available
                 if h2h_data and len(h2h_data) >= 2:
@@ -794,6 +809,8 @@ def get_sports_odds():
                         event_data['spreads'] = spreads_info
                     if totals_info:
                         event_data['totals'] = totals_info
+                    if player_props_data:
+                        event_data['player_props'] = player_props_data
                     
                     formatted_events.append(event_data)
         

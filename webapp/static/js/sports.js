@@ -196,6 +196,11 @@ function displayAllGames(odds) {
             `;
         }
         
+        let playerPropsBtn = '';
+        if (event.player_props && event.player_props.length > 0) {
+            playerPropsBtn = `<button class="view-props-btn" onclick="showGameDetail(event, ${JSON.stringify(event).replace(/"/g, '&quot;')})">View Props (${event.player_props.length})</button>`;
+        }
+        
         eventEl.innerHTML = `
             <div class="game-header">
                 <span class="game-league">${event.sport_key || 'SPORTS'}</span>
@@ -225,10 +230,43 @@ function displayAllGames(odds) {
             </div>
             ${spreadsHTML}
             ${totalsHTML}
+            ${playerPropsBtn}
         `;
         
         container.appendChild(eventEl);
     });
+}
+
+function showGameDetail(event, gameData) {
+    const modal = document.getElementById('game-detail-overlay');
+    const title = document.getElementById('game-detail-title');
+    const content = document.getElementById('game-detail-content');
+    
+    title.textContent = `${gameData.home_team} vs ${gameData.away_team}`;
+    
+    let propsHTML = '<div class="props-list">';
+    if (gameData.player_props && gameData.player_props.length > 0) {
+        gameData.player_props.forEach(prop => {
+            propsHTML += `
+                <div class="prop-item" onclick="openSportsBetModal('${gameData.id}', '${prop.player_name}', '${prop.player_name} - ${prop.prop_type}', ${prop.odds})">
+                    <div class="prop-name">${prop.player_name}</div>
+                    <div class="prop-details">${prop.prop_type} ${prop.line ? prop.line : ''}</div>
+                    <div class="prop-odds">${prop.odds > 0 ? '+' : ''}${prop.odds}</div>
+                </div>
+            `;
+        });
+    } else {
+        propsHTML += '<p>No player props available for this game</p>';
+    }
+    propsHTML += '</div>';
+    
+    content.innerHTML = propsHTML;
+    modal.classList.add('open');
+}
+
+function closeGameDetail() {
+    const modal = document.getElementById('game-detail-overlay');
+    modal.classList.remove('open');
 }
 
 function displayEmptyState(container) {

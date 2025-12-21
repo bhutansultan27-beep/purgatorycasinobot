@@ -108,6 +108,12 @@
                         <button class="filter-btn" data-sport="soccer">
                             <i class="fas fa-futbol"></i> Soccer
                         </button>
+                        <button class="filter-btn" data-sport="cfb">
+                            <i class="fas fa-football-ball"></i> CFB
+                        </button>
+                        <button class="filter-btn" data-sport="cbb">
+                            <i class="fas fa-basketball-ball"></i> CBB
+                        </button>
                     </div>
                 </div>
 
@@ -165,6 +171,16 @@
     </div>
 
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="game-detail-modal-overlay" id="game-detail-overlay">
+        <div class="game-detail-modal" id="game-detail-modal">
+            <div class="modal-header">
+                <h3 id="game-detail-title">Game Details</h3>
+                <button class="modal-close" onclick="closeGameDetail()">&times;</button>
+            </div>
+            <div class="modal-body" id="game-detail-content"></div>
+        </div>
+    </div>
 
     <div class="bet-modal-overlay" id="bet-modal-overlay">
         <div class="bet-modal" id="bet-modal">
