@@ -685,7 +685,7 @@ def get_sports_odds():
         
         formatted_events = []
         
-        for event in events[:10]:
+        for event in events:
             if not isinstance(event, dict):
                 continue
             
@@ -774,16 +774,12 @@ def get_sports_odds():
                                 from dateutil import parser
                                 commence_dt = parser.parse(commence_time_str)
                             
-                            # Only show games that are upcoming (not in the past)
-                            # Skip games that have already started
+                            # Determine if game is live or scheduled
                             from datetime import datetime, timezone
                             now = datetime.now(timezone.utc) if commence_dt.tzinfo else datetime.now()
                             
-                            # Only include games that start in the future or very recently (within 3 hours)
                             time_diff = (commence_dt - now).total_seconds()
-                            if time_diff < -10800:  # -3 hours in seconds
-                                continue  # Skip games that started more than 3 hours ago
-                            elif time_diff < 0:
+                            if time_diff < 0:
                                 actual_status = 'live'
                             else:
                                 actual_status = 'scheduled'
@@ -817,6 +813,9 @@ def get_sports_odds():
         if len(formatted_events) == 0:
             print("No events formatted, using mock data")
             return jsonify({"success": True, "odds": get_mock_odds()})
+        
+        # Sort to prioritize live games first, then scheduled games
+        formatted_events.sort(key=lambda x: (x['status'] != 'live', x['commence_time']))
         
         print(f"Returning {len(formatted_events)} formatted events")
         return jsonify({"success": True, "odds": formatted_events})
