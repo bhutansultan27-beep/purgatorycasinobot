@@ -1,8 +1,6 @@
-let tg = window.Telegram.WebApp;
 let sportsUserData = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    initTelegram();
     loadSportsUserData();
     initSidebar();
     loadSportsOdds();
@@ -12,11 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
         leagueFilter.addEventListener('change', loadSportsOdds);
     }
 });
-
-function initTelegram() {
-    tg.setHeaderColor('#0d0d0f');
-    tg.setBackgroundColor('#0d0d0f');
-}
 
 function loadSportsUserData() {
     const initData = tg.initData || '';
@@ -67,15 +60,17 @@ function loadSportsOdds() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Odds response:', data);
         if (data.success && data.odds && data.odds.length > 0) {
             displayOdds(data.odds);
         } else {
-            container.innerHTML = '<div class="error-message">No live odds available at the moment. Please try again later.</div>';
+            const errorMsg = data.error || 'No live odds available at the moment.';
+            container.innerHTML = '<div class="error-message">' + errorMsg + ' Please try again later.</div>';
         }
     })
     .catch(error => {
         console.error('Error loading odds:', error);
-        container.innerHTML = '<div class="error-message">Failed to load odds. Please try again.</div>';
+        container.innerHTML = '<div class="error-message">Network error. Please check your connection and try again.</div>';
     });
 }
 
