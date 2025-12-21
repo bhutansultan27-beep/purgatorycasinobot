@@ -657,11 +657,11 @@ def get_sports_odds():
         
         # Use correct /odds endpoint with multiple markets
         url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds"
-        # Fetch multiple market types: h2h (moneyline), spreads, totals, and player props
+        # Fetch multiple market types: h2h (moneyline), spreads, totals
         params = {
             'apiKey': api_key,
             'regions': 'us',
-            'markets': 'h2h,spreads,totals,player_props',
+            'markets': 'h2h,spreads,totals',
             'orderBy': 'commence_time'
         }
         

@@ -197,9 +197,6 @@ function displayAllGames(odds) {
         }
         
         let playerPropsBtn = '';
-        if (event.player_props && event.player_props.length > 0) {
-            playerPropsBtn = `<button class="view-props-btn" onclick="showGameDetail(event, ${JSON.stringify(event).replace(/"/g, '&quot;')})">View Props (${event.player_props.length})</button>`;
-        }
         
         eventEl.innerHTML = `
             <div class="game-header">
