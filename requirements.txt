@@ -67,3 +67,7 @@ pymysql
 python-dotenv
 requests
 sqlalchemy
+flask
+gunicorn
+python-dotenv
+requests
