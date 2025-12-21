@@ -156,14 +156,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 0 16px;
+    gap: 8px;
+    padding: 0 20px;
     border: none;
     background: var(--bg-card);
     color: var(--text-secondary);
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     transition: all 0.3s ease;
     white-space: nowrap;
@@ -330,14 +330,17 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 0;
     flex-shrink: 1;
     min-width: 150px;
-    max-width: 250px;
+    max-width: 400px;
 }
 
 .header-center-logo {
-    display: none;
+    display: block;
+    height: 40px;
+    width: auto;
+    margin-right: 8px;
 }
 
 .header-right-section {
@@ -909,18 +912,28 @@ body {
 .balance-pill {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 8px 16px;
+    padding: 8px 14px;
     font-size: 13px;
     font-weight: 600;
     white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .balance-pill i {
     color: var(--accent-yellow);
+    font-size: 16px;
+}
+
+.balance-pill::after {
+    content: '▼';
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-left: 4px;
 }
 
 .wallet-btn-header {
@@ -941,6 +954,9 @@ body {
     position: relative;
     overflow: hidden;
     white-space: nowrap;
+    margin-left: -8px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 .wallet-btn-header::before {
