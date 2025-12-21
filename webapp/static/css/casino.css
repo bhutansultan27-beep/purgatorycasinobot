@@ -5,21 +5,21 @@
 }
 
 :root {
-    --bg-primary: #37335E;
-    --bg-secondary: #063A72;
-    --bg-card: #10216E;
-    --bg-hover: #1a3d8f;
-    --accent-purple: #BA0963;
-    --accent-pink: #DC9CC4;
+    --bg-primary: #0f1419;
+    --bg-secondary: #1a1f2e;
+    --bg-card: #232d42;
+    --bg-hover: #2a3652;
+    --accent-purple: #11A9EF;
+    --accent-pink: #AEF964;
     --accent-blue: #11A9EF;
-    --accent-green: #4C9305;
+    --accent-green: #AEF964;
     --accent-yellow: #AEF964;
-    --accent-orange: #BA0963;
-    --accent-red: #AD5272;
+    --accent-orange: #11A9EF;
+    --accent-red: #FF6B6B;
     --text-primary: #ffffff;
-    --text-secondary: #A2A8CC;
-    --text-muted: #8A8FB0;
-    --border-color: #1a3d8f;
+    --text-secondary: #B0B8D4;
+    --text-muted: #7A8399;
+    --border-color: #2a3652;
     --sidebar-width: 240px;
 }
 
@@ -662,7 +662,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: linear-gradient(135deg, #BA0963, #DC9CC4);
+    background: linear-gradient(135deg, #11A9EF, #0D7DC5);
     border: none;
     border-radius: 12px;
     padding: 11px 22px;
@@ -672,7 +672,7 @@ body {
     cursor: pointer;
     text-decoration: none;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(186, 9, 99, 0.35);
+    box-shadow: 0 4px 15px rgba(17, 169, 239, 0.35);
     position: relative;
     overflow: hidden;
 }
@@ -690,7 +690,7 @@ body {
 
 .wallet-btn-header:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(186, 9, 99, 0.4);
+    box-shadow: 0 6px 20px rgba(17, 169, 239, 0.4);
 }
 
 .wallet-btn-header:hover::before {
@@ -705,7 +705,7 @@ body {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #BA0963, #DC9CC4);
+    background: linear-gradient(135deg, #11A9EF, #0D7DC5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -714,12 +714,12 @@ body {
     background-size: cover;
     background-position: center;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 2px 8px rgba(186, 9, 99, 0.2);
+    box-shadow: 0 2px 8px rgba(17, 169, 239, 0.2);
 }
 
 .user-avatar-header:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(186, 9, 99, 0.3);
+    box-shadow: 0 4px 12px rgba(17, 169, 239, 0.3);
 }
 
 .content-area {
