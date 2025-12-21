@@ -20,3 +20,7 @@ flask
 gunicorn
 python-dotenv
 requests
+flask
+gunicorn
+python-dotenv
+requests
