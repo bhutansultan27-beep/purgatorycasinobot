@@ -164,20 +164,16 @@ function initCategoryTabs() {
             const category = this.dataset.tab;
             const gamesSection = document.getElementById('games-section');
             const tableSection = document.getElementById('table-section');
-            const slotsSection = document.getElementById('slots-section');
             
             if (category === 'all') {
                 if (gamesSection) gamesSection.style.display = 'block';
                 if (tableSection) tableSection.style.display = 'block';
-                if (slotsSection) slotsSection.style.display = 'block';
             } else if (category === 'originals') {
                 if (gamesSection) gamesSection.style.display = 'block';
                 if (tableSection) tableSection.style.display = 'none';
-                if (slotsSection) slotsSection.style.display = 'none';
             } else if (category === 'table') {
                 if (gamesSection) gamesSection.style.display = 'none';
                 if (tableSection) tableSection.style.display = 'block';
-                if (slotsSection) slotsSection.style.display = 'none';
             }
         });
     });
@@ -247,7 +243,6 @@ const gameIcons = {
     'hilo': '📊',
     'roulette': '🎡',
     'coinflip': '🪙',
-    'slots': '🎰',
     'dice': '🎲',
     'connect4': '🔴',
     'crash': '📈',
@@ -264,7 +259,6 @@ const gameImages = {
     'hilo': '/static/images/hilo_casino_game_card.png',
     'roulette': '/static/images/roulette_casino_game_card.png',
     'coinflip': '/static/images/coinflip_casino_game_card.png',
-    'slots': '/static/images/slots_casino_game_card.png',
     'dice': '/static/images/dice_casino_game_card.png',
     'connect4': '/static/images/connect4_casino_game_card.png',
     'crash': '/static/images/crash_casino_game_card.png',
@@ -627,149 +621,6 @@ function renderResultVisual(bet) {
                 </div>
             </div>
         `;
-    } else if (gameType === 'slots') {
-        const symbols = details.symbols || details.result || '?';
-        return `
-            <div class="bet-result-visual">
-                <div class="result-details-grid">
-                    <div class="result-detail-box" style="grid-column: span 3;">
-                        <div class="result-detail-label">Spin Result</div>
-                        <div class="result-detail-value" style="font-size: 24px;">${symbols}</div>
-                    </div>
-                </div>
-            </div>
-        `;
-    } else if (gameType === 'dice') {
-        const roll = details.roll || details.result || '?';
-        const target = details.target || '?';
-        const condition = details.condition || 'over';
-        return `
-            <div class="bet-result-visual">
-                <div class="result-details-grid">
-                    <div class="result-detail-box">
-                        <div class="result-detail-label">Roll</div>
-                        <div class="result-detail-value">${roll}</div>
-                    </div>
-                    <div class="result-detail-box">
-                        <div class="result-detail-label">Target</div>
-                        <div class="result-detail-value">${condition} ${target}</div>
-                    </div>
-                    <div class="result-detail-box">
-                        <div class="result-detail-label">Win Chance</div>
-                        <div class="result-detail-value">${details.win_chance || '?'}%</div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-    
-    return `
-        <div class="bet-result-visual">
-            <div class="result-details-grid">
-                <div class="result-detail-box" style="grid-column: span 3;">
-                    <div class="result-detail-label">Game Result</div>
-                    <div class="result-detail-value">Game completed</div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function renderGameSnapshot(gameType, snapshot) {
-    const type = gameType.toLowerCase();
-    
-    if (type === 'blackjack' && snapshot) {
-        return renderBlackjackSnapshot(snapshot);
-    } else if (type === 'mines' && snapshot) {
-        return renderMinesSnapshot(snapshot);
-    } else if (type === 'keno' && snapshot) {
-        return renderKenoSnapshot(snapshot);
-    }
-    
-    return '';
-}
-
-function renderDetailsSnapshot(gameType, details) {
-    const type = gameType.toLowerCase();
-    
-    if (type === 'blackjack' && details.player_hand) {
-        return `
-            <div class="bet-snapshot">
-                <div class="bet-snapshot-title">Game Result</div>
-                <div class="blackjack-snapshot">
-                    <div>
-                        <strong>Player Hand:</strong> ${details.player_hand} (${details.player_value || '?'})
-                    </div>
-                    <div>
-                        <strong>Dealer Hand:</strong> ${details.dealer_hand || '?'} (${details.dealer_value || '?'})
-                    </div>
-                </div>
-            </div>
-        `;
-    } else if (type === 'mines' && details.gems_found !== undefined) {
-        return `
-            <div class="bet-snapshot">
-                <div class="bet-snapshot-title">Game Result</div>
-                <div class="mines-snapshot">
-                    <div><strong>Gems Found:</strong> ${details.gems_found} 💎</div>
-                    <div><strong>Mines:</strong> ${details.mine_count || details.mines || '?'} 💣</div>
-                </div>
-            </div>
-        `;
-    } else if (type === 'keno' && details.hits !== undefined) {
-        return `
-            <div class="bet-snapshot">
-                <div class="bet-snapshot-title">Game Result</div>
-                <div class="keno-snapshot">
-                    <div><strong>Numbers Selected:</strong> ${details.numbers_selected || '?'}</div>
-                    <div><strong>Hits:</strong> ${details.hits}</div>
-                </div>
-            </div>
-        `;
-    } else if (type === 'limbo' && details.target_multiplier !== undefined) {
-        return `
-            <div class="bet-snapshot">
-                <div class="bet-snapshot-title">Game Result</div>
-                <div>
-                    <div><strong>Target:</strong> ${details.target_multiplier}x</div>
-                    <div><strong>Result:</strong> ${details.result_multiplier || details.rolled_multiplier}x</div>
-                </div>
-            </div>
-        `;
-    } else if (type === 'roulette' && details.result !== undefined) {
-        return `
-            <div class="bet-snapshot">
-                <div class="bet-snapshot-title">Game Result</div>
-                <div>
-                    <div><strong>Result:</strong> ${details.result} ${details.color || ''}</div>
-                    <div><strong>Bet Type:</strong> ${details.bet_type || '?'}</div>
-                </div>
-            </div>
-        `;
-    } else if (type === 'coinflip') {
-        return `
-            <div class="bet-snapshot">
-                <div class="bet-snapshot-title">Game Result</div>
-                <div>
-                    <div><strong>Choice:</strong> ${details.choice || '?'}</div>
-                    <div><strong>Result:</strong> ${details.result || '?'}</div>
-                </div>
-            </div>
-        `;
-    }
-    
-    return '';
-}
-
-function renderBlackjackSnapshot(snapshot) {
-    let playerCards = '';
-    let dealerCards = '';
-    
-    if (snapshot.player_cards) {
-        playerCards = snapshot.player_cards.map(card => {
-            const isRed = card.includes('♥') || card.includes('♦');
-            return `<div class="card-visual ${isRed ? 'red' : 'black'}">${card}</div>`;
-        }).join('');
     }
     
     if (snapshot.dealer_cards) {

@@ -212,10 +212,6 @@ def index():
 def blackjack():
     return render_template('blackjack.html')
 
-@app.route('/slots')
-def slots():
-    return render_template('slots.html')
-
 @app.route('/mines')
 def mines():
     return render_template('mines.html')
