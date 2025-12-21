@@ -210,6 +210,7 @@ body {
     white-space: nowrap;
     min-width: 0;
     height: 80px;
+    position: relative;
 }
 
 .menu-toggle {
@@ -249,12 +250,11 @@ body {
 .header-center-section {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 6px;
     flex-shrink: 1;
     min-width: 150px;
     max-width: 250px;
-    position: relative;
 }
 
 .header-center-logo {
@@ -262,8 +262,10 @@ body {
     height: 120px;
     border-radius: 6px;
     flex-shrink: 0;
-    margin-right: auto;
-    margin-left: -100px;
+    position: absolute;
+    left: 255px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .header-right-section {
