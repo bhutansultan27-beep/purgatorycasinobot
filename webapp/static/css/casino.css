@@ -894,7 +894,7 @@ body {
 .promo-slide {
     flex: 0 0 420px;
     height: 300px;
-    background-size: cover;
+    background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     border-radius: 16px;
