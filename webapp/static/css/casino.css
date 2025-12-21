@@ -252,22 +252,12 @@ body {
         width: 180px;
         height: 180px;
     }
-    
-    .top-header {
-        height: auto;
-        min-height: 130px;
-    }
 }
 
 @media (max-width: 600px) {
     .header-logo-img {
         width: 200px;
         height: 200px;
-    }
-    
-    .top-header {
-        height: auto;
-        min-height: 150px;
     }
 }
 
