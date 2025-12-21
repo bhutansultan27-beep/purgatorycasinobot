@@ -15,28 +15,47 @@
     <link rel="stylesheet" href="/static/css/casino.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .wallet-modal-overlay {
+        body {
+            background: var(--bg-primary);
+        }
+
+        .page-background {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+            overflow: auto;
+            pointer-events: none;
+        }
+
+        .wallet-modal-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: center;
             z-index: 1000;
-            padding-top: 40px;
-            overflow-y: auto;
+            pointer-events: none;
         }
 
         .wallet-modal {
             background: var(--bg-secondary);
             border-radius: 16px;
             width: 90%;
-            max-width: 600px;
+            max-width: 500px;
             padding: 30px 25px;
             position: relative;
+            pointer-events: auto;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
         }
 
         .wallet-modal-header {
@@ -248,6 +267,7 @@
     </style>
 </head>
 <body>
+    <div class="page-background" id="page-bg"></div>
     <div class="wallet-modal-overlay">
         <div class="wallet-modal">
             <div class="wallet-modal-header">
@@ -330,6 +350,17 @@
         let tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
+
+        // Load home page content in background
+        fetch('/')
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const mainContent = doc.querySelector('.app-container') || doc.body;
+                document.getElementById('page-bg').appendChild(mainContent);
+            })
+            .catch(err => console.log('Background load optional'));
 
         function switchTab(tabName) {
             // Hide all tabs
