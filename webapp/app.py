@@ -651,19 +651,22 @@ def get_sports_odds():
         elif league == 'nfl':
             sport_key = 'americanfootball_nfl'
         
-        url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/events"
+        # Use correct /odds endpoint instead of /events
+        url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds"
         params = {
             'apiKey': api_key,
             'regions': 'us',
-            'markets': 'h2h'
+            'markets': 'h2h',
+            'orderBy': 'commence_time'
         }
         
         print(f"Fetching odds from: {url}")
         response = requests.get(url, params=params, timeout=10)
         print(f"Response status: {response.status_code}")
+        print(f"Response text: {response.text[:500]}")
         
         if response.status_code != 200:
-            print(f"API error: {response.status_code}. Using mock data.")
+            print(f"API error: {response.status_code}. Response: {response.text}")
             return jsonify({"success": True, "odds": get_mock_odds()})
         
         odds_data = response.json()
@@ -691,8 +694,16 @@ def get_sports_odds():
                         home_odds = h2h[0].get('price', 0)
                         away_odds = h2h[1].get('price', 0)
                         
-                        home_odds_american = round((home_odds - 1) * 100) if home_odds < 2 else round((home_odds - 1) * 100)
-                        away_odds_american = round((away_odds - 1) * 100) if away_odds < 2 else round((away_odds - 1) * 100)
+                        # Convert decimal odds to American format
+                        if home_odds > 0:
+                            home_odds_american = round((home_odds - 1) * 100) if home_odds >= 2 else round(-100 / (home_odds - 1))
+                        else:
+                            home_odds_american = -110
+                            
+                        if away_odds > 0:
+                            away_odds_american = round((away_odds - 1) * 100) if away_odds >= 2 else round(-100 / (away_odds - 1))
+                        else:
+                            away_odds_american = -110
                         
                         formatted_events.append({
                             'id': event.get('id'),
@@ -712,6 +723,8 @@ def get_sports_odds():
         return jsonify({"success": True, "odds": formatted_events})
     except Exception as e:
         print(f"Exception: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": True, "odds": get_mock_odds()})
 
 def get_mock_odds():
@@ -720,8 +733,8 @@ def get_mock_odds():
     return [
         {
             'id': '1',
-            'home_team': 'Kansas City Chiefs',
-            'away_team': 'Buffalo Bills',
+            'home_team': 'Phoenix Suns',
+            'away_team': 'Golden State Warriors',
             'home_odds': -110,
             'away_odds': -110,
             'commence_time': (now + timedelta(hours=2)).isoformat(),
@@ -738,8 +751,8 @@ def get_mock_odds():
         },
         {
             'id': '3',
-            'home_team': 'Dallas Cowboys',
-            'away_team': 'Philadelphia Eagles',
+            'home_team': 'Miami Heat',
+            'away_team': 'Dallas Mavericks',
             'home_odds': 110,
             'away_odds': -130,
             'commence_time': (now + timedelta(hours=6)).isoformat(),
@@ -747,10 +760,10 @@ def get_mock_odds():
         },
         {
             'id': '4',
-            'home_team': 'Golden State Warriors',
-            'away_team': 'Denver Nuggets',
-            'home_odds': 150,
-            'away_odds': -180,
+            'home_team': 'Denver Nuggets',
+            'away_team': 'New York Knicks',
+            'home_odds': -150,
+            'away_odds': 120,
             'commence_time': (now + timedelta(hours=3)).isoformat(),
             'status': 'scheduled'
         },
