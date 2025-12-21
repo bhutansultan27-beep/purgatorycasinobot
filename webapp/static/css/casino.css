@@ -53,7 +53,7 @@ body {
 }
 
 .bottom-nav {
-    display: none;
+    display: flex;
     position: fixed;
     bottom: 0;
     left: 0;
@@ -1008,6 +1008,7 @@ body {
 
 .content-area {
     padding: 20px;
+    padding-bottom: calc(90px + max(0px, env(safe-area-inset-bottom)));
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
