@@ -175,18 +175,21 @@ body {
     flex: 1;
     margin-left: var(--sidebar-width);
     min-height: 100vh;
+    margin-top: 80px;
 }
 
 .top-header {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
-    padding: 12px 20px;
+    padding: 8px 15px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 8px;
     z-index: 50;
     white-space: nowrap;
     min-width: 0;
@@ -215,14 +218,14 @@ body {
 .header-left-section {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     flex-shrink: 0;
 }
 
 .header-logo-img {
-    width: 60px;
-    height: 60px;
-    border-radius: 8px;
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
     flex-shrink: 0;
 }
 
@@ -230,10 +233,10 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     flex-shrink: 1;
-    min-width: 200px;
-    max-width: 300px;
+    min-width: 150px;
+    max-width: 250px;
 }
 
 .header-right-section {
@@ -261,24 +264,25 @@ body {
 .header-icons {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-left: 8px;
+    gap: 6px;
+    margin-left: 0px;
 }
 
 .header-icon-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 16px;
+    font-size: 14px;
     padding: 0;
+    flex-shrink: 0;
 }
 
 .header-icon-btn:hover {
@@ -744,13 +748,14 @@ body {
 .balance-pill {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 25px;
-    padding: 8px 16px;
-    font-size: 14px;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .balance-pill i {
@@ -760,13 +765,13 @@ body {
 .wallet-btn-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
     background: linear-gradient(135deg, #5FD068, #4FBE5A);
     border: none;
-    border-radius: 12px;
-    padding: 11px 22px;
+    border-radius: 8px;
+    padding: 6px 14px;
     color: white;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     text-decoration: none;
@@ -774,6 +779,7 @@ body {
     box-shadow: 0 4px 15px rgba(95, 208, 104, 0.35);
     position: relative;
     overflow: hidden;
+    white-space: nowrap;
 }
 
 .wallet-btn-header::before {
