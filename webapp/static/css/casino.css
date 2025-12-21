@@ -833,32 +833,55 @@ body {
     border-radius: 16px;
     margin-bottom: 25px;
     position: relative;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     box-shadow: 0 8px 32px rgba(168, 85, 247, 0.3);
-    height: 200px;
+    height: 240px;
     cursor: grab;
+    scroll-behavior: smooth;
+}
+
+.promo-banner::-webkit-scrollbar {
+    height: 6px;
+}
+
+.promo-banner::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.promo-banner::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+.promo-banner::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .promo-banner.dragging {
     cursor: grabbing;
+    scroll-behavior: auto;
 }
 
 .promo-slider {
     display: flex;
+    width: max-content;
     height: 100%;
-    width: 100%;
-    position: relative;
-    gap: 12px;
-    padding: 0 12px;
+    gap: 16px;
+    padding: 0 20px;
+    align-items: center;
 }
 
 .promo-slide {
-    flex: 0 0 calc(100% - 24px);
-    height: 100%;
-    background-size: cover;
+    flex: 0 0 400px;
+    height: 180px;
+    background-size: contain;
+    background-repeat: no-repeat;
     background-position: center;
     border-radius: 12px;
     transition: transform 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .category-tabs {
