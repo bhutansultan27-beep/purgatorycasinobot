@@ -5,11 +5,11 @@
 }
 
 :root {
-    --bg-primary: #0d0d0f;
-    --bg-secondary: #141418;
-    --bg-card: #1a1a1f;
-    --bg-hover: #222228;
-    --accent-purple: #8b5cf6;
+    --bg-primary: #0a0e27;
+    --bg-secondary: #0f1535;
+    --bg-card: #151d42;
+    --bg-hover: #1a2454;
+    --accent-purple: #a855f7;
     --accent-pink: #ec4899;
     --accent-blue: #3b82f6;
     --accent-green: #22c55e;
@@ -19,7 +19,7 @@
     --text-primary: #ffffff;
     --text-secondary: #9ca3af;
     --text-muted: #6b7280;
-    --border-color: #2d2d35;
+    --border-color: #1e2d5f;
     --sidebar-width: 240px;
 }
 
@@ -114,8 +114,10 @@ body {
 }
 
 .nav-item.active {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.1));
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(236, 72, 153, 0.2));
     color: var(--text-primary);
+    border-left: 3px solid var(--accent-purple);
+    padding-left: 12px;
 }
 
 .nav-item i {
@@ -268,12 +270,13 @@ body {
 }
 
 .promo-banner {
-    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
     border-radius: 16px;
     padding: 30px;
     margin-bottom: 25px;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 8px 32px rgba(168, 85, 247, 0.3);
 }
 
 .promo-content {
@@ -293,13 +296,11 @@ body {
 }
 
 .promo-banner h2 {
-    font-size: 28px;
-    font-weight: 800;
-    margin-bottom: 8px;
-    background: linear-gradient(90deg, #fff, #a78bfa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .promo-banner p {
@@ -454,11 +455,12 @@ body {
     flex-shrink: 0;
     width: 160px;
     text-decoration: none;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, filter 0.3s ease;
 }
 
 .game-card-new:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px) scale(1.02);
+    filter: brightness(1.1);
 }
 
 .game-thumb {
@@ -482,7 +484,7 @@ body {
 }
 
 .game-card-new:hover .game-thumb {
-    box-shadow: 0 10px 40px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 12px 48px rgba(168, 85, 247, 0.5);
 }
 
 .game-badge {
