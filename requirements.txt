@@ -73,3 +73,10 @@ python-dotenv
 requests
 flask
 gunicorn
+APScheduler
+flask
+gunicorn
+psycopg2-binary
+python-dotenv
+requests
+sqlalchemy
