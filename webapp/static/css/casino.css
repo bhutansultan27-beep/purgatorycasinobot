@@ -249,11 +249,20 @@ body {
 .header-center-section {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     gap: 6px;
     flex-shrink: 1;
     min-width: 150px;
     max-width: 250px;
+    position: relative;
+}
+
+.header-center-logo {
+    width: 45px;
+    height: 45px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    margin-right: auto;
 }
 
 .header-right-section {
