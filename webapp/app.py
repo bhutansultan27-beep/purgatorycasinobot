@@ -21,6 +21,16 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 
 db = SQLDatabaseManager()
 
+@app.after_request
+def add_cache_headers(response):
+    if response.direct_passthrough or not response.is_streamed:
+        if response.content_type and ('image' in response.content_type or 'png' in response.content_type or 'jpg' in response.content_type or 'jpeg' in response.content_type or 'gif' in response.content_type or 'webp' in response.content_type):
+            response.cache_control.max_age = 0
+            response.cache_control.no_cache = True
+            response.cache_control.no_store = True
+            response.headers['Pragma'] = 'no-cache'
+    return response
+
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 ADMIN_IDS_STR = os.getenv("ADMIN_IDS", "")
 ADMIN_IDS = set()
