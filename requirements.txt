@@ -45,3 +45,12 @@ pymysql
 python-dotenv
 requests
 sqlalchemy
+APScheduler
+flask
+gunicorn
+Pillow
+psycopg2-binary
+pymysql
+python-dotenv
+requests
+sqlalchemy
