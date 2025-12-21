@@ -188,6 +188,8 @@ body {
     justify-content: space-between;
     gap: 12px;
     z-index: 50;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .menu-toggle {
@@ -229,8 +231,9 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    flex: 1;
-    margin: 0 20px;
+    flex-shrink: 1;
+    min-width: 200px;
+    max-width: 300px;
 }
 
 .header-right-section {
@@ -239,6 +242,7 @@ body {
     justify-content: flex-end;
     gap: 8px;
     flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .header-brand {
