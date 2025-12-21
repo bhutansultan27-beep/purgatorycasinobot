@@ -191,7 +191,7 @@ body {
     flex: 1;
     margin-left: var(--sidebar-width);
     min-height: 100vh;
-    margin-top: 130px;
+    margin-top: 80px;
 }
 
 .top-header {
@@ -209,7 +209,7 @@ body {
     z-index: 50;
     white-space: nowrap;
     min-width: 0;
-    height: 130px;
+    height: 80px;
     margin: 0;
 }
 
@@ -252,28 +252,12 @@ body {
         width: 180px;
         height: 180px;
     }
-    
-    .top-header {
-        height: 180px;
-    }
-    
-    .main-content {
-        margin-top: 180px;
-    }
 }
 
 @media (max-width: 600px) {
     .header-logo-img {
         width: 200px;
         height: 200px;
-    }
-    
-    .top-header {
-        height: 200px;
-    }
-    
-    .main-content {
-        margin-top: 200px;
     }
 }
 
