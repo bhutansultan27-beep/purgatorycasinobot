@@ -134,22 +134,15 @@ body {
     height: 64px;
 }
 
-@media (min-width: 769px) {
-    .sidebar-header {
-        display: none;
-    }
-}
-
 @media (max-width: 768px) {
     .menu-toggle-sidebar {
         display: none;
     }
 }
 
-/* Hide Bets nav item on mobile */
-@media (max-width: 768px) {
-    .bottom-nav-item:nth-child(3) {
-        display: none;
+@media (min-width: 769px) {
+    .bottom-nav {
+        display: none !important;
     }
 }
 
