@@ -249,8 +249,13 @@ body {
 
 @media (max-width: 768px) {
     .header-logo-img {
-        width: 110px;
-        height: 110px;
+        width: 150px;
+        height: 150px;
+    }
+    
+    .top-header {
+        height: auto;
+        min-height: 120px;
     }
 }
 
