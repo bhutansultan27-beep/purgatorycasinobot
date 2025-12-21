@@ -635,6 +635,97 @@ body {
     transform: scale(1.02);
 }
 
+/* Christmas Snow Effect */
+.snow-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+    overflow: hidden;
+}
+
+.snowflake {
+    position: absolute;
+    top: -10px;
+    color: #ffffff;
+    font-size: 1em;
+    font-family: Arial, sans-serif;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+    z-index: 50;
+}
+
+@keyframes snowfall {
+    0% {
+        transform: translateY(0) translateX(0) rotateZ(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) translateX(100px) rotateZ(360deg);
+        opacity: 0.3;
+    }
+}
+
+@keyframes snowfall-slow {
+    0% {
+        transform: translateY(0) translateX(0) rotateZ(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) translateX(50px) rotateZ(360deg);
+        opacity: 0.3;
+    }
+}
+
+@keyframes snowfall-fast {
+    0% {
+        transform: translateY(0) translateX(0) rotateZ(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) translateX(150px) rotateZ(360deg);
+        opacity: 0.3;
+    }
+}
+
+.snowflake.falling {
+    animation: snowfall linear infinite;
+}
+
+.snowflake.falling-slow {
+    animation: snowfall-slow linear infinite;
+}
+
+.snowflake.falling-fast {
+    animation: snowfall-fast linear infinite;
+}
+
+/* Snow particles burst effect on wallet button */
+@keyframes snow-burst {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+    }
+}
+
+.snow-burst {
+    position: absolute;
+    color: #ffffff;
+    font-size: 0.8em;
+    pointer-events: none;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.snow-burst.burst-particle {
+    animation: snow-burst 1s ease-out forwards;
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
     .right-panel {
