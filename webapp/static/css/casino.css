@@ -830,33 +830,19 @@ body {
 }
 
 .promo-banner {
-    border-radius: 16px;
+    border-radius: 12px;
     margin-bottom: 25px;
     position: relative;
     overflow-x: auto;
     overflow-y: hidden;
     box-shadow: 0 8px 32px rgba(168, 85, 247, 0.3);
-    height: 240px;
+    height: 160px;
     cursor: grab;
     scroll-behavior: smooth;
 }
 
 .promo-banner::-webkit-scrollbar {
-    height: 6px;
-}
-
-.promo-banner::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-}
-
-.promo-banner::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-}
-
-.promo-banner::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
+    height: 0;
 }
 
 .promo-banner.dragging {
@@ -868,20 +854,20 @@ body {
     display: flex;
     width: max-content;
     height: 100%;
-    gap: 16px;
-    padding: 0 20px;
-    align-items: center;
+    gap: 0;
+    padding: 0;
+    align-items: stretch;
 }
 
 .promo-slide {
-    flex: 0 0 400px;
-    height: 180px;
-    background-size: contain;
+    flex: 0 0 320px;
+    height: 160px;
+    background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    border-radius: 12px;
+    border-radius: 0;
     transition: transform 0.3s ease;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: none;
 }
 
 .category-tabs {
