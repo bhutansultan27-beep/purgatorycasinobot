@@ -53,7 +53,7 @@ body {
 }
 
 .bottom-nav {
-    display: flex;
+    display: none;
     position: fixed;
     bottom: 0;
     left: 0;
@@ -129,6 +129,12 @@ body {
     text-decoration: none;
     cursor: pointer;
     height: 64px;
+}
+
+@media (min-width: 769px) {
+    .sidebar-header {
+        display: none;
+    }
 }
 
 .menu-toggle-sidebar {
@@ -1583,8 +1589,13 @@ body {
         font-size: 10px;
     }
     
+    .bottom-nav {
+        display: flex;
+    }
+    
     .content-area {
         padding: 10px;
+        padding-bottom: calc(90px + max(0px, env(safe-area-inset-bottom)));
         overflow-x: hidden;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
