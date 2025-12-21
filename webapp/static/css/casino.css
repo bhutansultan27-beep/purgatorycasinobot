@@ -1027,6 +1027,7 @@ body {
     justify-content: center;
     overflow: hidden;
     transition: box-shadow 0.3s ease;
+    border: 2px solid #FF6B6B;
 }
 
 .game-card-img {
