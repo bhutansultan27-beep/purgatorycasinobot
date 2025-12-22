@@ -2132,11 +2132,12 @@ body {
     text-align: center;
 }
 
-/* Live Bets Section Redesign */
+/* Live Bets Section Redesign to match screenshot */
 .live-bets-section {
     margin-top: 40px;
     width: 100%;
     padding: 0 20px;
+    background: transparent;
 }
 
 .live-bets-header-top {
@@ -2148,8 +2149,8 @@ body {
 
 .live-tabs {
     display: flex;
-    background: #1a1d23;
-    padding: 4px;
+    background: #111419;
+    padding: 6px;
     border-radius: 8px;
     gap: 4px;
 }
@@ -2157,8 +2158,8 @@ body {
 .live-tab {
     background: transparent;
     border: none;
-    color: var(--text-secondary);
-    padding: 8px 20px;
+    color: #9BA5B0;
+    padding: 10px 24px;
     border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
@@ -2168,18 +2169,19 @@ body {
 
 .live-tab.active {
     background: #2a2e35;
-    color: var(--text-primary);
+    color: #ffffff;
 }
 
 .row-count-select {
-    background: #1a1d23;
-    border: none;
-    color: var(--text-primary);
+    background: #111419;
+    border: 1px solid #2a2e35;
+    color: #ffffff;
     padding: 10px 15px;
     border-radius: 8px;
     font-size: 14px;
     outline: none;
     cursor: pointer;
+    min-width: 80px;
 }
 
 .live-bets-table-container {
@@ -2190,61 +2192,62 @@ body {
     display: grid;
     grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr 1.5fr;
     padding: 10px 20px;
-    color: var(--text-muted);
+    color: #555c65;
     font-size: 13px;
     font-weight: 500;
+    text-transform: none;
 }
 
 .live-bets-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    max-height: none;
-    overflow: visible;
+    gap: 2px;
 }
 
 .live-bet-row {
     display: grid;
     grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr 1.5fr;
-    padding: 14px 20px;
-    background: #111419;
-    border-radius: 8px;
+    padding: 16px 20px;
+    background: #0b0e11;
+    border-radius: 4px;
     align-items: center;
     font-size: 14px;
     color: #ffffff;
-    transition: all 0.2s ease;
+    transition: background 0.2s ease;
     cursor: pointer;
 }
 
-.live-bet-row:nth-child(even) {
-    background: #0e1116;
-}
-
 .live-bet-row:hover {
-    background: #1a1d23;
+    background: #111419;
 }
 
 .live-bet-row.active-row {
     background: #1a1d23;
-    box-shadow: inset 4px 0 0 var(--accent-purple);
 }
 
 .live-bet-row i {
-    margin-right: 10px;
-    font-size: 14px;
-    width: 18px;
+    margin-right: 12px;
+    font-size: 16px;
+    width: 20px;
     text-align: center;
-    color: var(--text-muted);
+    color: #9BA5B0;
 }
 
 .col-user {
     font-weight: 600;
     display: flex;
     align-items: center;
+    color: #ffffff;
 }
 
 .col-user i {
     color: #9BA5B0;
+    font-size: 14px;
+}
+
+.col-game {
+    display: flex;
+    align-items: center;
 }
 
 .col-amount, .col-result {
@@ -2254,7 +2257,7 @@ body {
 
 .col-amount i, .col-result i {
     color: #26C485;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .col-result.win {
@@ -2262,21 +2265,21 @@ body {
 }
 
 .col-result.loss {
-    color: var(--text-muted);
+    color: #9BA5B0;
 }
 
 .col-result.loss i {
-    color: var(--text-muted);
+    color: #26C485;
 }
 
 .col-multi {
-    color: var(--text-muted);
+    color: #9BA5B0;
     display: flex;
     align-items: center;
 }
 
 .col-multi i {
-    font-size: 12px;
+    font-size: 14px;
 }
 
 @media (max-width: 768px) {
@@ -2287,6 +2290,11 @@ body {
     .live-tabs {
         overflow-x: auto;
         white-space: nowrap;
+        scrollbar-width: none;
+    }
+    
+    .live-tabs::-webkit-scrollbar {
+        display: none;
     }
     
     .live-table-header {
