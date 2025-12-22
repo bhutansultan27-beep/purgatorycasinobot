@@ -1933,17 +1933,18 @@ body {
 /* Live Bets Section */
 .live-bets-section {
     background: var(--bg-card);
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 10px;
-    overflow-x: auto;
+    border-radius: 8px;
+    padding: 0;
+    margin-bottom: 8px;
+    overflow: hidden;
 }
 
 .live-bets-section .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    padding: 8px 12px;
+    margin-bottom: 0;
 }
 
 .live-indicator {
@@ -1977,32 +1978,31 @@ body {
 
 .live-bets-header {
     display: grid;
-    grid-template-columns: 0.7fr 1fr 0.7fr 0.7fr;
-    padding: 6px 8px;
+    grid-template-columns: 0.9fr 1.2fr 0.8fr 0.8fr 0.8fr;
+    padding: 6px 10px;
     background: var(--bg-hover);
-    font-size: 9px;
+    font-size: 10px;
     color: var(--text-muted);
     text-transform: uppercase;
     font-weight: 600;
-    letter-spacing: 0px;
-    gap: 6px;
+    gap: 8px;
 }
 
 .live-bets-list {
-    max-height: 150px;
+    max-height: 180px;
     overflow-y: auto;
 }
 
 .live-bet-row {
     display: grid;
-    grid-template-columns: 0.7fr 1fr 0.7fr 0.7fr;
-    padding: 6px 8px;
+    grid-template-columns: 0.9fr 1.2fr 0.8fr 0.8fr 0.8fr;
+    padding: 6px 10px;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
     transition: background 0.2s;
     cursor: pointer;
-    font-size: 10px;
-    gap: 6px;
+    font-size: 11px;
+    gap: 8px;
 }
 
 .live-bet-row:hover {
@@ -2520,7 +2520,7 @@ body {
 .footer {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
-    padding: 8px 12px;
+    padding: 8px 10px;
     margin-top: 8px;
 }
 
