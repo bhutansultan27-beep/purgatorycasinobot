@@ -1047,10 +1047,11 @@ body {
     overflow-x: auto;
     overflow-y: hidden;
     box-shadow: none;
-    height: 180px;
+    height: 220px;
     cursor: grab;
     scroll-behavior: smooth;
     background: transparent;
+    padding: 10px 0;
 }
 
 .promo-banner::-webkit-scrollbar {
@@ -1067,7 +1068,7 @@ body {
     width: max-content;
     height: 100%;
     gap: 12px;
-    padding: 0 16px;
+    padding: 10px 16px;
     align-items: center;
 }
 
@@ -1080,10 +1081,12 @@ body {
     border-radius: 12px;
     transition: transform 0.3s ease;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    margin: 0;
 }
 
 .promo-slide:hover {
     transform: translateY(-8px);
+    z-index: 10;
 }
 
 .category-tabs {
@@ -1210,6 +1213,7 @@ body {
     display: flex;
     gap: 15px;
     overflow-x: auto;
+    overflow-y: hidden;
     scroll-behavior: smooth;
     padding-bottom: 10px;
     -ms-overflow-style: none;
@@ -1218,6 +1222,12 @@ body {
 
 .games-scroll::-webkit-scrollbar {
     display: none;
+}
+
+/* Prevent scroll propagation */
+.promo-banner,
+.games-scroll {
+    overscroll-behavior: contain;
 }
 
 .game-card-new {
