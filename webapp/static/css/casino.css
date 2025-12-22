@@ -5,16 +5,16 @@
 }
 
 :root {
-    --bg-primary: #0F1419;
-    --bg-secondary: #1C2127;
+    --bg-primary: #0a0d18;
+    --bg-secondary: #0d1117;
     --bg-card: #262D35;
     --bg-hover: #3A4149;
-    --accent-purple: #1a1e2e;
-    --accent-pink: #1a1e2e;
-    --accent-blue: #1a1e2e;
+    --accent-purple: #3FAEE8;
+    --accent-pink: #3FAEE8;
+    --accent-blue: #3FAEE8;
     --accent-green: #26C485;
     --accent-yellow: #F4A460;
-    --accent-orange: #1a1e2e;
+    --accent-orange: #3FAEE8;
     --accent-red: #FF6B6B;
     --text-primary: #FFFFFF;
     --text-secondary: #9BA5B0;
@@ -151,7 +151,7 @@ body {
     text-decoration: none;
     cursor: pointer;
     height: 64px;
-    background: #1a1e2e;
+    background: #0a0d18;
 }
 
 @media (max-width: 768px) {
@@ -309,9 +309,9 @@ body {
 }
 
 .nav-item.active {
-    background: linear-gradient(90deg, rgba(26, 30, 46, 0.4) 0%, rgba(26, 30, 46, 0.15) 50%, rgba(26, 30, 46, 0) 100%);
+    background: linear-gradient(90deg, rgba(63, 174, 232, 0.4) 0%, rgba(63, 174, 232, 0.15) 50%, rgba(63, 174, 232, 0) 100%);
     color: var(--text-primary);
-    border-left: 3px solid #1a1e2e;
+    border-left: 3px solid #3FAEE8;
     padding-left: 12px;
 }
 
@@ -502,7 +502,7 @@ body {
 }
 
 .header-category-btn.active {
-    background: #1a1e2e;
+    background: #3FAEE8;
     color: white;
 }
 
@@ -1124,7 +1124,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #1a1e2e;
+    background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 8px 14px;
@@ -1151,7 +1151,7 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: #1a1e2e;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
     border: none;
     border-radius: 8px;
     padding: 8px 16px;
@@ -1161,7 +1161,7 @@ body {
     cursor: pointer;
     text-decoration: none;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(26, 30, 46, 0.35);
+    box-shadow: 0 4px 15px rgba(63, 174, 232, 0.35);
     position: relative;
     overflow: hidden;
     white-space: nowrap;
