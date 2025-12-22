@@ -1029,7 +1029,7 @@ body {
     overflow-x: hidden !important;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    touch-action: none;
+    touch-action: pan-y;
 }
 
 .container {
@@ -1040,7 +1040,7 @@ body {
     overflow-x: hidden !important;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    touch-action: none;
+    touch-action: pan-y;
 }
 
 .promo-banner {
@@ -1056,6 +1056,7 @@ body {
     background: transparent;
     padding: 10px 0;
     overscroll-behavior: contain;
+    touch-action: manipulation;
 }
 
 .promo-banner::-webkit-scrollbar {
@@ -1223,6 +1224,7 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
     overscroll-behavior: contain;
+    touch-action: manipulation;
 }
 
 .games-scroll::-webkit-scrollbar {
