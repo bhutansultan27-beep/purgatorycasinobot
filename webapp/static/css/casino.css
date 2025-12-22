@@ -1933,18 +1933,16 @@ body {
 /* Live Bets Section */
 .live-bets-section {
     background: var(--bg-card);
-    border-radius: 16px;
-    padding: 8px;
-    margin-bottom: 8px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
 }
 
 .live-bets-section .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .live-indicator {
@@ -1952,7 +1950,7 @@ body {
     align-items: center;
     gap: 6px;
     color: var(--accent-red);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
 }
@@ -1971,35 +1969,36 @@ body {
 }
 
 .live-bets-container {
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
 }
 
 .live-bets-header {
     display: grid;
-    grid-template-columns: 0.8fr 0.8fr 0.8fr 0.6fr 0.8fr;
-    padding: 6px 8px;
+    grid-template-columns: 1fr 1.5fr 1fr 1fr 1fr;
+    padding: 10px 12px;
     background: var(--bg-hover);
-    font-size: 9px;
+    font-size: 11px;
     color: var(--text-muted);
     text-transform: uppercase;
     font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .live-bets-list {
-    max-height: 120px;
+    max-height: 200px;
     overflow-y: auto;
 }
 
 .live-bet-row {
     display: grid;
-    grid-template-columns: 0.8fr 0.8fr 0.8fr 0.6fr 0.8fr;
-    padding: 8px 8px;
+    grid-template-columns: 1fr 1.5fr 1fr 1fr 1fr;
+    padding: 10px 12px;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
     transition: background 0.2s;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .live-bet-row:hover {
