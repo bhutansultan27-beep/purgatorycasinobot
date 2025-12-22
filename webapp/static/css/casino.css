@@ -450,13 +450,30 @@ body {
 .header-left-section {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     flex-shrink: 0;
+}
+
+.header-menu-toggle {
+    display: flex;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.header-menu-toggle:hover {
+    color: var(--accent-purple);
 }
 
 .header-casino-sports {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
 }
 
@@ -464,15 +481,19 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 14px;
+    padding: 6px 12px;
     background: var(--bg-card);
     color: var(--text-secondary);
-    border: 1px solid var(--border-color);
+    border: none;
     border-radius: 6px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+}
+
+.header-category-btn i {
+    font-size: 14px;
 }
 
 .header-category-btn:hover {
@@ -483,7 +504,6 @@ body {
 .header-category-btn.active {
     background: #3FAEE8;
     color: white;
-    border-color: #3FAEE8;
 }
 
 .header-category-btn:not(.active) {
