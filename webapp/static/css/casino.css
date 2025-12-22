@@ -1039,12 +1039,12 @@ body {
 
 .promo-banner {
     border-radius: 0;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     position: relative;
     overflow-x: auto;
     overflow-y: hidden;
     box-shadow: none;
-    height: 240px;
+    height: 180px;
     cursor: grab;
     scroll-behavior: smooth;
     background: transparent;
@@ -1083,7 +1083,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 25px;
+    margin-bottom: 12px;
     flex-wrap: wrap;
 }
 
@@ -1141,7 +1141,7 @@ body {
 }
 
 .games-section {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 }
 
 .section-header {
@@ -1984,7 +1984,7 @@ body {
 }
 
 .live-bets-list {
-    max-height: 200px;
+    max-height: 120px;
     overflow-y: auto;
 }
 
@@ -2513,25 +2513,25 @@ body {
 .footer {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
-    padding: 15px 20px;
-    margin-top: 15px;
+    padding: 10px 15px;
+    margin-top: 10px;
 }
 
 .footer-content {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 20px;
+    gap: 12px;
     max-width: 1400px;
     margin: 0 auto;
-    padding-bottom: 15px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--border-color);
 }
 
 .footer-column h4 {
     color: var(--text-primary);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
     text-transform: capitalize;
 }
 
@@ -2540,13 +2540,13 @@ body {
 }
 
 .footer-column li {
-    margin-bottom: 5px;
+    margin-bottom: 3px;
 }
 
 .footer-column a {
     color: var(--text-secondary);
     text-decoration: none;
-    font-size: 13px;
+    font-size: 11px;
     transition: color 0.3s ease;
 }
 
@@ -2592,14 +2592,14 @@ body {
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding-top: 10px;
+    gap: 5px;
+    padding-top: 8px;
 }
 
 .footer-info p {
     color: var(--text-muted);
-    font-size: 12px;
-    line-height: 1.6;
+    font-size: 10px;
+    line-height: 1.4;
 }
 
 .footer-logos {
@@ -2612,7 +2612,7 @@ body {
 
 .copyright {
     color: var(--text-muted);
-    font-size: 12px;
+    font-size: 10px;
 }
 
 .logos {
