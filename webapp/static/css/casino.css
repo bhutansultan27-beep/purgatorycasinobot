@@ -1934,8 +1934,9 @@ body {
 .live-bets-section {
     background: var(--bg-card);
     border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 12px;
+    padding: 10px;
+    margin-bottom: 10px;
+    overflow-x: auto;
 }
 
 .live-bets-section .section-header {
@@ -1971,18 +1972,19 @@ body {
 .live-bets-container {
     border-radius: 8px;
     overflow: hidden;
+    min-width: 100%;
 }
 
 .live-bets-header {
     display: grid;
-    grid-template-columns: 1fr 1.5fr 1fr 1fr 1fr;
-    padding: 10px 12px;
+    grid-template-columns: 1fr 1.2fr 0.9fr 0.9fr 0.9fr;
+    padding: 8px 10px;
     background: var(--bg-hover);
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-muted);
     text-transform: uppercase;
     font-weight: 600;
-    letter-spacing: 0.5px;
+    letter-spacing: 0px;
 }
 
 .live-bets-list {
@@ -1992,13 +1994,14 @@ body {
 
 .live-bet-row {
     display: grid;
-    grid-template-columns: 1fr 1.5fr 1fr 1fr 1fr;
-    padding: 10px 12px;
+    grid-template-columns: 1fr 1.2fr 0.9fr 0.9fr 0.9fr;
+    padding: 8px 10px;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
     transition: background 0.2s;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 11px;
+    gap: 4px;
 }
 
 .live-bet-row:hover {
