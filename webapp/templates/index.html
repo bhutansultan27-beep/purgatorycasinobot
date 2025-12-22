@@ -293,8 +293,8 @@
                 <section class="live-bets-section">
                     <div class="live-bets-header-top">
                         <div class="live-tabs">
-                            <button class="live-tab">My Plays</button>
-                            <button class="live-tab active">Latest Plays</button>
+                            <button class="live-tab">My Bets</button>
+                            <button class="live-tab active">Latest Bets</button>
                             <button class="live-tab">High Rollers</button>
                             <button class="live-tab">Daily Race</button>
                         </div>
@@ -316,7 +316,7 @@
                         </div>
                             <div class="live-bets-list" id="live-bets-list">
                                 <!-- Latest Plays (Default) -->
-                                <div class="tab-content" id="latest-plays">
+                                <div class="tab-content" id="latest-bets">
                                     <div class="live-bet-row">
                                         <span class="col-user"><i class="fas fa-caret-up"></i> Kensjio</span>
                                         <span class="col-game"><i class="fas fa-coins"></i> Le Santa</span>
@@ -390,7 +390,7 @@
                                 </div>
 
                                 <!-- My Plays -->
-                                <div class="tab-content" id="my-plays" style="display: none;">
+                                <div class="tab-content" id="my-bets" style="display: none;">
                                     <div class="no-bets">No bets yet. Be the first to play!</div>
                                 </div>
 
@@ -784,6 +784,9 @@
                     }
                 });
             });
+
+            // Ensure Latest Bets is visible on load
+            document.getElementById('latest-bets').style.display = 'block';
         });
     </script>
 </body>
