@@ -123,16 +123,17 @@
         }
 
         .form-section {
-            margin-bottom: 25px;
+            margin-bottom: 18px;
         }
 
         .form-label {
             display: block;
             color: var(--text-primary);
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             text-transform: capitalize;
+            letter-spacing: 0.3px;
         }
 
         .form-control {
@@ -140,12 +141,12 @@
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 12px 14px;
+            padding: 11px 13px;
             color: var(--text-primary);
-            font-size: 14px;
+            font-size: 13px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -365,20 +366,86 @@
 
         .action-button {
             width: 100%;
-            padding: 14px;
-            background: rgba(159, 122, 234, 0.3);
-            border: 1px solid var(--border-color);
+            padding: 13px;
+            background: rgba(159, 122, 234, 0.25);
+            border: 1px solid rgba(159, 122, 234, 0.3);
             border-radius: 8px;
             color: var(--text-primary);
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 20px;
+            margin-top: 18px;
         }
 
         .action-button:hover {
-            background: rgba(159, 122, 234, 0.4);
+            background: rgba(159, 122, 234, 0.35);
+            border-color: rgba(159, 122, 234, 0.4);
+        }
+
+        .buy-crypto-section {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 11px 13px;
+        }
+
+        .buy-crypto-section input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .buy-crypto-section input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .buy-crypto-amount {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .payment-method {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .payment-method:hover {
+            border-color: var(--accent-purple);
+            background: var(--bg-hover);
+        }
+
+        .crypto-disclaimer {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 12px;
+            line-height: 1.4;
         }
 
         .tab-content {
@@ -523,7 +590,57 @@
             </div>
 
             <div id="buy-crypto" class="tab-content">
-                <p style="color: var(--text-secondary); text-align: center;">Buy Crypto page coming soon...</p>
+                <div class="form-section">
+                    <label class="form-label">You Pay With</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="buy-crypto-section" style="flex: 1;">
+                            <input type="text" placeholder="50.00" style="font-size: 14px; font-weight: 600;">
+                        </div>
+                        <div class="form-control" style="flex: 0 0 auto; width: auto; padding: 11px 13px;">
+                            <span class="input-icon" style="color: var(--accent-green); margin: 0;">💵</span>
+                            <span style="font-size: 13px;">USD</span>
+                            <span style="font-size: 10px; color: var(--text-secondary); margin-left: 5px;">▼</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-label">In Exchange For</label>
+                    <div class="form-control">
+                        <span class="form-control-icon">
+                            <i class="fab fa-ethereum"></i>
+                        </span>
+                        <div class="form-control-content">
+                            <span>ETH</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-label">Select Provider and Receive</label>
+                    <div class="form-control">
+                        <span class="form-control-icon">
+                            <i class="fas fa-wallet"></i>
+                        </span>
+                        <div class="form-control-content">
+                            <span>Moonpay</span>
+                            <span style="color: var(--text-secondary); font-size: 12px;">0.01590600</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="action-button" style="background: rgba(63, 174, 232, 0.25); border-color: rgba(63, 174, 232, 0.3); margin-top: 20px;">Buy Now</button>
+
+                <div class="payment-methods">
+                    <div class="payment-method">🍎</div>
+                    <div class="payment-method">💳</div>
+                    <div class="payment-method">💰</div>
+                    <div class="payment-method">💳</div>
+                    <div class="payment-method">🔵</div>
+                </div>
+
+                <div class="crypto-disclaimer">Crypto purchases are processed externally and subject to additional processing fees. Final quotes vary by provider.</div>
             </div>
 
             <div id="tip" class="tab-content">
