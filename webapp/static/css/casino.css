@@ -2202,6 +2202,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-height: 200px;
 }
 
 .live-bet-row {

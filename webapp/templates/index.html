@@ -714,6 +714,7 @@
 
         // Draggable promo slider
         const promoSlider = document.getElementById('promo-slider');
+        const promoBanner = document.querySelector('.promo-banner');
         let isDown = false;
         let startX;
         let scrollLeft;
@@ -794,7 +795,7 @@
                 const latestBets = document.getElementById('latest-bets');
                 const latestTab = Array.from(document.querySelectorAll('.live-tab')).find(t => t.textContent.trim() === 'Latest Bets');
                 
-                if (latestBets) {
+                if (latestBets && latestBets.style.display !== 'block') {
                     contents.forEach(content => {
                         content.style.setProperty('display', 'none', 'important');
                         content.classList.remove('active');
@@ -803,32 +804,15 @@
                     latestBets.classList.add('active');
                 }
                 
-                if (latestTab) {
+                if (latestTab && !latestTab.classList.contains('active')) {
                     tabs.forEach(t => t.classList.remove('active'));
                     latestTab.classList.add('active');
                 }
             }
 
+            // Execute immediately and periodically to ensure visibility
             showLatestBets();
-            // Using a more persistent observer to prevent external scripts from hiding it
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                        const latestBets = document.getElementById('latest-bets');
-                        const activeTab = document.querySelector('.live-tab.active');
-                        if (activeTab && activeTab.textContent.trim() === 'Latest Bets' && latestBets.style.display === 'none') {
-                            showLatestBets();
-                        }
-                    }
-                });
-            });
-
-            contents.forEach(content => {
-                observer.observe(content, { attributes: true });
-            });
-
-            // Backup for any late-loading data/logic or dynamic changes
-            setInterval(showLatestBets, 1000);
+            setInterval(showLatestBets, 500);
         });
     </script>
 </body>

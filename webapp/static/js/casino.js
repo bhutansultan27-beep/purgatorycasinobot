@@ -268,8 +268,9 @@ const gameImages = {
 };
 
 function initLiveBets() {
-    loadLiveBets();
-    liveBetsInterval = setInterval(loadLiveBets, 3000);
+    // Disabled to prevent overwriting static data
+    // loadLiveBets();
+    // liveBetsInterval = setInterval(loadLiveBets, 3000);
 }
 
 function loadLiveBets() {
