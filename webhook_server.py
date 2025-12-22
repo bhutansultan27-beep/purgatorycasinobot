@@ -232,3 +232,12 @@ class WebhookServer:
         site = web.TCPSite(runner, '0.0.0.0', self.port)
         await site.start()
         logger.info(f"Webhook server started on port {self.port}")
+        await asyncio.Event().wait()
+
+async def main():
+    """Run webhook server in demo mode without bot"""
+    server = WebhookServer(bot=None, port=5000)
+    await server.start()
+
+if __name__ == '__main__':
+    asyncio.run(main())

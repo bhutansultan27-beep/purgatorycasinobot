@@ -23,11 +23,12 @@ name = "Web App"
 author = "agent"
 
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "python webhook_server.py"
+waitForPort = 5000
 
 [userenv]
 
