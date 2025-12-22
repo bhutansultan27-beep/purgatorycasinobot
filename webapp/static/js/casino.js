@@ -109,6 +109,16 @@ function initSidebar() {
     if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
     if (overlay) overlay.addEventListener('click', toggleSidebar);
 
+    // Collapsible sections logic
+    const triggers = document.querySelectorAll('.collapsible-trigger');
+    triggers.forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            const parent = this.parentElement;
+            parent.classList.toggle('open');
+        });
+    });
+
     // Initial state for desktop
     if (window.innerWidth > 768) {
         const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
