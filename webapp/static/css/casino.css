@@ -2721,7 +2721,6 @@ body {
 /* Footer Styles */
 .footer {
     background: var(--bg-secondary);
-    border-top: 1px solid var(--border-color);
     padding: 8px 10px;
     margin-top: 8px;
 }
@@ -2733,7 +2732,6 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-color);
     box-sizing: border-box;
 }
 
@@ -2803,7 +2801,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    padding-top: 8px;
 }
 
 .footer-info p {
