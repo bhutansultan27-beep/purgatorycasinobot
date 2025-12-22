@@ -1018,17 +1018,17 @@
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
                     
-                    // Get tabs and form content from deposit page
+                    // Get tabs and all tab content from deposit page
                     const tabs = doc.querySelector('.wallet-modal-tabs');
-                    const forms = doc.querySelectorAll('[data-tab]');
+                    const tabContents = doc.querySelectorAll('.tab-content');
                     
-                    if (tabs) {
+                    if (tabs && tabContents.length > 0) {
                         depositContentContainer.innerHTML = '';
                         depositContentContainer.appendChild(tabs.cloneNode(true));
                         
-                        // Add all form sections
-                        forms.forEach(form => {
-                            depositContentContainer.appendChild(form.cloneNode(true));
+                        // Add all tab content sections
+                        tabContents.forEach(content => {
+                            depositContentContainer.appendChild(content.cloneNode(true));
                         });
                         
                         // Reinitialize tab functionality
@@ -1048,28 +1048,28 @@
 
         function initializeTabs() {
             const tabs = depositContentContainer.querySelectorAll('.wallet-modal-tab');
-            const panes = depositContentContainer.querySelectorAll('[data-tab]');
+            const tabContents = depositContentContainer.querySelectorAll('.tab-content');
             
             tabs.forEach(tab => {
                 tab.addEventListener('click', (e) => {
                     e.preventDefault();
                     const tabName = tab.textContent.toLowerCase().trim().replace(/\s+/g, '-');
                     
-                    // Remove active from all tabs and panes
+                    // Remove active from all tabs and contents
                     tabs.forEach(t => t.classList.remove('active'));
-                    panes.forEach(p => p.style.display = 'none');
+                    tabContents.forEach(tc => tc.classList.remove('active'));
                     
-                    // Add active to clicked tab and show pane
+                    // Add active to clicked tab and show content
                     tab.classList.add('active');
-                    const activePane = depositContentContainer.querySelector(`[data-tab="${tabName}"]`);
-                    if (activePane) activePane.style.display = 'block';
+                    const activeContent = depositContentContainer.querySelector(`#${tabName}`);
+                    if (activeContent) activeContent.classList.add('active');
                 });
             });
             
             // Show first tab by default
             if (tabs.length > 0) {
                 tabs[0].classList.add('active');
-                if (panes.length > 0) panes[0].style.display = 'block';
+                if (tabContents.length > 0) tabContents[0].classList.add('active');
             }
         }
 
