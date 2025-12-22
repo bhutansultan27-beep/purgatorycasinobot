@@ -468,8 +468,8 @@ body {
 
 .nav-divider {
     height: 1px;
-    background: var(--border-color);
-    margin: 15px 10px;
+    background: #202225;
+    margin: 12px 10px;
 }
 
 .sidebar-section {
