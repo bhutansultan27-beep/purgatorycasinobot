@@ -992,62 +992,29 @@
     </style>
 
     <div class="wallet-modal-overlay" id="wallet-modal-overlay">
-        <div class="wallet-modal-content">
-            <div class="wallet-modal-header">
-                <div class="wallet-modal-title">Wallet</div>
-                <button class="wallet-modal-close" id="wallet-modal-close">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <div class="balance-display">
-                <div class="balance-label">Current Balance</div>
-                <div class="balance-amount" id="wallet-modal-balance">$0.00</div>
-            </div>
-
-            <div class="wallet-options">
-                <a href="/deposit" class="wallet-option-btn deposit">
-                    <div class="wallet-option-icon">
-                        <i class="fas fa-arrow-down"></i>
-                    </div>
-                    <div class="wallet-option-info">
-                        <div class="wallet-option-title">Deposit</div>
-                        <div class="wallet-option-desc">Add funds</div>
-                    </div>
-                </a>
-
-                <a href="/withdraw" class="wallet-option-btn withdraw">
-                    <div class="wallet-option-icon">
-                        <i class="fas fa-arrow-up"></i>
-                    </div>
-                    <div class="wallet-option-info">
-                        <div class="wallet-option-title">Withdraw</div>
-                        <div class="wallet-option-desc">Cash out</div>
-                    </div>
-                </a>
-            </div>
+        <div class="wallet-modal-content" id="wallet-modal-content">
+            <button class="wallet-modal-close" id="wallet-modal-close" style="position: absolute; top: 20px; right: 20px; z-index: 1001;">
+                <i class="fas fa-times"></i>
+            </button>
+            <iframe id="wallet-iframe" style="width: 100%; height: 100%; border: none; border-radius: 16px;" src=""></iframe>
         </div>
     </div>
 
     <script>
-        // Wallet Modal Handler
         const walletBtnHeader = document.getElementById('wallet-btn-header');
         const walletModalOverlay = document.getElementById('wallet-modal-overlay');
         const walletModalClose = document.getElementById('wallet-modal-close');
+        const walletIframe = document.getElementById('wallet-iframe');
         const walletModalTriggers = document.querySelectorAll('.wallet-modal-trigger');
 
         function openWalletModal() {
             walletModalOverlay.classList.add('active');
-            updateWalletBalance();
+            walletIframe.src = '/deposit';
         }
 
         function closeWalletModal() {
             walletModalOverlay.classList.remove('active');
-        }
-
-        function updateWalletBalance() {
-            const balanceText = document.getElementById('balance').textContent;
-            document.getElementById('wallet-modal-balance').textContent = balanceText;
+            walletIframe.src = '';
         }
 
         walletBtnHeader.addEventListener('click', (e) => {
