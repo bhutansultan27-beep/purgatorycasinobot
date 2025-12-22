@@ -27,7 +27,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python webhook_server.py"
+args = "python -m flask --app webapp.app run --host=0.0.0.0 --port=5000"
 waitForPort = 5000
 
 [userenv]
