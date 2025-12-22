@@ -992,11 +992,11 @@
     </style>
 
     <div class="wallet-modal-overlay" id="wallet-modal-overlay">
-        <div class="wallet-modal-content" id="wallet-modal-content">
-            <button class="wallet-modal-close" id="wallet-modal-close" style="position: absolute; top: 20px; right: 20px; z-index: 1001;">
+        <div class="wallet-modal-content" id="wallet-modal-content" style="position: relative; max-height: 90vh; overflow-y: auto;">
+            <button class="wallet-modal-close" id="wallet-modal-close" style="position: absolute; top: 15px; right: 15px; z-index: 1001;">
                 <i class="fas fa-times"></i>
             </button>
-            <iframe id="wallet-iframe" style="width: 100%; height: 100%; border: none; border-radius: 16px;" src=""></iframe>
+            <div id="deposit-content-container"></div>
         </div>
     </div>
 
@@ -1004,17 +1004,73 @@
         const walletBtnHeader = document.getElementById('wallet-btn-header');
         const walletModalOverlay = document.getElementById('wallet-modal-overlay');
         const walletModalClose = document.getElementById('wallet-modal-close');
-        const walletIframe = document.getElementById('wallet-iframe');
+        const depositContentContainer = document.getElementById('deposit-content-container');
         const walletModalTriggers = document.querySelectorAll('.wallet-modal-trigger');
+        let depositContentLoaded = false;
 
-        function openWalletModal() {
+        async function openWalletModal() {
             walletModalOverlay.classList.add('active');
-            walletIframe.src = '/deposit';
+            
+            if (!depositContentLoaded) {
+                try {
+                    const response = await fetch('/deposit');
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Get tabs and form content from deposit page
+                    const tabs = doc.querySelector('.wallet-modal-tabs');
+                    const forms = doc.querySelectorAll('[data-tab]');
+                    
+                    if (tabs) {
+                        depositContentContainer.innerHTML = '';
+                        depositContentContainer.appendChild(tabs.cloneNode(true));
+                        
+                        // Add all form sections
+                        forms.forEach(form => {
+                            depositContentContainer.appendChild(form.cloneNode(true));
+                        });
+                        
+                        // Reinitialize tab functionality
+                        initializeTabs();
+                        depositContentLoaded = true;
+                    }
+                } catch (error) {
+                    console.error('Error loading deposit content:', error);
+                    depositContentContainer.innerHTML = '<p style="color: #FF6B6B; padding: 20px;">Error loading wallet</p>';
+                }
+            }
         }
 
         function closeWalletModal() {
             walletModalOverlay.classList.remove('active');
-            walletIframe.src = '';
+        }
+
+        function initializeTabs() {
+            const tabs = depositContentContainer.querySelectorAll('.wallet-modal-tab');
+            const panes = depositContentContainer.querySelectorAll('[data-tab]');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const tabName = tab.textContent.toLowerCase().trim().replace(/\s+/g, '-');
+                    
+                    // Remove active from all tabs and panes
+                    tabs.forEach(t => t.classList.remove('active'));
+                    panes.forEach(p => p.style.display = 'none');
+                    
+                    // Add active to clicked tab and show pane
+                    tab.classList.add('active');
+                    const activePane = depositContentContainer.querySelector(`[data-tab="${tabName}"]`);
+                    if (activePane) activePane.style.display = 'block';
+                });
+            });
+            
+            // Show first tab by default
+            if (tabs.length > 0) {
+                tabs[0].classList.add('active');
+                if (panes.length > 0) panes[0].style.display = 'block';
+            }
         }
 
         walletBtnHeader.addEventListener('click', (e) => {
