@@ -13,8 +13,16 @@
     <title>Roulette - rakebet Casino</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="/static/css/roulette.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><button class="menu-toggle-sidebar" id="menu-toggle"><i class="fas fa-bars"></i></button><div class="sidebar-category-toggle"><button class="sidebar-category-btn active" data-category="casino"><i class="fas fa-dice"></i> Casino</button></div></div>
+            <nav class="sidebar-nav"><a href="/" class="nav-item"><i class="fas fa-home"></i><span>Home</span></a><a href="/profile" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a><a href="/history" class="nav-item"><i class="fas fa-clock"></i><span>Recently Played</span></a><a href="/leaderboard" class="nav-item"><i class="fas fa-trophy"></i><span>Leaderboard</span></a><div class="nav-divider"></div><a href="/" class="nav-item"><i class="fas fa-dice"></i><span>Originals</span></a></nav>
+            <div class="sidebar-footer"><div class="nav-item admin-nav" id="admin-nav" style="display: none;"><a href="/admin"><i class="fas fa-shield-alt"></i><span>Admin</span></a></div></div>
+        </aside>
+        <main class="main-content">
     <div class="container">
         <a href="/" class="back-button">← Menu</a>
         <header class="header">
@@ -90,5 +98,9 @@
     <div class="message-toast" id="message-toast"></div>
 
     <script src="/static/js/roulette.js"></script>
+    </div>
+        </main>
+    </div>
+    <script src="/static/js/casino.js"></script>
 </body>
 </html>

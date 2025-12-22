@@ -93,39 +93,43 @@ function initSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
     
-    function openSidebar() {
-        sidebar.classList.add('open');
-        overlay.classList.add('open');
-    }
-    
-    function closeSidebar() {
-        sidebar.classList.remove('open');
-        overlay.classList.remove('open');
+    // Load collapsed state from localStorage
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isCollapsed && sidebar) {
+        sidebar.classList.add('collapsed');
     }
     
     if (menuToggle) {
         menuToggle.addEventListener('click', function(e) {
             e.preventDefault();
-            if (sidebar.classList.contains('open')) {
-                closeSidebar();
-            } else {
-                openSidebar();
+            if (sidebar) {
+                sidebar.classList.toggle('collapsed');
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
             }
         });
         
         menuToggle.addEventListener('touchstart', function(e) {
             e.preventDefault();
-            if (sidebar.classList.contains('open')) {
-                closeSidebar();
-            } else {
-                openSidebar();
+            if (sidebar) {
+                sidebar.classList.toggle('collapsed');
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
             }
         }, { passive: false });
     }
     
     if (overlay) {
-        overlay.addEventListener('click', closeSidebar);
-        overlay.addEventListener('touchstart', closeSidebar, { passive: true });
+        overlay.addEventListener('click', () => {
+            if (sidebar) {
+                sidebar.classList.remove('open');
+            }
+            overlay.classList.remove('open');
+        });
+        overlay.addEventListener('touchstart', () => {
+            if (sidebar) {
+                sidebar.classList.remove('open');
+            }
+            overlay.classList.remove('open');
+        }, { passive: true });
     }
     
     // Use event delegation on the sidebar for all nav items
@@ -136,17 +140,14 @@ function initSidebar() {
                 const href = navItem.getAttribute('href');
                 if (href && href.startsWith('#')) {
                     e.preventDefault();
-                    closeSidebar();
                     setTimeout(() => {
                         const target = document.querySelector(href);
                         if (target) {
                             target.scrollIntoView({ behavior: 'smooth' });
                         }
                     }, 300);
-                } else if (href) {
-                    closeSidebar();
-                    // Allow default navigation
                 }
+                // Allow default navigation for other links
             }
         });
     }
