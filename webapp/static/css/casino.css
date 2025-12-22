@@ -395,6 +395,8 @@ body {
     min-height: 100vh;
     margin-top: 64px;
     transition: margin-left 0.3s ease;
+    max-width: calc(100vw - var(--sidebar-width));
+    overflow-x: hidden;
 }
 
 .sidebar.collapsed ~ .main-content {
@@ -1209,12 +1211,11 @@ body {
 }
 
 .content-area {
-    padding: 8px;
-    max-width: 100%;
+    padding: 20px;
+    max-width: 1400px;
     margin: 0 auto;
     width: 100%;
-    overflow: hidden;
-    height: 100%;
+    box-sizing: border-box;
 }
 
 .container {
@@ -2733,6 +2734,7 @@ body {
     margin: 0 auto;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--border-color);
+    box-sizing: border-box;
 }
 
 .footer-column h4 {
