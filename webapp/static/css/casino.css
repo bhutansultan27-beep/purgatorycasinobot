@@ -173,6 +173,17 @@ body {
     margin: 0;
 }
 
+.sidebar-header {
+    padding: calc(max(15px, env(safe-area-inset-top))) 15px 15px 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: auto;
+    min-height: 70px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
 .sidebar-category-toggle {
     display: flex;
     flex-direction: row;
@@ -185,22 +196,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 0 14px;
+    gap: 8px;
+    padding: 8px 16px;
     border: none;
     background: var(--bg-card);
     color: var(--text-secondary);
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     transition: all 0.3s ease;
     white-space: nowrap;
     flex: 1;
-    min-width: 0;
-    height: 40px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    height: 44px;
 }
 
 .sidebar-category-btn:hover {
