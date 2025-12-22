@@ -145,13 +145,13 @@ body {
     padding: 12px 8px;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 6px;
     border-bottom: 1px solid var(--border-color);
     text-decoration: none;
     cursor: pointer;
     height: 64px;
-    background: var(--bg-primary);
+    background: #3FAEE8;
 }
 
 @media (max-width: 768px) {
