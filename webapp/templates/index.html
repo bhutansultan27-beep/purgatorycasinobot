@@ -316,7 +316,7 @@
                         </div>
                             <div class="live-bets-list" id="live-bets-list">
                                 <!-- Latest Bets (Default) -->
-                                <div class="tab-content active" id="latest-bets" style="display: block;">
+                                <div class="tab-content active" id="latest-bets" style="display: block !important;">
                                     <div class="live-bet-row">
                                         <span class="col-user"><i class="fas fa-caret-up"></i> Kensjio</span>
                                         <span class="col-game"><i class="fas fa-coins"></i> Le Santa</span>
@@ -789,12 +789,46 @@
                 });
             });
 
-            // Force initial display of Latest Bets
-            const latestBets = document.getElementById('latest-bets');
-            if (latestBets) {
-                latestBets.style.display = 'block';
-                latestBets.classList.add('active');
+            // Force initial display of Latest Bets and prevent flicker
+            function showLatestBets() {
+                const latestBets = document.getElementById('latest-bets');
+                const latestTab = Array.from(document.querySelectorAll('.live-tab')).find(t => t.textContent.trim() === 'Latest Bets');
+                
+                if (latestBets) {
+                    contents.forEach(content => {
+                        content.style.setProperty('display', 'none', 'important');
+                        content.classList.remove('active');
+                    });
+                    latestBets.style.setProperty('display', 'block', 'important');
+                    latestBets.classList.add('active');
+                }
+                
+                if (latestTab) {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    latestTab.classList.add('active');
+                }
             }
+
+            showLatestBets();
+            // Using a more persistent observer to prevent external scripts from hiding it
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        const latestBets = document.getElementById('latest-bets');
+                        const activeTab = document.querySelector('.live-tab.active');
+                        if (activeTab && activeTab.textContent.trim() === 'Latest Bets' && latestBets.style.display === 'none') {
+                            showLatestBets();
+                        }
+                    }
+                });
+            });
+
+            contents.forEach(content => {
+                observer.observe(content, { attributes: true });
+            });
+
+            // Backup for any late-loading data/logic or dynamic changes
+            setInterval(showLatestBets, 1000);
         });
     </script>
 </body>
