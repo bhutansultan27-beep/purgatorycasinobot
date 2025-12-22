@@ -537,6 +537,32 @@
             if (overlay) overlay.classList.remove('active');
         }
 
+        // Prevent scroll propagation for scrollable sections
+        const scrollableSections = [
+            document.getElementById('promo-banner'),
+            document.getElementById('originals-scroll'),
+            document.getElementById('table-scroll')
+        ];
+
+        scrollableSections.forEach(section => {
+            if (section) {
+                // Prevent wheel event propagation
+                section.addEventListener('wheel', (e) => {
+                    e.stopPropagation();
+                }, { passive: false });
+
+                // Prevent touch scroll propagation
+                section.addEventListener('touchmove', (e) => {
+                    e.stopPropagation();
+                }, { passive: false });
+
+                // Prevent scroll event propagation
+                section.addEventListener('scroll', (e) => {
+                    e.stopPropagation();
+                }, true);
+            }
+        });
+
         // Draggable promo slider
         const promoBanner = document.getElementById('promo-banner');
         const promoSlider = document.getElementById('promo-slider');
@@ -552,6 +578,7 @@
                 startX = e.pageX - promoBanner.offsetLeft;
                 scrollLeft = promoSlider.scrollLeft;
                 clearTimeout(autoScrollTimer);
+                e.stopPropagation();
             });
 
             promoBanner.addEventListener('mouseleave', () => {
@@ -569,6 +596,7 @@
             promoBanner.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 e.preventDefault();
+                e.stopPropagation();
                 const x = e.pageX - promoBanner.offsetLeft;
                 const walk = (x - startX) * 1;
                 promoSlider.scrollLeft = scrollLeft - walk;
