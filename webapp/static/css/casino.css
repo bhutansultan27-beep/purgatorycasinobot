@@ -177,7 +177,7 @@ body {
     padding: calc(max(15px, env(safe-area-inset-top))) 15px 15px 15px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     height: 72px;
     border-bottom: 1px solid var(--border-color);
     background: var(--bg-secondary);
@@ -193,8 +193,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
+    width: 20px;
     height: 24px;
+    flex-shrink: 0;
 }
 
 .menu-toggle-sidebar i {
@@ -204,29 +205,35 @@ body {
 .sidebar-category-toggle {
     display: flex;
     flex-direction: row;
-    gap: 8px;
+    gap: 4px;
     flex: 1;
     min-width: 0;
-    height: 40px;
+    height: 36px;
 }
 
 .sidebar-category-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 0 12px;
+    gap: 6px;
+    padding: 0 8px;
     border: none;
     background: #1a1d21;
     color: var(--text-secondary);
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     transition: all 0.2s ease;
     white-space: nowrap;
     flex: 1;
     height: 100%;
+    min-width: 0;
+}
+
+.sidebar-category-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sidebar-category-btn.active {
@@ -235,7 +242,8 @@ body {
 }
 
 .sidebar-category-btn i {
-    font-size: 16px;
+    font-size: 14px;
+    flex-shrink: 0;
 }
 
 .sidebar-category-btn:hover {
