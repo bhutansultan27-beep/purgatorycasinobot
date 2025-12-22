@@ -464,23 +464,26 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 16px;
-    background: #3FAEE8;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
+    padding: 6px 14px;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .header-category-btn:hover {
-    opacity: 0.9;
+    background: var(--bg-hover);
+    color: var(--text-primary);
 }
 
 .header-category-btn.active {
     background: #3FAEE8;
+    color: white;
+    border-color: #3FAEE8;
 }
 
 .header-category-btn:not(.active) {
