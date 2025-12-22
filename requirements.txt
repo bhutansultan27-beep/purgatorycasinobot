@@ -80,3 +80,12 @@ psycopg2-binary
 python-dotenv
 requests
 sqlalchemy
+apscheduler
+flask
+gunicorn
+pillow
+psycopg2-binary
+pymysql
+python-dotenv
+requests
+sqlalchemy
