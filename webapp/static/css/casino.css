@@ -351,7 +351,7 @@ body {
 }
 
 .nav-badge {
-    background: #6D5BFF;
+    background: #3faee8;
     color: white;
     font-size: 11px;
     font-weight: 700;
@@ -375,9 +375,9 @@ body {
 }
 
 .nav-collapsible.open .collapsible-trigger {
-    color: #9B7EF0;
+    color: #3faee8;
     background: var(--bg-hover);
-    border: 1px solid rgba(155, 126, 240, 0.3);
+    border: 1px solid rgba(63, 174, 232, 0.3);
 }
 
 .collapsible-content {
