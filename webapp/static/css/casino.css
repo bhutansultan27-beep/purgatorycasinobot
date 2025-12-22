@@ -1911,17 +1911,17 @@ body {
     }
     
     .bottom-nav {
-        display: none;
+        display: none !important;
     }
 
     @media (max-width: 768px) and (hover: none) and (pointer: coarse) {
         /* Only show bottom nav on mobile touch devices (iPhone/Android) */
         .bottom-nav {
-            display: flex;
+            display: none !important;
         }
         
         .content-area {
-            padding-bottom: calc(70px + max(0px, env(safe-area-inset-bottom)));
+            padding-bottom: max(0px, env(safe-area-inset-bottom));
         }
     }
 
