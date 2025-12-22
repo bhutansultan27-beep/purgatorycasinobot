@@ -1052,6 +1052,8 @@ body {
     scroll-behavior: smooth;
     background: transparent;
     padding: 10px 0;
+    overscroll-behavior: contain;
+    touch-action: pan-x;
 }
 
 .promo-banner::-webkit-scrollbar {
@@ -1218,16 +1220,12 @@ body {
     padding-bottom: 10px;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    overscroll-behavior: contain;
+    touch-action: pan-x;
 }
 
 .games-scroll::-webkit-scrollbar {
     display: none;
-}
-
-/* Prevent scroll propagation */
-.promo-banner,
-.games-scroll {
-    overscroll-behavior: contain;
 }
 
 .game-card-new {
