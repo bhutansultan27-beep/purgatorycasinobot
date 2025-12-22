@@ -1933,15 +1933,15 @@ body {
 .live-bets-section {
     background: var(--bg-card);
     border-radius: 16px;
-    padding: 15px;
-    margin-bottom: 15px;
+    padding: 10px;
+    margin-bottom: 10px;
 }
 
 .live-bets-section .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
 }
 
 .live-indicator {
@@ -1975,16 +1975,16 @@ body {
 .live-bets-header {
     display: grid;
     grid-template-columns: 1.5fr 1fr 1fr 0.8fr 1fr;
-    padding: 12px 15px;
+    padding: 8px 10px;
     background: var(--bg-hover);
-    font-size: 12px;
+    font-size: 10px;
     color: var(--text-muted);
     text-transform: uppercase;
     font-weight: 600;
 }
 
 .live-bets-list {
-    max-height: 400px;
+    max-height: 200px;
     overflow-y: auto;
 }
 
@@ -2513,25 +2513,25 @@ body {
 .footer {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
-    padding: 25px 20px;
-    margin-top: 25px;
+    padding: 15px 20px;
+    margin-top: 15px;
 }
 
 .footer-content {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 30px;
+    gap: 20px;
     max-width: 1400px;
     margin: 0 auto;
-    padding-bottom: 30px;
+    padding-bottom: 15px;
     border-bottom: 1px solid var(--border-color);
 }
 
 .footer-column h4 {
     color: var(--text-primary);
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
     text-transform: capitalize;
 }
 
@@ -2540,7 +2540,7 @@ body {
 }
 
 .footer-column li {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .footer-column a {
@@ -2592,8 +2592,8 @@ body {
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding-top: 20px;
+    gap: 10px;
+    padding-top: 10px;
 }
 
 .footer-info p {
