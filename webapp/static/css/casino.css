@@ -105,7 +105,7 @@ body {
     display: flex;
     min-height: 100vh;
     min-height: 100dvh;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 .sidebar {
@@ -1027,6 +1027,8 @@ body {
     margin: 0 auto;
     width: 100%;
     overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .container {
@@ -1078,6 +1080,10 @@ body {
     border-radius: 12px;
     transition: transform 0.3s ease;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.promo-slide:hover {
+    transform: translateY(-8px);
 }
 
 .category-tabs {
@@ -1143,6 +1149,7 @@ body {
 
 .games-section {
     margin-bottom: 12px;
+    overflow: hidden;
 }
 
 .section-header {
@@ -1221,8 +1228,7 @@ body {
 }
 
 .game-card-new:hover {
-    transform: translateY(-8px) scale(1.02);
-    filter: brightness(1.1);
+    transform: translateY(-8px);
 }
 
 .game-thumb {
@@ -1234,7 +1240,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
     transition: box-shadow 0.3s ease;
 }
 
@@ -1247,7 +1253,7 @@ body {
 }
 
 .game-card-new:hover .game-thumb {
-    box-shadow: 0 12px 48px rgba(168, 85, 247, 0.5);
+    box-shadow: none;
 }
 
 .game-badge {
