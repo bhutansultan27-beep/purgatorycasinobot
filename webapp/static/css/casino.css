@@ -35,8 +35,7 @@ body {
     color: var(--text-primary);
     min-height: 100vh;
     min-height: 100dvh;
-    overflow-x: hidden !important;
-    overflow-y: auto;
+    overflow: hidden !important;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -273,6 +272,7 @@ body {
     margin-left: var(--sidebar-width);
     min-height: 100vh;
     margin-top: 64px;
+    overflow: hidden;
 }
 
 .top-header {

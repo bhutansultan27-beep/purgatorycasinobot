@@ -537,59 +537,6 @@
             if (overlay) overlay.classList.remove('active');
         }
 
-        // Scroll management - enable scroll only on specific sections
-        const contentArea = document.querySelector('.content-area');
-        let isOverScrollable = false;
-        let lastScrollableElement = null;
-
-        // Get all scrollable sections
-        const promoBanner = document.getElementById('promo-banner');
-        const originalsScroll = document.getElementById('originals-scroll');
-        const tableScroll = document.getElementById('table-scroll');
-        const scrollableSections = [promoBanner, originalsScroll, tableScroll].filter(Boolean);
-
-        // Track which scrollable section mouse is over
-        scrollableSections.forEach(section => {
-            section.addEventListener('mouseenter', () => {
-                isOverScrollable = true;
-                lastScrollableElement = section;
-            });
-            section.addEventListener('mouseleave', () => {
-                isOverScrollable = false;
-                lastScrollableElement = null;
-            });
-        });
-
-        // Prevent scrolling on main content area
-        if (contentArea) {
-            contentArea.addEventListener('wheel', (e) => {
-                // Only allow scroll if over a scrollable section
-                if (!isOverScrollable) {
-                    e.preventDefault();
-                    return false;
-                }
-            }, { passive: false });
-
-            contentArea.addEventListener('touchmove', (e) => {
-                // Check if touch is on scrollable section
-                const touch = e.touches[0];
-                const element = document.elementFromPoint(touch.clientX, touch.clientY);
-                
-                let isOnScrollable = scrollableSections.some(section => 
-                    section.contains(element)
-                );
-                
-                if (!isOnScrollable) {
-                    e.preventDefault();
-                    return false;
-                }
-            }, { passive: false });
-        }
-
-        // Allow scrolling on designated sections
-        scrollableSections.forEach(section => {
-            section.style.overscrollBehavior = 'contain';
-        });
 
         // Draggable promo slider
         const promoSlider = document.getElementById('promo-slider');
