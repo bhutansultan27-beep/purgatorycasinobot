@@ -315,8 +315,8 @@
                             <span>Result</span>
                         </div>
                             <div class="live-bets-list" id="live-bets-list">
-                                <!-- Latest Plays (Default) -->
-                                <div class="tab-content" id="latest-bets">
+                                <!-- Latest Bets (Default) -->
+                                <div class="tab-content active" id="latest-bets" style="display: block;">
                                     <div class="live-bet-row">
                                         <span class="col-user"><i class="fas fa-caret-up"></i> Kensjio</span>
                                         <span class="col-game"><i class="fas fa-coins"></i> Le Santa</span>
@@ -774,19 +774,27 @@
                     tab.classList.add('active');
 
                     // Hide all content
-                    contents.forEach(content => content.style.display = 'none');
+                    contents.forEach(content => {
+                        content.style.display = 'none';
+                        content.classList.remove('active');
+                    });
                     
                     // Show target content
-                    const targetId = tab.textContent.toLowerCase().replace(' ', '-');
+                    const targetId = tab.textContent.toLowerCase().trim().replace(' ', '-');
                     const targetContent = document.getElementById(targetId);
                     if (targetContent) {
                         targetContent.style.display = 'block';
+                        targetContent.classList.add('active');
                     }
                 });
             });
 
-            // Ensure Latest Bets is visible on load
-            document.getElementById('latest-bets').style.display = 'block';
+            // Force initial display of Latest Bets
+            const latestBets = document.getElementById('latest-bets');
+            if (latestBets) {
+                latestBets.style.display = 'block';
+                latestBets.classList.add('active');
+            }
         });
     </script>
 </body>

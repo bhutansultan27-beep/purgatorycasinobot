@@ -2326,7 +2326,12 @@ body {
 }
 
 .tab-content {
+    display: none;
     animation: fadeIn 0.2s ease;
+}
+
+.tab-content.active {
+    display: block;
 }
 
 @keyframes fadeIn {
