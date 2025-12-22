@@ -2317,7 +2317,22 @@ body {
     .col-multi { display: none; }
 }
 
-/* Bet Modal */
+.no-bets {
+    padding: 40px;
+    text-align: center;
+    color: #9BA5B0;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.tab-content {
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 .bet-modal-overlay {
     display: none;
     position: fixed;
