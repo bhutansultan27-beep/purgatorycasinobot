@@ -123,6 +123,11 @@ body {
     display: flex;
     flex-direction: column;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.sidebar-content-wrapper::-webkit-scrollbar {
+    display: none;
 }
 
 .sidebar.collapsed .sidebar-content-wrapper {
