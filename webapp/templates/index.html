@@ -69,6 +69,24 @@
                 
                 <div class="nav-divider"></div>
                 
+                <div class="sidebar-section">
+                    <h3 class="sidebar-section-title">Favorites</h3>
+                    <div class="favorites-container" id="favorites-container">
+                        <div class="no-favorites">No favorites yet</div>
+                    </div>
+                </div>
+                
+                <div class="nav-divider"></div>
+                
+                <div class="sidebar-section">
+                    <h3 class="sidebar-section-title">Recently Played</h3>
+                    <div class="recently-played-container" id="recently-played-container">
+                        <div class="no-recent">No games played</div>
+                    </div>
+                </div>
+                
+                <div class="nav-divider"></div>
+                
                 <a href="#games-section" class="nav-item">
                     <i class="fas fa-dice"></i>
                     <span>Originals</span>
@@ -88,7 +106,14 @@
         <main class="main-content">
             <header class="top-header">
                 <div class="header-left-section">
-                    <img src="/static/images/logo.png" alt="rakebet" class="header-logo-img">
+                    <div class="header-casino-sports">
+                        <button class="header-category-btn active" data-category="casino">
+                            <span class="casino-icon">♦</span> Casino
+                        </button>
+                        <button class="header-category-btn" data-category="sports">
+                            <span class="sports-icon">⚽</span> Sports
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="header-center-section">

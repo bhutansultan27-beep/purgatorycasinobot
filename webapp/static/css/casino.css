@@ -291,6 +291,35 @@ body {
     margin: 15px 10px;
 }
 
+.sidebar-section {
+    margin: 0;
+}
+
+.sidebar-section-title {
+    margin: 0 0 10px 15px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.favorites-container,
+.recently-played-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 5px;
+}
+
+.no-favorites,
+.no-recent {
+    padding: 12px 15px;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
 .sidebar-footer {
     padding: 15px;
     border-top: 1px solid var(--border-color);
@@ -353,6 +382,45 @@ body {
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
+}
+
+.header-casino-sports {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.header-category-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #3FAEE8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.header-category-btn:hover {
+    opacity: 0.9;
+}
+
+.header-category-btn.active {
+    background: #3FAEE8;
+}
+
+.header-category-btn:not(.active) {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+}
+
+.casino-icon,
+.sports-icon {
+    font-size: 16px;
 }
 
 .header-logo-img {
