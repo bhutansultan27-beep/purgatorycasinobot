@@ -49,8 +49,8 @@
             background: var(--bg-secondary);
             border-radius: 16px;
             width: 90%;
-            max-width: 500px;
-            padding: 30px 25px;
+            max-width: 480px;
+            padding: 25px;
             position: relative;
             pointer-events: auto;
             max-height: 85vh;
@@ -60,17 +60,17 @@
 
         .wallet-modal-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .wallet-modal-tabs {
             display: flex;
-            gap: 30px;
+            gap: 25px;
             border-bottom: 1px solid var(--border-color);
-            margin-bottom: 30px;
-            padding-bottom: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
             position: relative;
         }
 
@@ -78,11 +78,11 @@
             background: none;
             border: none;
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            transition: color 0.2s ease;
-            padding-bottom: 5px;
+            transition: all 0.2s ease;
+            padding: 0;
             position: relative;
         }
 
@@ -91,17 +91,17 @@
         }
 
         .wallet-modal-tab.active {
-            color: var(--accent-purple);
+            color: #3faee8;
         }
 
         .wallet-modal-tab.active::after {
             content: '';
             position: absolute;
-            bottom: -20px;
+            bottom: -12px;
             left: 0;
             right: 0;
             height: 2px;
-            background: var(--accent-purple);
+            background: #3faee8;
         }
 
         .close-btn {
@@ -123,25 +123,25 @@
         }
 
         .form-section {
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
         .form-label {
             display: block;
             color: var(--text-primary);
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 7px;
             text-transform: capitalize;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
         }
 
         .form-control {
             width: 100%;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 11px 13px;
+            border-radius: 6px;
+            padding: 10px 12px;
             color: var(--text-primary);
             font-size: 13px;
             display: flex;
@@ -152,7 +152,7 @@
         }
 
         .form-control:hover {
-            border-color: var(--accent-purple);
+            border-color: #3faee8;
         }
 
         .form-control-icon {
@@ -261,10 +261,10 @@
         .input-field {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px 14px;
+            border-radius: 6px;
+            padding: 10px 12px;
             color: var(--text-primary);
-            font-size: 14px;
+            font-size: 13px;
             width: 100%;
             transition: all 0.2s ease;
         }
@@ -275,22 +275,22 @@
 
         .input-field:focus {
             outline: none;
-            border-color: var(--accent-purple);
+            border-color: #3faee8;
         }
 
         .input-with-icon {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px 14px;
+            border-radius: 6px;
+            padding: 10px 12px;
             transition: all 0.2s ease;
         }
 
         .input-with-icon:focus-within {
-            border-color: var(--accent-purple);
+            border-color: #3faee8;
         }
 
         .input-with-icon input {
@@ -366,21 +366,21 @@
 
         .action-button {
             width: 100%;
-            padding: 13px;
-            background: rgba(159, 122, 234, 0.25);
-            border: 1px solid rgba(159, 122, 234, 0.3);
-            border-radius: 8px;
+            padding: 12px;
+            background: rgba(159, 122, 234, 0.2);
+            border: 1px solid rgba(159, 122, 234, 0.2);
+            border-radius: 6px;
             color: var(--text-primary);
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 18px;
+            margin-top: 16px;
         }
 
         .action-button:hover {
-            background: rgba(159, 122, 234, 0.35);
-            border-color: rgba(159, 122, 234, 0.4);
+            background: rgba(159, 122, 234, 0.25);
+            border-color: rgba(159, 122, 234, 0.3);
         }
 
         .buy-crypto-section {
