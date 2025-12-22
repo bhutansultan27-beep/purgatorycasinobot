@@ -272,14 +272,15 @@ body {
 }
 
 .sidebar-nav {
-    padding: 10px 10px;
-    overflow-y: auto;
-}
-
-.sidebar-profile-nav {
     flex: 1;
     padding: 10px 10px;
     overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.sidebar-profile-nav {
+    padding: 10px 10px;
+    overflow-y: visible;
     border-top: 1px solid var(--border-color);
 }
 
@@ -390,6 +391,7 @@ body {
 }
 
 .main-content {
+    overscroll-behavior: none;
     flex: 1;
     margin-left: var(--sidebar-width);
     min-height: 100vh;
@@ -400,6 +402,7 @@ body {
 }
 
 .sidebar.collapsed ~ .main-content {
+    overscroll-behavior: none;
     margin-left: 80px;
 }
 
@@ -1075,6 +1078,7 @@ body {
     }
     
     .main-content {
+    overscroll-behavior: none;
         margin-top: 64px;
     }
     
@@ -1721,6 +1725,7 @@ body {
     }
     
     .main-content {
+    overscroll-behavior: none;
         margin-left: 0;
         display: flex;
         flex-direction: column;
