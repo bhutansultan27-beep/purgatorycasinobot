@@ -291,23 +291,72 @@
                 </section>
 
                 <section class="live-bets-section">
-                    <div class="section-header">
-                        <h2><i class="fas fa-bolt"></i> Live Bets</h2>
-                        <div class="live-indicator">
-                            <span class="live-dot"></span>
-                            <span>LIVE</span>
+                    <div class="live-bets-header-top">
+                        <div class="live-tabs">
+                            <button class="live-tab">My Plays</button>
+                            <button class="live-tab active">Latest Plays</button>
+                            <button class="live-tab">High Rollers</button>
+                            <button class="live-tab">Daily Race</button>
+                        </div>
+                        <div class="live-controls">
+                            <select class="row-count-select">
+                                <option>10</option>
+                                <option>25</option>
+                                <option>50</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="live-bets-container">
-                        <div class="live-bets-header">
-                            <span class="col-user">User</span>
-                            <span class="col-game">Game</span>
-                            <span class="col-bet">Bet Amount</span>
-                            <span class="col-multi">Multiplier</span>
-                            <span class="col-payout">Payout</span>
+                    <div class="live-bets-table-container">
+                        <div class="live-table-header">
+                            <span>User</span>
+                            <span>Game</span>
+                            <span>Amount</span>
+                            <span>Multiplier</span>
+                            <span>Result</span>
                         </div>
                         <div class="live-bets-list" id="live-bets-list">
-                            <div class="loading-bets">Loading live bets...</div>
+                            <div class="live-bet-row">
+                                <span class="col-user"><i class="fas fa-diamond"></i> Em101</span>
+                                <span class="col-game"><i class="fas fa-dice"></i> Keno</span>
+                                <span class="col-amount"><i class="fas fa-coins"></i> 5.00</span>
+                                <span class="col-multi"><i class="fas fa-chart-line"></i> 0.00x</span>
+                                <span class="col-result loss"><i class="fas fa-coins"></i> -5.00</span>
+                            </div>
+                            <div class="live-bet-row">
+                                <span class="col-user"><i class="fas fa-caret-up"></i> lpippen2</span>
+                                <span class="col-game"><i class="fas fa-bowling-ball"></i> Plinko</span>
+                                <span class="col-amount"><i class="fas fa-coins"></i> 1.28</span>
+                                <span class="col-multi"><i class="fas fa-chart-line"></i> 0.20x</span>
+                                <span class="col-result loss"><i class="fas fa-coins"></i> -1.02</span>
+                            </div>
+                            <div class="live-bet-row">
+                                <span class="col-user"><i class="fas fa-caret-up"></i> lambecreta</span>
+                                <span class="col-game"><i class="fas fa-gift"></i> Gift X</span>
+                                <span class="col-amount"><i class="fas fa-coins"></i> 0.60</span>
+                                <span class="col-multi"><i class="fas fa-chart-line"></i> 1.06x</span>
+                                <span class="col-result win"><i class="fas fa-coins"></i> 0.64</span>
+                            </div>
+                            <div class="live-bet-row">
+                                <span class="col-user"><i class="fas fa-diamond"></i> Em101</span>
+                                <span class="col-game"><i class="fas fa-dice"></i> Keno</span>
+                                <span class="col-amount"><i class="fas fa-coins"></i> 5.00</span>
+                                <span class="col-multi"><i class="fas fa-chart-line"></i> 10.00x</span>
+                                <span class="col-result win"><i class="fas fa-coins"></i> 50.00</span>
+                            </div>
+                            <div class="live-bet-row active-row">
+                                <span class="col-user"><i class="fas fa-circle"></i> Mattydaddy2968</span>
+                                <span class="col-game"><i class="fas fa-dice"></i> Keno</span>
+                                <span class="col-amount"><i class="fas fa-coins"></i> 6.00</span>
+                                <span class="col-multi"><i class="fas fa-chart-line"></i> 0.00x</span>
+                                <span class="col-result loss"><i class="fas fa-coins"></i> -6.00</span>
+                            </div>
+                            <div class="live-bet-row">
+                                <span class="col-user"><i class="fas fa-diamond"></i> Clurr</span>
+                                <span class="col-game"><i class="fas fa-dice"></i> Mines</span>
+                                <span class="col-amount"><i class="fas fa-coins"></i> 0.04</span>
+                                <span class="col-multi"><i class="fas fa-chart-line"></i> 0.00x</span>
+                                <span class="col-result loss"><i class="fas fa-coins"></i> -0.04</span>
+                            </div>
                         </div>
                     </div>
                 </section>
