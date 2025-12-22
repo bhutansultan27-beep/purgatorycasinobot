@@ -144,7 +144,7 @@
                             <i class="fas fa-chevron-down arrow"></i>
                         </div>
                         <div class="collapsible-content">
-                            <a href="/wallet" class="sub-nav-item">
+                            <a href="#" class="sub-nav-item wallet-modal-trigger">
                                 <i class="fas fa-wallet"></i>
                                 <span>Wallet</span>
                             </a>
@@ -218,10 +218,10 @@
                     <div class="balance-pill">
                         <span id="balance">$0.00</span>
                     </div>
-                    <a href="/deposit" class="wallet-btn-header">
+                    <button class="wallet-btn-header" id="wallet-btn-header">
                         <i class="fas fa-wallet"></i>
                         <span>Wallet</span>
-                    </a>
+                    </button>
                 </div>
                 
                 <div class="header-right-section">
@@ -832,6 +832,242 @@
             // Execute immediately and periodically to ensure visibility
             showLatestBets();
             setInterval(showLatestBets, 500);
+        });
+    </script>
+
+    <!-- Wallet Modal -->
+    <style>
+        .wallet-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .wallet-modal-overlay.active {
+            display: flex;
+        }
+
+        .wallet-modal-content {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px 25px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .wallet-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .wallet-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wallet-modal-close:hover {
+            color: var(--accent-purple);
+        }
+
+        .wallet-modal-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .balance-display {
+            background: linear-gradient(135deg, var(--bg-card), #2a2d31);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .balance-label {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .wallet-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .wallet-option-btn {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .wallet-option-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent-purple);
+        }
+
+        .wallet-option-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .wallet-option-btn.deposit .wallet-option-icon {
+            background: rgba(38, 196, 133, 0.2);
+            color: var(--accent-green);
+        }
+
+        .wallet-option-btn.withdraw .wallet-option-icon {
+            background: rgba(255, 107, 107, 0.2);
+            color: #FF6B6B;
+        }
+
+        .wallet-option-info {
+            flex: 1;
+        }
+
+        .wallet-option-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .wallet-option-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+    </style>
+
+    <div class="wallet-modal-overlay" id="wallet-modal-overlay">
+        <div class="wallet-modal-content">
+            <div class="wallet-modal-header">
+                <div class="wallet-modal-title">Wallet</div>
+                <button class="wallet-modal-close" id="wallet-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="balance-display">
+                <div class="balance-label">Current Balance</div>
+                <div class="balance-amount" id="wallet-modal-balance">$0.00</div>
+            </div>
+
+            <div class="wallet-options">
+                <a href="/deposit" class="wallet-option-btn deposit">
+                    <div class="wallet-option-icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="wallet-option-info">
+                        <div class="wallet-option-title">Deposit</div>
+                        <div class="wallet-option-desc">Add funds</div>
+                    </div>
+                </a>
+
+                <a href="/withdraw" class="wallet-option-btn withdraw">
+                    <div class="wallet-option-icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="wallet-option-info">
+                        <div class="wallet-option-title">Withdraw</div>
+                        <div class="wallet-option-desc">Cash out</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wallet Modal Handler
+        const walletBtnHeader = document.getElementById('wallet-btn-header');
+        const walletModalOverlay = document.getElementById('wallet-modal-overlay');
+        const walletModalClose = document.getElementById('wallet-modal-close');
+        const walletModalTriggers = document.querySelectorAll('.wallet-modal-trigger');
+
+        function openWalletModal() {
+            walletModalOverlay.classList.add('active');
+            updateWalletBalance();
+        }
+
+        function closeWalletModal() {
+            walletModalOverlay.classList.remove('active');
+        }
+
+        function updateWalletBalance() {
+            const balanceText = document.getElementById('balance').textContent;
+            document.getElementById('wallet-modal-balance').textContent = balanceText;
+        }
+
+        walletBtnHeader.addEventListener('click', (e) => {
+            e.preventDefault();
+            openWalletModal();
+        });
+
+        walletModalClose.addEventListener('click', closeWalletModal);
+
+        walletModalOverlay.addEventListener('click', (e) => {
+            if (e.target === walletModalOverlay) {
+                closeWalletModal();
+            }
+        });
+
+        walletModalTriggers.forEach(trigger => {
+            trigger.addEventListener('click', (e) => {
+                e.preventDefault();
+                openWalletModal();
+            });
         });
     </script>
 </body>
