@@ -239,12 +239,22 @@ body {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        position: sticky;
+        position: fixed;
         top: 0;
+        left: 0;
+        right: 0;
         background: #0b0e11;
-        z-index: 100;
-        border-bottom: 1px solid #1a1d21;
+        z-index: 1000;
+        border-bottom: none;
         margin-top: 0;
+    }
+
+    .main-content {
+        flex: 1;
+        width: 100%;
+        margin-left: 0;
+        padding-top: 44px;
+        padding-bottom: 80px;
     }
 
     .header-user-avatar, .header-profile-icon {
