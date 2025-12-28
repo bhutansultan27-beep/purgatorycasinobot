@@ -224,8 +224,16 @@ body {
         margin: auto;
     }
 
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: flex !important;
+    }
+
     /* Header optimization */
-    .top-header {
+    .top-header.mobile-only {
         padding: 8px 12px;
         height: 60px;
         display: flex;

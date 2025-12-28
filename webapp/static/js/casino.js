@@ -51,6 +51,11 @@ function loadUserData() {
 
 function updateUI() {
     if (userData) {
+        const balanceDisplay = document.getElementById('balance');
+        if (balanceDisplay) {
+            balanceDisplay.textContent = '$' + formatNumber(userData.balance);
+        }
+
         const gcBalance = document.querySelector('.gc-balance');
         if (gcBalance) {
             gcBalance.textContent = formatNumber(userData.balance).split('.')[0];
@@ -108,6 +113,11 @@ function initSidebar() {
         }
     }
 
+    const walletBtnDesktop = document.getElementById('wallet-btn-header-desktop');
+    if (walletBtnDesktop) {
+        walletBtnDesktop.addEventListener('click', showDeposit);
+    }
+    
     if (headerToggle) headerToggle.addEventListener('click', toggleSidebar);
     if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
     if (overlay) overlay.addEventListener('click', toggleSidebar);

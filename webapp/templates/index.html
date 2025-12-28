@@ -199,7 +199,51 @@
         </aside>
 
         <main class="main-content">
-            <header class="top-header">
+            <header class="top-header desktop-only">
+                <div class="header-left-section">
+                    <button class="header-menu-toggle" id="header-menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="header-casino-sports">
+                        <button class="header-category-btn active" data-category="casino">
+                            <i class="fas fa-dice"></i> Casino
+                        </button>
+                        <button class="header-category-btn" data-category="sports">
+                            <i class="fas fa-trophy"></i> Sports
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="header-center-section">
+                    <img src="/static/images/rakebet_logo_santa.png" alt="rakebet" class="header-center-logo">
+                    <div class="balance-pill">
+                        <span id="balance">$0.00</span>
+                    </div>
+                    <button class="wallet-btn-header" id="wallet-btn-header-desktop">
+                        <i class="fas fa-wallet"></i>
+                        <span>Wallet</span>
+                    </button>
+                </div>
+                
+                <div class="header-right-section">
+                    <div class="header-icons">
+                        <button class="header-icon-btn" title="Bet Slip">
+                            <i class="fas fa-clipboard"></i>
+                        </button>
+                        <button class="header-icon-btn" title="VIP">
+                            <i class="fas fa-gem"></i>
+                        </button>
+                        <button class="header-icon-btn" title="Global Chat">
+                            <i class="fas fa-comments"></i>
+                        </button>
+                        <button class="header-icon-btn profile-btn" title="Profile">
+                            <i class="fas fa-user-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <header class="top-header mobile-only">
                 <div class="header-left-section">
                     <div class="header-user-avatar">
                         <img src="/static/images/logo.png" alt="Profile" class="user-avatar-img">
