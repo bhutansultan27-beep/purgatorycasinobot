@@ -234,8 +234,8 @@ body {
 
     /* Header optimization */
     .top-header.mobile-only {
-        padding: 4px 12px;
-        height: 50px;
+        padding: 0 12px;
+        height: 44px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -244,11 +244,12 @@ body {
         background: #0b0e11;
         z-index: 100;
         border-bottom: 1px solid #1a1d21;
+        margin-top: 0;
     }
 
     .header-user-avatar, .header-profile-icon {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         overflow: hidden;
         background: #6236ff;
@@ -267,7 +268,7 @@ body {
         flex: 1;
         display: flex;
         justify-content: center;
-        padding: 0 10px;
+        padding: 0 8px;
     }
 
     .balance-container {
@@ -275,15 +276,15 @@ body {
         align-items: center;
         background: #1a1d21;
         border-radius: 8px;
-        padding: 4px 12px;
-        min-width: 90px;
-        height: 32px;
+        padding: 4px 10px;
+        min-width: 80px;
+        height: 28px;
         border: 1px solid #2a2d31;
     }
 
     .currency-icon {
-        margin-right: 8px;
-        font-size: 14px;
+        margin-right: 6px;
+        font-size: 12px;
     }
 
     .balance-value {
@@ -291,12 +292,12 @@ body {
         text-align: center;
         font-weight: 700;
         color: #fff;
-        font-size: 14px;
+        font-size: 12px;
     }
 
     .header-wallet-btn {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
         background: #6236ff;
         border: none;
         border-radius: 8px;
@@ -304,8 +305,8 @@ body {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
-        margin-right: 8px;
+        font-size: 14px;
+        margin-right: 6px;
     }
 
     /* Bottom Nav Styles */
