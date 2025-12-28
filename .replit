@@ -56,9 +56,9 @@ WITHDRAWAL_GROUP_ID = "-5089646716"
 BOT_USERNAME = "emojigamblebot"
 USE_POLLING = "true"
 ODDS_API_KEY = "de3f80f59d5eeb4008770c619cf6f230"
+WEBHOOK_URL = "https://697d92bd-27b9-40df-b8b9-e3ce2199788d-00-25t4r4t0wa8t1.spock.replit.dev"
 
 [userenv.production]
-WEBHOOK_URL = "https://replit-casino-bot--stugbak2.replit.app"
 
 [userenv.development]
 

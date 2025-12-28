@@ -36,7 +36,7 @@ from hilo import HiLoGame
 from connect4 import Connect4Game
 
 # External dependencies (assuming they are installed via pip install python-telegram-bot)
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand, WebAppInfo
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -1163,8 +1163,11 @@ Good luck! 🍀"""
         
         balance_text = f"🏦 **Menu**\n\n💰 Balance: **${user_data['balance']:.2f}**"
         
+        webapp_url = os.getenv("WEBHOOK_URL", "")
+        
         keyboard = [
-            [InlineKeyboardButton("🎮 Play", callback_data="menu_play")],
+            [InlineKeyboardButton("🎮 Open Casino App", web_app=WebAppInfo(url=webapp_url))] if webapp_url else [],
+            [InlineKeyboardButton("🎮 Play (Bot Version)", callback_data="menu_play")],
             [InlineKeyboardButton("💳 Deposit", callback_data="deposit_mock"),
              InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")],
             [InlineKeyboardButton("🎁 Bonuses", callback_data="menu_bonuses"),
@@ -1172,6 +1175,8 @@ Good luck! 🍀"""
             [InlineKeyboardButton("⚙️ Commands", callback_data="menu_commands"),
              InlineKeyboardButton("📞 Support", callback_data="menu_support")]
         ]
+        # Filter out empty rows if webapp_url is missing
+        keyboard = [row for row in keyboard if row]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(balance_text, reply_markup=reply_markup, parse_mode="Markdown")
@@ -1187,8 +1192,11 @@ Good luck! 🍀"""
         
         menu_text = f"🏦 **Menu**\n\n💰 Balance: **${user_data['balance']:.2f}**"
         
+        webapp_url = os.getenv("WEBHOOK_URL", "")
+        
         keyboard = [
-            [InlineKeyboardButton("🎮 Play", callback_data="menu_play")],
+            [InlineKeyboardButton("🎮 Open Casino App", web_app=WebAppInfo(url=webapp_url))] if webapp_url else [],
+            [InlineKeyboardButton("🎮 Play (Bot Version)", callback_data="menu_play")],
             [InlineKeyboardButton("💳 Deposit", callback_data="deposit_mock"),
              InlineKeyboardButton("💸 Withdraw", callback_data="withdraw_mock")],
             [InlineKeyboardButton("🎁 Bonuses", callback_data="menu_bonuses"),
@@ -1196,6 +1204,8 @@ Good luck! 🍀"""
             [InlineKeyboardButton("⚙️ Commands", callback_data="menu_commands"),
              InlineKeyboardButton("📞 Support", callback_data="menu_support")]
         ]
+        # Filter out empty rows if webapp_url is missing
+        keyboard = [row for row in keyboard if row]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         sent_msg = await update.message.reply_text(menu_text, reply_markup=reply_markup, parse_mode="Markdown")
