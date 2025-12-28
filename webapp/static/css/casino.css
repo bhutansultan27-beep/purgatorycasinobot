@@ -1393,37 +1393,36 @@ body {
     margin-bottom: 24px;
     position: relative;
     overflow: hidden;
-    height: 220px;
-    cursor: grab;
-    scroll-behavior: smooth;
+    height: auto;
+    aspect-ratio: 21/9;
     background: transparent;
     padding: 0;
-    overscroll-behavior: contain;
-    touch-action: pan-x;
 }
 
 .promo-slider {
     display: flex;
     width: 100%;
     height: 100%;
-    gap: 12px;
+    gap: 0;
     padding: 0;
     align-items: center;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
+    overflow: hidden;
 }
 
 .promo-slide {
     flex: 0 0 100%;
     height: 100%;
-    background-size: cover;
+    background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center;
     border-radius: 12px;
     transition: transform 0.3s ease;
-    scroll-snap-align: start;
     margin: 0;
+    display: none;
+}
+
+.promo-slide:first-child {
+    display: block;
 }
 
 .promo-slide:hover {

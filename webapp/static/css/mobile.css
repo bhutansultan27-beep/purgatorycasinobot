@@ -142,28 +142,37 @@ body {
         margin: 8px 0 !important;
     }
 
-    /* Promotional banners - stack better */
+    /* Promotional banners - static and full size */
     .promo-banner {
         border-radius: 12px !important;
         overflow: hidden !important;
         margin: 12px !important;
         height: auto !important;
         aspect-ratio: 16/9 !important;
+        touch-action: none !important;
     }
 
     .promo-slider {
         height: 100% !important;
         padding: 0 !important;
+        overflow: hidden !important;
+        display: block !important;
     }
 
     .promo-slide {
         height: 100% !important;
+        width: 100% !important;
         aspect-ratio: 16/9 !important;
-        background-size: cover !important;
+        background-size: 100% 100% !important;
         background-position: center !important;
         background-repeat: no-repeat !important;
         border-radius: 12px !important;
         flex: 0 0 100% !important;
+        display: none;
+    }
+
+    .promo-slide:first-child {
+        display: block !important;
     }
 
     .promo-grid {
