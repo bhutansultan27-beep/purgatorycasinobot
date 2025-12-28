@@ -9,8 +9,3 @@ gunicorn
 pymysql
 psycopg2-binary
 Pillow
-telegram
-flask
-flask
-aiohttp
-flask
