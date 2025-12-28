@@ -23,6 +23,11 @@ db = SQLDatabaseManager()
 
 @app.after_request
 def add_cache_headers(response):
+    # Mobile optimization headers
+    response.headers['X-UA-Compatible'] = 'IE=edge'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    
     if response.direct_passthrough or not response.is_streamed:
         if response.content_type and ('image' in response.content_type or 'png' in response.content_type or 'jpg' in response.content_type or 'jpeg' in response.content_type or 'gif' in response.content_type or 'webp' in response.content_type):
             response.cache_control.max_age = 0

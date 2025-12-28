@@ -5,9 +5,18 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0d0d0f",
-  "theme_color": "#0d0d0f",
+  "background_color": "#0b0e11",
+  "theme_color": "#0b0e11",
   "orientation": "portrait-primary",
+  "categories": ["games"],
+  "screenshots": [
+    {
+      "src": "/static/images/logo.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
   "icons": [
     {
       "src": "/static/images/logo.png",
