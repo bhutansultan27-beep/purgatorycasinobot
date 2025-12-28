@@ -284,30 +284,41 @@ body {
     .balance-container {
         display: flex;
         align-items: center;
-        background: #1a1d21;
+        background: transparent;
         border-radius: 8px;
-        padding: 4px 10px;
-        min-width: 80px;
-        height: 28px;
+        padding: 0 8px;
+        height: 36px;
         border: 1px solid #2a2d31;
+        gap: 8px;
     }
 
-    .currency-icon {
-        margin-right: 6px;
-        font-size: 12px;
+    .currency-switch-icon {
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .balance-value {
-        flex: 1;
-        text-align: center;
-        font-weight: 700;
+    .balance-value-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: #2a2d31;
+        padding: 4px 12px;
+        border-radius: 6px;
+        height: 28px;
         color: #fff;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .balance-value-pill i {
         font-size: 12px;
     }
 
     .header-wallet-btn {
-        width: 32px;
-        height: 32px;
+        width: 40px;
+        height: 36px;
         background: #6236ff;
         border: none;
         border-radius: 8px;
@@ -315,8 +326,8 @@ body {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
-        margin-right: 6px;
+        font-size: 18px;
+        margin-right: 8px;
     }
 
     /* Bottom Nav Styles */
