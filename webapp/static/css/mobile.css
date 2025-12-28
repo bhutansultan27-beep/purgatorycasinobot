@@ -1,13 +1,59 @@
 /* Mobile-First Optimizations for Telegram Mini App */
 
+/* Global Scrollbar Hiding for App-like feel */
+* {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Prevent iOS Callouts and Selection */
+img, a, button, .game-card, .nav-item, .game-card-new {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    outline: none !important;
+}
+
 /* Telegram WebApp Safe Area and Viewport */
-@supports (padding: max(0px)) {
-    body {
-        padding-top: max(0px, env(safe-area-inset-top));
-        padding-left: max(0px, env(safe-area-inset-left));
-        padding-right: max(0px, env(safe-area-inset-right));
-        padding-bottom: max(0px, env(safe-area-inset-bottom));
-    }
+html, body {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #0b0e11;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+.app-container {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+}
+
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
 }
 
 /* Hide Sidebar on Mobile, Show Bottom Navigation */
@@ -147,16 +193,86 @@
     }
 
     /* Header optimization */
-    .header {
-        padding: 12px 16px;
-        min-height: 56px;
+    .top-header {
+        padding: 8px 12px;
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        background: #0b0e11;
+        z-index: 100;
     }
 
-    /* Avatar and profile image optimization */
-    .user-avatar, .profile-img {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+    .header-center-logo {
+        height: 24px !important;
+        width: auto !important;
+        max-width: 100px;
+        object-fit: contain;
+    }
+
+    .balance-pill {
+        padding: 4px 8px !important;
+        font-size: 12px !important;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+    }
+
+    .wallet-btn-header {
+        padding: 6px 10px !important;
+    }
+
+    .wallet-btn-header span {
+        display: none !important;
+    }
+
+    /* Game Cards - Optimized for small screens */
+    .games-section {
+        padding: 12px;
+    }
+
+    .section-header h2 {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+
+    .games-scroll {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+
+    .game-card-new {
+        flex: none !important;
+        width: 100% !important;
+        aspect-ratio: 1/1;
+        overflow: hidden;
+        border-radius: 12px;
+        background: #1a1d21;
+        position: relative;
+    }
+
+    .game-thumb {
+        width: 100%;
+        height: 100%;
+    }
+
+    .game-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scale(1.01); /* Prevent tiny gaps */
+    }
+
+    /* Grid optimization for lobby */
+    .game-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px;
+        padding: 12px;
     }
 
     /* Text sizing for readability */
