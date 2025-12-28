@@ -49,13 +49,6 @@ body {
 
 .status-bar {
     display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 32px;
-    background: linear-gradient(90deg, var(--accent-purple), #2DCEC0);
-    z-index: 200;
 }
 
 .bottom-nav {
