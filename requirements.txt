@@ -12,3 +12,5 @@ Pillow
 telegram
 flask
 flask
+aiohttp
+flask
