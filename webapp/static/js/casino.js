@@ -51,7 +51,10 @@ function loadUserData() {
 
 function updateUI() {
     if (userData) {
-        document.getElementById('balance').textContent = '$' + formatNumber(userData.balance);
+        const gcBalance = document.querySelector('.gc-balance');
+        if (gcBalance) {
+            gcBalance.textContent = formatNumber(userData.balance).split('.')[0];
+        }
         
         if (userData.is_admin) {
             const adminNav = document.getElementById('admin-nav');
@@ -108,6 +111,9 @@ function initSidebar() {
     if (headerToggle) headerToggle.addEventListener('click', toggleSidebar);
     if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
     if (overlay) overlay.addEventListener('click', toggleSidebar);
+    
+    const menuBtn = document.getElementById('menu-toggle-btn');
+    if (menuBtn) menuBtn.addEventListener('click', toggleSidebar);
 
     // Collapsible sections logic
     const triggers = document.querySelectorAll('.collapsible-trigger');

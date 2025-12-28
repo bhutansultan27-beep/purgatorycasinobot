@@ -227,7 +227,7 @@ body {
     /* Header optimization */
     .top-header {
         padding: 8px 12px;
-        min-height: 50px;
+        height: 60px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -235,28 +235,107 @@ body {
         top: 0;
         background: #0b0e11;
         z-index: 100;
+        border-bottom: 1px solid #1a1d21;
     }
 
-    .header-center-logo {
-        height: 24px !important;
-        width: auto !important;
-        max-width: 100px;
-        object-fit: contain;
+    .header-user-avatar, .header-profile-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #6236ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .balance-pill {
-        padding: 4px 8px !important;
-        font-size: 12px !important;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 20px;
+    .user-avatar-img, .profile-thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
-    .wallet-btn-header {
-        padding: 6px 10px !important;
+    .header-center-section {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        padding: 0 10px;
     }
 
-    .wallet-btn-header span {
-        display: none !important;
+    .balance-container {
+        display: flex;
+        align-items: center;
+        background: #1a1d21;
+        border-radius: 8px;
+        padding: 4px 8px;
+        min-width: 100px;
+        height: 36px;
+        border: 1px solid #2a2d31;
+    }
+
+    .currency-icon {
+        margin-right: 8px;
+        font-size: 14px;
+    }
+
+    .balance-value {
+        flex: 1;
+        text-align: center;
+        font-weight: 700;
+        color: #fff;
+        font-size: 14px;
+    }
+
+    .header-wallet-btn {
+        width: 44px;
+        height: 44px;
+        background: #6236ff;
+        border: none;
+        border-radius: 10px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-right: 8px;
+    }
+
+    /* Bottom Nav Styles */
+    .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 65px;
+        background: #0b0e11;
+        border-top: 1px solid #1a1d21;
+        z-index: 1000;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .bottom-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #9BA5B0;
+        text-decoration: none;
+        font-size: 11px;
+        gap: 4px;
+    }
+
+    .bottom-nav-item i {
+        font-size: 20px;
+    }
+
+    .bottom-nav-item span {
+        font-weight: 500;
+    }
+
+    .bottom-nav-item:active {
+        color: #fff;
     }
 
     /* Game Cards - Optimized for small screens */
