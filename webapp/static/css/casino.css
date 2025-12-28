@@ -1416,18 +1416,13 @@ body {
     background-repeat: no-repeat;
     background-position: center;
     border-radius: 12px;
-    transition: transform 0.3s ease;
+    transition: opacity 0.5s ease;
     margin: 0;
     display: none;
 }
 
-.promo-slide:first-child {
+.promo-slide.active {
     display: block;
-}
-
-.promo-slide:hover {
-    transform: translateY(-8px);
-    z-index: 10;
 }
 
 .category-tabs {

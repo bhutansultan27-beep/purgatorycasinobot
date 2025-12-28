@@ -1096,5 +1096,22 @@
             });
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.promo-slide');
+            let currentSlide = 0;
+
+            if (slides.length > 0) {
+                // Initialize first slide
+                slides[0].classList.add('active');
+
+                setInterval(() => {
+                    slides[currentSlide].classList.remove('active');
+                    currentSlide = (currentSlide + 1) % slides.length;
+                    slides[currentSlide].classList.add('active');
+                }, 3000);
+            }
+        });
+    </script>
 </body>
 </html>

@@ -171,7 +171,7 @@ body {
         display: none;
     }
 
-    .promo-slide:first-child {
+    .promo-slide.active {
         display: block !important;
     }
 
